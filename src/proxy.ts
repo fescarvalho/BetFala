@@ -1,0 +1,54 @@
+import { createServerClient } from '@supabase/ssr';
+import { NextResponse, type NextRequest } from 'next/server';
+
+export async function proxy(request: NextRequest) {
+  let supabaseResponse = NextResponse.next({ request });
+
+  // Só roda middleware se o Supabase estiver configurado
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const isMockMode = !supabaseKey || supabaseKey === 'SUA_ANON_KEY_AQUI';
+
+  if (isMockMode) {
+    return supabaseResponse;
+  }
+
+  const supabase = createServerClient(supabaseUrl!, supabaseKey!, {
+    cookies: {
+      getAll() {
+        return request.cookies.getAll();
+      },
+      setAll(cookiesToSet) {
+        cookiesToSet.forEach(({ name, value }) =>
+          request.cookies.set(name, value)
+        );
+        supabaseResponse = NextResponse.next({ request });
+        cookiesToSet.forEach(({ name, value, options }) =>
+          supabaseResponse.cookies.set(name, value, options)
+        );
+      },
+    },
+  });
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const { pathname } = request.nextUrl;
+
+  // Redirecionar para login se não autenticado (exceto a própria rota de auth)
+  if (!user && pathname !== '/auth') {
+    return NextResponse.redirect(new URL('/auth', request.url));
+  }
+
+  // Redirecionar para dashboard se já autenticado
+  if (user && pathname === '/auth') {
+    return NextResponse.redirect(new URL('/', request.url));
+  }
+
+  return supabaseResponse;
+}
+
+export const config = {
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
+};
