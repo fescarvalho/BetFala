@@ -52,120 +52,39 @@ export default function AuthPage() {
   };
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        background: 'var(--bg-base)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: 16,
-        position: 'relative',
-        overflow: 'hidden',
-      }}
-    >
+    <div className="min-h-screen bg-[#050816] flex items-center justify-center p-4 relative overflow-hidden">
       {/* Glow de fundo decorativo */}
-      <div
-        style={{
-          position: 'absolute',
-          top: '20%',
-          left: '30%',
-          width: 500,
-          height: 500,
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(0,255,135,0.06) 0%, transparent 70%)',
-          pointerEvents: 'none',
-        }}
-      />
-      <div
-        style={{
-          position: 'absolute',
-          bottom: '10%',
-          right: '20%',
-          width: 400,
-          height: 400,
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(76,201,240,0.04) 0%, transparent 70%)',
-          pointerEvents: 'none',
-        }}
-      />
+      <div className="absolute top-[20%] left-[30%] w-[500px] h-[500px] rounded-full bg-[radial-gradient(circle,rgba(0,255,153,0.06)_0%,transparent_70%)] pointer-events-none" />
+      <div className="absolute bottom-[10%] right-[20%] w-[400px] h-[400px] rounded-full bg-[radial-gradient(circle,rgba(76,201,240,0.04)_0%,transparent_70%)] pointer-events-none" />
 
-      <div
-        className="glass-card animate-fade-in"
-        style={{
-          width: '100%',
-          maxWidth: 420,
-          padding: 36,
-          border: '1px solid rgba(0,255,135,0.12)',
-          boxShadow: '0 0 60px rgba(0,0,0,0.5)',
-          position: 'relative',
-          zIndex: 1,
-        }}
-      >
+      <div className="relative z-10 w-full max-w-[420px] p-9 bg-[rgba(14,22,40,0.7)] border border-[rgba(255,255,255,0.08)] rounded-[20px] backdrop-blur-[16px] shadow-[0_20px_50px_rgba(0,0,0,0.5)] animate-fade-in">
         {/* Logo */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 12,
-            marginBottom: 32,
-            justifyContent: 'center',
-          }}
-        >
-          <div
-            style={{
-              width: 44,
-              height: 44,
-              background: 'linear-gradient(135deg, var(--green-neon), #00A8FF)',
-              borderRadius: 12,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Zap size={24} color="#0A0E1A" strokeWidth={2.5} />
+        <div className="flex items-center gap-3.5 mb-8 justify-center">
+          <div className="w-11 h-11 bg-gradient-to-br from-[#00FF99] to-[#4CC9F0] rounded-xl flex items-center justify-center shadow-[0_4px_12px_rgba(0,255,153,0.15)]">
+            <Zap size={22} color="#050816" strokeWidth={2.5} />
           </div>
           <div>
-            <div
-              className="gradient-text"
-              style={{ fontSize: '1.4rem', fontWeight: 900, letterSpacing: '-0.03em' }}
-            >
+            <div className="text-xl font-black tracking-tight leading-none bg-gradient-to-r from-[#00FF99] to-[#4CC9F0] bg-clip-text text-transparent">
               BetFala
             </div>
-            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+            <div className="text-[10px] text-[#8A94A6] font-medium mt-1">
               Gestão de Banca de Apostas
             </div>
           </div>
         </div>
 
         {/* Tabs */}
-        <div
-          style={{
-            display: 'flex',
-            background: 'var(--bg-surface)',
-            borderRadius: 10,
-            padding: 4,
-            marginBottom: 24,
-          }}
-        >
+        <div className="flex bg-[#0E1628] rounded-xl p-1 mb-6">
           {(['login', 'register'] as const).map((tab) => (
             <button
               key={tab}
               id={`tab-${tab}`}
               onClick={() => { setMode(tab); setError(null); setSuccess(null); }}
-              style={{
-                flex: 1,
-                padding: '8px',
-                borderRadius: 8,
-                border: 'none',
-                cursor: 'pointer',
-                fontSize: '0.85rem',
-                fontWeight: 600,
-                transition: 'all 0.2s',
-                background: mode === tab ? 'var(--bg-card)' : 'transparent',
-                color: mode === tab ? 'var(--green-neon)' : 'var(--text-muted)',
-                boxShadow: mode === tab ? '0 1px 4px rgba(0,0,0,0.3)' : 'none',
-              }}
+              className={`flex-1 py-2 rounded-lg cursor-pointer text-xs font-semibold uppercase tracking-wider transition-all duration-200 ${
+                mode === tab
+                  ? 'bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)] text-[#00FF99] shadow-[0_1px_4px_rgba(0,0,0,0.3)]'
+                  : 'text-[#8A94A6] hover:text-white border-transparent'
+              }`}
             >
               {tab === 'login' ? 'Entrar' : 'Criar Conta'}
             </button>
@@ -174,33 +93,16 @@ export default function AuthPage() {
 
         {/* Form */}
         <form onSubmit={handleSubmit}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div className="flex flex-col gap-4.5">
             {/* E-mail */}
             <div>
-              <label
-                htmlFor="auth-email"
-                style={{
-                  display: 'block',
-                  fontSize: '0.75rem',
-                  fontWeight: 600,
-                  color: 'var(--text-secondary)',
-                  marginBottom: 6,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.06em',
-                }}
-              >
+              <label htmlFor="auth-email" className="block text-[10px] font-bold text-[#8A94A6] uppercase tracking-wider mb-2">
                 E-mail
               </label>
-              <div style={{ position: 'relative' }}>
+              <div className="relative">
                 <Mail
                   size={14}
-                  style={{
-                    position: 'absolute',
-                    left: 12,
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    color: 'var(--text-muted)',
-                  }}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-[#8A94A6] pointer-events-none"
                 />
                 <input
                   id="auth-email"
@@ -210,38 +112,20 @@ export default function AuthPage() {
                   placeholder="seu@email.com"
                   required
                   autoComplete="email"
-                  className="input-field"
-                  style={{ paddingLeft: 34 }}
+                  className="w-full bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.06)] focus:border-[#00FF99] focus:bg-[rgba(255,255,255,0.04)] focus:shadow-[0_0_0_3px_rgba(0,255,153,0.08)] rounded-xl text-sm py-2.5 pl-11 pr-4 outline-none placeholder-[#525C6C] transition-all duration-200 text-white"
                 />
               </div>
             </div>
 
             {/* Senha */}
             <div>
-              <label
-                htmlFor="auth-password"
-                style={{
-                  display: 'block',
-                  fontSize: '0.75rem',
-                  fontWeight: 600,
-                  color: 'var(--text-secondary)',
-                  marginBottom: 6,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.06em',
-                }}
-              >
+              <label htmlFor="auth-password" className="block text-[10px] font-bold text-[#8A94A6] uppercase tracking-wider mb-2">
                 Senha
               </label>
-              <div style={{ position: 'relative' }}>
+              <div className="relative">
                 <Lock
                   size={14}
-                  style={{
-                    position: 'absolute',
-                    left: 12,
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    color: 'var(--text-muted)',
-                  }}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-[#8A94A6] pointer-events-none"
                 />
                 <input
                   id="auth-password"
@@ -251,23 +135,12 @@ export default function AuthPage() {
                   placeholder="Mínimo 6 caracteres"
                   required
                   autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-                  className="input-field"
-                  style={{ paddingLeft: 34, paddingRight: 36 }}
+                  className="w-full bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.06)] focus:border-[#00FF99] focus:bg-[rgba(255,255,255,0.04)] focus:shadow-[0_0_0_3px_rgba(0,255,153,0.08)] rounded-xl text-sm py-2.5 pl-11 pr-10 outline-none placeholder-[#525C6C] transition-all duration-200 text-white"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPass((v) => !v)}
-                  style={{
-                    position: 'absolute',
-                    right: 10,
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    color: 'var(--text-muted)',
-                    display: 'flex',
-                  }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8A94A6] hover:text-white transition-colors cursor-pointer"
                 >
                   {showPass ? <EyeOff size={14} /> : <Eye size={14} />}
                 </button>
@@ -276,30 +149,12 @@ export default function AuthPage() {
 
             {/* Erros / sucesso */}
             {error && (
-              <div
-                style={{
-                  background: 'rgba(255,77,109,0.08)',
-                  border: '1px solid rgba(255,77,109,0.25)',
-                  borderRadius: 8,
-                  padding: '8px 12px',
-                  fontSize: '0.8rem',
-                  color: 'var(--red-neon)',
-                }}
-              >
+              <div className="bg-[rgba(255,77,109,0.06)] border border-[rgba(255,77,109,0.25)] rounded-xl p-3 text-xs text-[#FF4D6D]">
                 ⚠️ {error}
               </div>
             )}
             {success && (
-              <div
-                style={{
-                  background: 'rgba(0,255,135,0.08)',
-                  border: '1px solid rgba(0,255,135,0.25)',
-                  borderRadius: 8,
-                  padding: '8px 12px',
-                  fontSize: '0.8rem',
-                  color: 'var(--green-neon)',
-                }}
-              >
+              <div className="bg-[rgba(0,255,153,0.06)] border border-[rgba(0,255,153,0.25)] rounded-xl p-3 text-xs text-[#00FF99]">
                 ✅ {success}
               </div>
             )}
@@ -308,14 +163,13 @@ export default function AuthPage() {
             <button
               id="btn-auth-submit"
               type="submit"
-              className="btn-primary"
               disabled={loading}
-              style={{ justifyContent: 'center', marginTop: 4, padding: '12px' }}
+              className="w-full bg-gradient-to-br from-[#00FF99] to-[#00CC7A] text-[#050816] font-semibold text-xs md:text-sm py-3 rounded-xl shadow-[0_4px_12px_rgba(0,255,153,0.15)] hover:shadow-[0_6px_20px_rgba(0,255,153,0.25),0_0_25px_rgba(0,255,153,0.12)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 inline-flex items-center justify-center gap-2 cursor-pointer mt-2"
             >
               {loading ? (
                 <Loader2
                   size={16}
-                  style={{ animation: 'spin 1s linear infinite' }}
+                  className="animate-spin"
                 />
               ) : mode === 'login' ? (
                 'Entrar na Banca'
@@ -326,13 +180,6 @@ export default function AuthPage() {
           </div>
         </form>
       </div>
-
-      <style>{`
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
     </div>
   );
 }

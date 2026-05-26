@@ -1,50 +1,56 @@
 'use client';
 
-import { Bell, Menu } from 'lucide-react';
+import { formatarMoeda } from '@/lib/calculations';
+import { KpiData } from '@/types/aposta';
 
 interface HeaderProps {
   onNovaAposta: () => void;
   onMenuToggle?: () => void;
+  activeBancaNome?: string;
+  activeBancaSaldo?: number;
 }
 
-export default function Header({ onNovaAposta, onMenuToggle }: HeaderProps) {
+export default function Header({ onNovaAposta, onMenuToggle, activeBancaNome = 'Banca Principal', activeBancaSaldo = 0 }: HeaderProps) {
   return (
-    <header className="h-[76px] flex items-center justify-between px-6 md:px-8 border-b border-[var(--border)] bg-[var(--bg-base)]/50 backdrop-blur-md sticky top-0 z-30">
-      {/* Esquerda: Espaço reservado ou título adaptável se necessário */}
-      <div className="flex items-center gap-3">
-        {onMenuToggle && (
-          <button
-            onClick={onMenuToggle}
-            className="md:hidden text-[var(--text-secondary)] hover:text-[var(--text-primary)] p-1.5 rounded-lg hover:bg-[rgba(255,255,255,0.03)] transition-colors"
-          >
-            <Menu size={20} />
-          </button>
-        )}
-      </div>
+    <>
+      {/* ─── Mobile TopAppBar (md:hidden) ─────────────────────────── */}
+      <header className="fixed top-0 left-0 w-full z-50 flex md:hidden justify-between items-center px-6 h-16 bg-[#11131b]/70 backdrop-blur-xl border-b border-[#3b4b3d]/30">
 
-      {/* Direita: Notificações + Avatar */}
-      <div className="flex items-center gap-4">
-        {/* Notificações Bell Icon */}
-        <button className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] p-2 rounded-xl hover:bg-[rgba(255,255,255,0.03)] transition-all relative">
-          <Bell size={18} />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[var(--green-neon)] shadow-[0_0_8px_var(--green-neon)]" />
-        </button>
-
-        {/* Linha Divisora Vertical */}
-        <div className="w-[1px] h-5 bg-[var(--border)]" />
-
-        {/* Avatar com Borda Neon sutil */}
-        <div className="relative group cursor-pointer">
-          <div className="absolute -inset-0.5 bg-gradient-to-r from-[var(--green-neon)] to-[var(--blue-accent)] rounded-full opacity-35 group-hover:opacity-75 blur-xs transition-opacity duration-300" />
-          <div className="relative w-9 h-9 rounded-full bg-[var(--bg-surface)] border border-[rgba(255,255,255,0.1)] overflow-hidden">
+        {/* Left: Avatar + Bank Info */}
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full overflow-hidden border border-[#60ff99]/30 shrink-0">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"
-              alt="User Avatar"
+              alt="User avatar"
               className="w-full h-full object-cover"
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuCW1jBpOYZM1VUKfqJRbdfvHrDG2YcSVw3jV08qI_yxxmMJXthJsvjT9D49HrhVqw2xHZMlzb8JvLfeOt8EB1cVBrSytmo-I3Yl8hynmjCjmDRRhhGdbnQn8D0X2sAKEeaQRaGo7SFeGO19OPLyACBig2dJ8y4RQiTcYsJ4L1PxPcq-LFNFmqQ_T9wGK-ar5lZM-rXf-z8WIFMk0ORdxhJnrocoypIRTiMkgnaZl4aAdih3QJIMjVplR3eWq4ZLwfalL10j_DaKsWMd"
             />
           </div>
+          <div className="min-w-0">
+            <p className="text-[12px] font-medium text-[#b9cbb9] leading-none truncate max-w-[120px]">{activeBancaNome}</p>
+            <p className="text-[14px] font-bold text-[#60ff99] leading-snug font-mono">
+              {formatarMoeda(activeBancaSaldo)}
+            </p>
+          </div>
         </div>
-      </div>
-    </header>
+
+        {/* Right: Notification + Menu */}
+        <div className="flex items-center gap-1">
+          <button
+            className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-[#33343e] transition-colors active:scale-95 duration-100 cursor-pointer"
+            aria-label="Notificações"
+          >
+            <span className="material-symbols-outlined text-[#b9cbb9] text-[22px] select-none">notifications</span>
+          </button>
+          <button
+            onClick={onMenuToggle}
+            className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-[#33343e] transition-colors active:scale-95 duration-100 cursor-pointer"
+            aria-label="Menu"
+          >
+            <span className="material-symbols-outlined text-[#b9cbb9] text-[22px] select-none">menu</span>
+          </button>
+        </div>
+      </header>
+    </>
   );
 }

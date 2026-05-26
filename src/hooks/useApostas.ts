@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { Aposta, ApostaInsert, ApostaUpdate } from '@/types/aposta';
+import { Banca, Aposta, ApostaInsert, ApostaUpdate } from '@/types/aposta';
 import { MOCK_APOSTAS } from '@/lib/mock-data';
 
 const USE_MOCK =
@@ -10,10 +10,12 @@ const USE_MOCK =
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY === 'SUA_ANON_KEY_AQUI';
 
 // ============================================================
-// Hook de CRUD de apostas — suporta modo mock e Supabase real
+// Hook de CRUD de apostas e bancas — suporta modo mock e Supabase
 // ============================================================
 export function useApostas() {
-  const [apostas, setApostas] = useState<Aposta[]>(USE_MOCK ? MOCK_APOSTAS : []);
+  const [bancas, setBancas] = useState<Banca[]>([]);
+  const [activeBancaId, setActiveBancaId] = useState<string>('');
+  const [apostas, setApostas] = useState<Aposta[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -21,12 +23,96 @@ export function useApostas() {
 
   const supabase = !USE_MOCK ? createClient() : null;
 
+  // --- Inicialização e persistência no modo Mock ---
+  useEffect(() => {
+    if (USE_MOCK) {
+      // 1. Carregar bancas
+      const savedBancas = localStorage.getItem('betfala_bancas');
+      let loadedBancas: Banca[] = [];
+      if (savedBancas) {
+        loadedBancas = JSON.parse(savedBancas);
+      } else {
+        loadedBancas = [
+          {
+            id: 'banca-1',
+            user_id: 'mock-user',
+            nome: 'Banca Principal',
+            saldo_inicial: 1000,
+            data_criacao: new Date(Date.now() - 30 * 86400000).toISOString(),
+          },
+          {
+            id: 'banca-2',
+            user_id: 'mock-user',
+            nome: 'Banca Alavancagem',
+            saldo_inicial: 500,
+            data_criacao: new Date(Date.now() - 10 * 86400000).toISOString(),
+          },
+        ];
+        localStorage.setItem('betfala_bancas', JSON.stringify(loadedBancas));
+      }
+      setBancas(loadedBancas);
+
+      // 2. Carregar activeBancaId
+      const savedActiveId = localStorage.getItem('betfala_active_banca_id');
+      const activeId = savedActiveId && loadedBancas.some((b) => b.id === savedActiveId)
+        ? savedActiveId
+        : loadedBancas[0]?.id || '';
+      setActiveBancaId(activeId);
+      localStorage.setItem('betfala_active_banca_id', activeId);
+
+      // 3. Carregar apostas
+      const savedApostas = localStorage.getItem('betfala_apostas');
+      if (savedApostas) {
+        setApostas(JSON.parse(savedApostas));
+      } else {
+        const mappedMock = MOCK_APOSTAS.map((a) => ({
+          ...a,
+          banca_id: a.banca_id || 'banca-1',
+        }));
+        setApostas(mappedMock);
+        localStorage.setItem('betfala_apostas', JSON.stringify(mappedMock));
+      }
+    }
+  }, []);
+
+  // --- Buscar bancas (Supabase) ---
+  const fetchBancas = useCallback(async () => {
+    if (USE_MOCK) return;
+    try {
+      const { data, error: err } = await supabase!
+        .from('bancas')
+        .select('*')
+        .order('data_criacao', { ascending: true });
+
+      if (err) {
+        console.warn('Tabela bancas não encontrada no Supabase. Usando fallback local.', err);
+        // Fallback local
+        const local = localStorage.getItem('betfala_bancas');
+        const fallback = local ? JSON.parse(local) : [
+          {
+            id: 'banca-1',
+            user_id: 'supabase-fallback',
+            nome: 'Banca Principal',
+            saldo_inicial: 1000,
+            data_criacao: new Date().toISOString(),
+          }
+        ];
+        setBancas(fallback);
+        setActiveBancaId((prev) => prev && fallback.some((b: Banca) => b.id === prev) ? prev : fallback[0].id);
+        return;
+      }
+      setBancas(data as Banca[]);
+      if (data && data.length > 0) {
+        setActiveBancaId((prev) => prev && data.some((b: Banca) => b.id === prev) ? prev : data[0].id);
+      }
+    } catch (e) {
+      console.error('Erro ao buscar bancas:', e);
+    }
+  }, [supabase]);
+
   // --- Buscar apostas ---
   const fetchApostas = useCallback(async () => {
-    if (USE_MOCK) {
-      setApostas(MOCK_APOSTAS);
-      return;
-    }
+    if (USE_MOCK) return;
     setLoading(true);
     setError(null);
     try {
@@ -44,9 +130,81 @@ export function useApostas() {
     }
   }, [supabase]);
 
+  // Carregar dados iniciais para o Supabase
+  useEffect(() => {
+    if (!USE_MOCK) {
+      fetchBancas().then(() => fetchApostas());
+    }
+  }, [fetchBancas, fetchApostas]);
+
+  // --- Inserir banca ---
+  const inserirBanca = useCallback(
+    async (nome: string, saldoInicial: number): Promise<boolean> => {
+      const novaBanca = {
+        nome,
+        saldo_inicial: saldoInicial,
+        data_criacao: new Date().toISOString(),
+      };
+
+      if (USE_MOCK) {
+        const bancaCompleta: Banca = {
+          id: `banca-${Date.now()}`,
+          user_id: 'mock-user',
+          ...novaBanca,
+        };
+        const updated = [...bancas, bancaCompleta];
+        setBancas(updated);
+        localStorage.setItem('betfala_bancas', JSON.stringify(updated));
+        setActiveBancaId(bancaCompleta.id);
+        localStorage.setItem('betfala_active_banca_id', bancaCompleta.id);
+        return true;
+      }
+
+      setLoading(true);
+      setError(null);
+      try {
+        const { data: { user } } = await supabase!.auth.getUser();
+        if (!user) throw new Error('Usuário não autenticado');
+
+        const { data, error: err } = await supabase!
+          .from('bancas')
+          .insert({ ...novaBanca, user_id: user.id })
+          .select()
+          .single();
+
+        if (err) {
+          console.warn('Falha ao salvar banca no Supabase. Salvando localmente.', err);
+          const bancaCompleta: Banca = {
+            id: `banca-${Date.now()}`,
+            user_id: user.id,
+            ...novaBanca,
+          };
+          const updated = [...bancas, bancaCompleta];
+          setBancas(updated);
+          localStorage.setItem('betfala_bancas', JSON.stringify(updated));
+          setActiveBancaId(bancaCompleta.id);
+          return true;
+        }
+
+        const bancaReal = data as Banca;
+        setBancas((prev) => [...prev, bancaReal]);
+        setActiveBancaId(bancaReal.id);
+        return true;
+      } catch (e: any) {
+        setError(e.message || 'Erro ao criar banca');
+        return false;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [supabase, bancas]
+  );
+
   // --- Inserir aposta ---
   const inserirAposta = useCallback(
     async (nova: ApostaInsert): Promise<boolean> => {
+      const targetBancaId = nova.banca_id || activeBancaId;
+
       if (USE_MOCK) {
         const mockAposta: Aposta = {
           id: `mock-${Date.now()}`,
@@ -54,8 +212,11 @@ export function useApostas() {
           data_criacao: new Date().toISOString(),
           status: 'Aberta',
           ...nova,
+          banca_id: targetBancaId,
         };
-        setApostas((prev) => [mockAposta, ...prev]);
+        const updated = [mockAposta, ...apostas];
+        setApostas(updated);
+        localStorage.setItem('betfala_apostas', JSON.stringify(updated));
         return true;
       }
       setLoading(true);
@@ -68,7 +229,7 @@ export function useApostas() {
 
         const { data, error: err } = await supabase!
           .from('apostas')
-          .insert({ ...nova, user_id: user.id, status: 'Aberta' })
+          .insert({ ...nova, user_id: user.id, status: 'Aberta', banca_id: targetBancaId })
           .select()
           .single();
 
@@ -82,18 +243,18 @@ export function useApostas() {
         setLoading(false);
       }
     },
-    [supabase]
+    [supabase, activeBancaId, apostas]
   );
 
   // --- Atualizar status ---
   const atualizarAposta = useCallback(
     async (update: ApostaUpdate): Promise<boolean> => {
       if (USE_MOCK) {
-        setApostas((prev) =>
-          prev.map((a) =>
-            a.id === update.id ? { ...a, ...update } : a
-          )
+        const updated = apostas.map((a) =>
+          a.id === update.id ? { ...a, ...update } : a
         );
+        setApostas(updated);
+        localStorage.setItem('betfala_apostas', JSON.stringify(updated));
         return true;
       }
       setLoading(true);
@@ -117,14 +278,16 @@ export function useApostas() {
         setLoading(false);
       }
     },
-    [supabase]
+    [supabase, apostas]
   );
 
   // --- Excluir aposta ---
   const excluirAposta = useCallback(
     async (id: string): Promise<boolean> => {
       if (USE_MOCK) {
-        setApostas((prev) => prev.filter((a) => a.id !== id));
+        const updated = apostas.filter((a) => a.id !== id);
+        setApostas(updated);
+        localStorage.setItem('betfala_apostas', JSON.stringify(updated));
         return true;
       }
       setLoading(true);
@@ -145,17 +308,29 @@ export function useApostas() {
         setLoading(false);
       }
     },
-    [supabase]
+    [supabase, apostas]
   );
+
+  // --- Mudar de banca ---
+  const setActiveBanca = useCallback((id: string) => {
+    setActiveBancaId(id);
+    if (USE_MOCK) {
+      localStorage.setItem('betfala_active_banca_id', id);
+    }
+  }, []);
 
   return {
     apostas,
+    bancas,
+    activeBanca: bancas.find((b) => b.id === activeBancaId) || null,
     loading,
     error,
     fetchApostas,
     inserirAposta,
     atualizarAposta,
     excluirAposta,
+    inserirBanca,
+    setActiveBanca,
     isMockMode: USE_MOCK,
   };
 }

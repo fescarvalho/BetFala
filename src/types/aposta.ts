@@ -4,6 +4,14 @@
 
 export type ApostaStatus = 'Aberta' | 'Green' | 'Red' | 'Void';
 
+export interface Banca {
+  id: string;
+  user_id: string;
+  nome: string;
+  saldo_inicial: number;
+  data_criacao: string;
+}
+
 export interface Aposta {
   id: string;
   user_id: string;
@@ -13,6 +21,7 @@ export interface Aposta {
   odd: number;
   stake: number;
   status: ApostaStatus;
+  banca_id?: string;
 }
 
 export interface ApostaInsert {
@@ -21,6 +30,7 @@ export interface ApostaInsert {
   odd: number;
   stake: number;
   status?: ApostaStatus;
+  banca_id?: string;
 }
 
 export interface ApostaUpdate {
@@ -30,6 +40,7 @@ export interface ApostaUpdate {
   detalhe_aposta?: string;
   odd?: number;
   stake?: number;
+  banca_id?: string;
 }
 
 export interface KpiData {

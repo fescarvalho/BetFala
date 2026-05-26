@@ -2,126 +2,76 @@
 
 import { KpiData } from '@/types/aposta';
 import { formatarMoeda, formatarPorcentagem } from '@/lib/calculations';
-import {
-  TrendingUp,
-  TrendingDown,
-  Target,
-  BarChart2,
-  DollarSign,
-} from 'lucide-react';
 
 interface KpiCardsProps {
   kpis: KpiData;
 }
 
-interface KpiCardItem {
-  id: string;
-  label: string;
-  value: string;
-  sub: string;
-  icon: React.ReactNode;
-  color: string;
-  glowColor: string;
-  trend?: 'up' | 'down' | 'neutral';
-}
-
 export default function KpiCards({ kpis }: KpiCardsProps) {
-  const cards: KpiCardItem[] = [
-    {
-      id: 'kpi-lucro',
-      label: 'Lucro Total',
-      value: formatarMoeda(kpis.lucroTotal),
-      sub: `${kpis.greens} Greens · ${kpis.reds} Reds · ${kpis.voids} Voids`,
-      icon: <DollarSign size={20} />,
-      color: kpis.lucroTotal >= 0 ? 'var(--green-neon)' : 'var(--red-neon)',
-      glowColor: kpis.lucroTotal >= 0 ? 'rgba(0, 255, 153, 0.15)' : 'rgba(255, 77, 109, 0.15)',
-      trend: kpis.lucroTotal >= 0 ? 'up' : 'down',
-    },
-    {
-      id: 'kpi-taxa',
-      label: 'Taxa de Acerto',
-      value: formatarPorcentagem(kpis.taxaAcerto),
-      sub: `${kpis.greens} de ${kpis.greens + kpis.reds} resolvidas`,
-      icon: <Target size={20} />,
-      color: 'var(--text-primary)',
-      glowColor: 'rgba(255, 255, 255, 0.08)',
-      trend: kpis.taxaAcerto >= 50 ? 'up' : 'down',
-    },
-    {
-      id: 'kpi-roi',
-      label: 'ROI',
-      value: formatarPorcentagem(kpis.roi),
-      sub: `Total investido: ${formatarMoeda(kpis.totalInvestido)}`,
-      icon: <TrendingUp size={20} />,
-      color: kpis.roi >= 0 ? 'var(--green-neon)' : 'var(--red-neon)',
-      glowColor: kpis.roi >= 0 ? 'rgba(0, 255, 153, 0.15)' : 'rgba(255, 77, 109, 0.15)',
-      trend: kpis.roi >= 0 ? 'up' : 'down',
-    },
-    {
-      id: 'kpi-apostas',
-      label: 'Total de Apostas',
-      value: String(kpis.totalApostas),
-      sub: `${kpis.abertas} em andamento · ${kpis.voids} anuladas`,
-      icon: <BarChart2 size={20} />,
-      color: 'var(--blue-accent)',
-      glowColor: 'rgba(76, 201, 240, 0.15)',
-      trend: 'neutral',
-    },
-  ];
+  const lucroPositivo = kpis.lucroTotal >= 0;
+  const roiPositivo = kpis.roi >= 0;
+  const winRate = Math.max(0, Math.min(100, Math.round(kpis.taxaAcerto)));
 
   return (
-    <div className="grid grid-cols-2 gap-4 md:gap-6">
-      {cards.map((card) => (
-        <div
-          key={card.id}
-          id={card.id}
-          className="glass-card p-6 md:p-8 flex flex-col justify-between min-h-[140px] md:min-h-[180px]"
-          style={{
-            background: 'linear-gradient(135deg, rgba(14, 22, 40, 0.5) 0%, rgba(10, 15, 30, 0.8) 100%)',
-          }}
+    <section className="grid grid-cols-2 gap-3.5 md:gap-4">
+
+      {/* ── Lucro Total ── */}
+      <div id="kpi-lucro" className="glass-card p-5 md:p-6 rounded-xl flex flex-col gap-1 active:scale-[0.98] transition-transform">
+        <span className="text-[12px] font-medium text-[#b9cbb9]">Lucro Total</span>
+        <span
+          className="text-[24px] font-bold leading-tight font-mono"
+          style={{ color: lucroPositivo ? '#60ff99' : '#ffb4ab' }}
         >
-          {/* Faint background watermark icon inside card */}
-          <div 
-            className="absolute -right-4 -bottom-4 opacity-[0.02] transform scale-[4] pointer-events-none transition-transform duration-500 group-hover:scale-[4.5]" 
-            style={{ color: card.color }}
-          >
-            {card.icon}
-          </div>
-
-          {/* Top of Card: Label and Small Trend Icon */}
-          <div className="flex items-center justify-between mb-4 relative z-10">
-            <span className="text-[0.68rem] md:text-[0.75rem] text-[var(--text-secondary)] font-semibold uppercase tracking-wider">
-              {card.label}
-            </span>
-            <div 
-              className="w-8 h-8 rounded-xl flex items-center justify-center bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.04)]"
-              style={{ color: card.color }}
-            >
-              {card.trend === 'up' && <TrendingUp size={14} />}
-              {card.trend === 'down' && <TrendingDown size={14} />}
-              {card.trend === 'neutral' && <BarChart2 size={14} />}
-            </div>
-          </div>
-
-          {/* Primary Big Value */}
-          <div className="relative z-10">
-            <div
-              className="text-2xl md:text-4xl font-extrabold tracking-tight mb-2 font-mono"
-              style={{ 
-                color: card.color,
-                textShadow: card.glowColor !== 'rgba(255,255,255,0.08)' ? `0 0 15px ${card.glowColor}` : 'none'
-              }}
-            >
-              {card.value}
-            </div>
-
-            {/* Subtext info */}
-            <div className="text-[0.72rem] md:text-[0.78rem] text-[var(--text-secondary)] font-medium mt-1">
-              {card.sub}
-            </div>
-          </div>
+          {lucroPositivo ? '+' : ''}{formatarMoeda(kpis.lucroTotal)}
+        </span>
+        <div className="flex items-center gap-1 text-[10px]" style={{ color: '#00e479' }}>
+          <span className="material-symbols-outlined text-[12px] select-none leading-none">
+            {lucroPositivo ? 'trending_up' : 'trending_down'}
+          </span>
+          <span>ROI {lucroPositivo ? '+' : ''}{kpis.roi.toFixed(1)}%</span>
         </div>
-      ))}
-    </div>
+      </div>
+
+      {/* ── Taxa de Acerto ── */}
+      <div id="kpi-taxa" className="glass-card p-5 md:p-6 rounded-xl flex flex-col gap-1 active:scale-[0.98] transition-transform">
+        <span className="text-[12px] font-medium text-[#b9cbb9]">Taxa de Acerto</span>
+        <span className="text-[24px] font-bold leading-tight text-white">
+          {winRate}%
+        </span>
+        <div className="w-full bg-[#33343e] h-1 rounded-full mt-2">
+          <div
+            className="bg-[#00ff88] h-full rounded-full transition-all duration-700"
+            style={{ width: `${winRate}%` }}
+          />
+        </div>
+      </div>
+
+      {/* ── ROI ── */}
+      <div id="kpi-roi" className="glass-card p-5 md:p-6 rounded-xl flex flex-col gap-1 active:scale-[0.98] transition-transform">
+        <span className="text-[12px] font-medium text-[#b9cbb9]">ROI</span>
+        <span
+          className="text-[24px] font-bold leading-tight"
+          style={{ color: roiPositivo ? '#adc6ff' : '#ffb4ab' }}
+        >
+          {roiPositivo ? '+' : ''}{kpis.roi.toFixed(1)}%
+        </span>
+        <div className="flex items-center gap-1 text-[10px] text-[#adc6ff]">
+          <span className="material-symbols-outlined text-[12px] select-none leading-none">target</span>
+          <span>{roiPositivo ? 'Acima da meta' : 'Abaixo da meta'}</span>
+        </div>
+      </div>
+
+      {/* ── Apostas ── */}
+      <div id="kpi-apostas" className="glass-card p-5 md:p-6 rounded-xl flex flex-col gap-1 active:scale-[0.98] transition-transform">
+        <span className="text-[12px] font-medium text-[#b9cbb9]">Apostas</span>
+        <span className="text-[24px] font-bold leading-tight text-white">
+          {kpis.totalApostas}
+        </span>
+        <span className="text-[10px] text-[#b9cbb9]">
+          Ativas: {kpis.abertas}
+        </span>
+      </div>
+
+    </section>
   );
 }
