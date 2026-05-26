@@ -125,6 +125,11 @@ export default function Sidebar({
             <span className="text-[1.4rem] font-black tracking-wider text-[#00FF99] uppercase select-none">
               PROBANK
             </span>
+            {isMockMode && (
+              <span className="rounded-full border border-[#ffd166]/20 bg-[#ffd166]/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-[#ffd166]">
+                Demo
+              </span>
+            )}
           </div>
         </div>
 

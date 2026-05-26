@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { startTransition, useState, useCallback, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Banca, Aposta, ApostaInsert, ApostaUpdate } from '@/types/aposta';
 import { MOCK_APOSTAS } from '@/lib/mock-data';
@@ -8,6 +8,17 @@ import { MOCK_APOSTAS } from '@/lib/mock-data';
 const USE_MOCK =
   !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY === 'SUA_ANON_KEY_AQUI';
+
+const normalizeBanca = (banca: Banca): Banca => ({
+  ...banca,
+  saldo_inicial: Number(banca.saldo_inicial),
+});
+
+const normalizeAposta = (aposta: Aposta): Aposta => ({
+  ...aposta,
+  odd: Number(aposta.odd),
+  stake: Number(aposta.stake),
+});
 
 // ============================================================
 // Hook de CRUD de apostas e bancas — suporta modo mock e Supabase
@@ -50,28 +61,31 @@ export function useApostas() {
         ];
         localStorage.setItem('betfala_bancas', JSON.stringify(loadedBancas));
       }
-      setBancas(loadedBancas);
-
       // 2. Carregar activeBancaId
       const savedActiveId = localStorage.getItem('betfala_active_banca_id');
       const activeId = savedActiveId && loadedBancas.some((b) => b.id === savedActiveId)
         ? savedActiveId
         : loadedBancas[0]?.id || '';
-      setActiveBancaId(activeId);
       localStorage.setItem('betfala_active_banca_id', activeId);
 
       // 3. Carregar apostas
       const savedApostas = localStorage.getItem('betfala_apostas');
+      let loadedApostas: Aposta[];
       if (savedApostas) {
-        setApostas(JSON.parse(savedApostas));
+        loadedApostas = JSON.parse(savedApostas);
       } else {
-        const mappedMock = MOCK_APOSTAS.map((a) => ({
+        loadedApostas = MOCK_APOSTAS.map((a) => ({
           ...a,
           banca_id: a.banca_id || 'banca-1',
         }));
-        setApostas(mappedMock);
-        localStorage.setItem('betfala_apostas', JSON.stringify(mappedMock));
+        localStorage.setItem('betfala_apostas', JSON.stringify(loadedApostas));
       }
+
+      startTransition(() => {
+        setBancas(loadedBancas);
+        setActiveBancaId(activeId);
+        setApostas(loadedApostas);
+      });
     }
   }, []);
 
@@ -101,10 +115,30 @@ export function useApostas() {
         setActiveBancaId((prev) => prev && fallback.some((b: Banca) => b.id === prev) ? prev : fallback[0].id);
         return;
       }
-      setBancas(data as Banca[]);
       if (data && data.length > 0) {
-        setActiveBancaId((prev) => prev && data.some((b: Banca) => b.id === prev) ? prev : data[0].id);
+        const normalized = (data as Banca[]).map(normalizeBanca);
+        setBancas(normalized);
+        setActiveBancaId((prev) => prev && normalized.some((b) => b.id === prev) ? prev : normalized[0].id);
+        return;
       }
+
+      const { data: { user } } = await supabase!.auth.getUser();
+      if (!user) return;
+
+      const { data: created, error: createErr } = await supabase!
+        .from('bancas')
+        .insert({
+          user_id: user.id,
+          nome: 'Banca Principal',
+          saldo_inicial: 1000,
+        })
+        .select()
+        .single();
+
+      if (createErr) throw createErr;
+      const banca = normalizeBanca(created as Banca);
+      setBancas([banca]);
+      setActiveBancaId(banca.id);
     } catch (e) {
       console.error('Erro ao buscar bancas:', e);
     }
@@ -122,7 +156,7 @@ export function useApostas() {
         .order('data_criacao', { ascending: false });
 
       if (err) throw err;
-      setApostas(data as Aposta[]);
+      setApostas((data as Aposta[]).map(normalizeAposta));
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Erro ao buscar apostas');
     } finally {
@@ -133,7 +167,9 @@ export function useApostas() {
   // Carregar dados iniciais para o Supabase
   useEffect(() => {
     if (!USE_MOCK) {
-      fetchBancas().then(() => fetchApostas());
+      queueMicrotask(() => {
+        fetchBancas().then(() => fetchApostas());
+      });
     }
   }, [fetchBancas, fetchApostas]);
 
@@ -186,12 +222,12 @@ export function useApostas() {
           return true;
         }
 
-        const bancaReal = data as Banca;
+        const bancaReal = normalizeBanca(data as Banca);
         setBancas((prev) => [...prev, bancaReal]);
         setActiveBancaId(bancaReal.id);
         return true;
-      } catch (e: any) {
-        setError(e.message || 'Erro ao criar banca');
+      } catch (e: unknown) {
+        setError(e instanceof Error ? e.message : 'Erro ao criar banca');
         return false;
       } finally {
         setLoading(false);
@@ -234,7 +270,7 @@ export function useApostas() {
           .single();
 
         if (err) throw err;
-        setApostas((prev) => [data as Aposta, ...prev]);
+        setApostas((prev) => [normalizeAposta(data as Aposta), ...prev]);
         return true;
       } catch (e: unknown) {
         setError(e instanceof Error ? e.message : 'Erro ao inserir aposta');

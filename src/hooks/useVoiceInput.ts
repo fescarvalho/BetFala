@@ -49,7 +49,7 @@ export function useVoiceInput(
       recognition.onerror = () => {
         setIsListening(false);
         // Fallback para mock em caso de erro
-        useMockVoice();
+        simulateVoiceInput();
       };
 
       recognition.onend = () => {
@@ -60,10 +60,10 @@ export function useVoiceInput(
       recognition.start();
     } else {
       // Simulação para browsers sem suporte
-      useMockVoice();
+      simulateVoiceInput();
     }
 
-    function useMockVoice() {
+    function simulateVoiceInput() {
       mockTimerRef.current = setTimeout(() => {
         const mockText =
           VOICE_SUGGESTIONS[
