@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useApostas } from '@/hooks/useApostas';
 import { ApostaStatus, FiltrosState } from '@/types/aposta';
 import {
@@ -18,7 +18,7 @@ import ApostasTable from '@/components/dashboard/ApostasTable';
 import NovaApostaForm from '@/components/forms/NovaApostaForm';
 
 export default function DashboardPage() {
-  const { apostas, inserirAposta, atualizarAposta, excluirAposta, isMockMode } =
+  const { apostas, inserirAposta, atualizarAposta, excluirAposta, isMockMode, fetchApostas } =
     useApostas();
   const [showForm, setShowForm] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -26,6 +26,10 @@ export default function DashboardPage() {
     busca: '',
     periodo: 'todos',
   });
+
+  useEffect(() => {
+    fetchApostas();
+  }, [fetchApostas]);
 
   // Aplica filtros de período
   const apostasFiltradas = useMemo(() => {

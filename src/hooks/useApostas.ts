@@ -13,9 +13,11 @@ const USE_MOCK =
 // Hook de CRUD de apostas — suporta modo mock e Supabase real
 // ============================================================
 export function useApostas() {
-  const [apostas, setApostas] = useState<Aposta[]>(MOCK_APOSTAS);
+  const [apostas, setApostas] = useState<Aposta[]>(USE_MOCK ? MOCK_APOSTAS : []);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  console.log('[BetFala] Modo Mock ativo:', USE_MOCK);
 
   const supabase = !USE_MOCK ? createClient() : null;
 
