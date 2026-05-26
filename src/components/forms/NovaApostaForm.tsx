@@ -19,11 +19,6 @@ interface FormErrors {
   stake?: string;
 }
 
-interface NovaApostaFormProps {
-  onSave: (aposta: ApostaInsert) => Promise<boolean>;
-  onClose: () => void;
-}
-
 function validate(values: FormValues): FormErrors {
   const errors: FormErrors = {};
   if (!values.times_apostados || values.times_apostados.trim().length < 2)
@@ -48,7 +43,13 @@ const INITIAL: FormValues = {
   stake: '',
 };
 
-export default function NovaApostaForm({ onSave, onClose }: NovaApostaFormProps) {
+interface NovaApostaFormProps {
+  onSave: (aposta: ApostaInsert) => Promise<boolean>;
+  onClose: () => void;
+  autoStartVoice?: boolean;
+}
+
+export default function NovaApostaForm({ onSave, onClose, autoStartVoice = false }: NovaApostaFormProps) {
   const [values, setValues] = useState<FormValues>(INITIAL);
   const [errors, setErrors] = useState<FormErrors>({});
   const [touched, setTouched] = useState<Partial<Record<keyof FormValues, boolean>>>({});
@@ -85,9 +86,18 @@ export default function NovaApostaForm({ onSave, onClose }: NovaApostaFormProps)
       }
     });
 
+  // Auto trigger voice input if requested on mount
+  useEffect(() => {
+    if (autoStartVoice) {
+      const t = setTimeout(() => {
+        startListening();
+      }, 300);
+      return () => clearTimeout(t);
+    }
+  }, [autoStartVoice, startListening]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Mark all touched
     setTouched({ times_apostados: true, detalhe_aposta: true, odd: true, stake: true });
     const errs = validate(values);
     setErrors(errs);
@@ -135,113 +145,71 @@ export default function NovaApostaForm({ onSave, onClose }: NovaApostaFormProps)
   return (
     <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div
-        className="glass-card animate-fade-in"
-        style={{
-          width: '100%',
-          maxWidth: 520,
-          padding: 28,
-          border: '1px solid rgba(0,255,135,0.15)',
-          boxShadow: '0 0 40px rgba(0,255,135,0.08)',
-        }}
+        className="glass-card animate-fade-in w-full max-w-[500px] p-6 md:p-8 border border-[rgba(255,255,255,0.08)] bg-[rgba(14,22,40,0.85)] shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
       >
         {/* Header */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: 24,
-          }}
-        >
+        <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-              ➕ Nova Aposta
+            <h2 className="text-base font-bold uppercase tracking-wider text-[var(--text-primary)]">
+              Adicionar Aposta
             </h2>
-            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 2 }}>
-              Status padrão: Aberta
+            <p className="text-xs text-[var(--text-secondary)] mt-1">
+              Nova entrada na banca (Status: Aberta)
             </p>
           </div>
           <button
             onClick={onClose}
-            style={{
-              background: 'var(--bg-card-hover)',
-              border: '1px solid var(--border)',
-              borderRadius: 8,
-              width: 32,
-              height: 32,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              color: 'var(--text-secondary)',
-            }}
+            className="w-8 h-8 rounded-lg bg-[rgba(255,255,255,0.03)] border border-[var(--border)] flex items-center justify-center cursor-pointer text-[var(--text-secondary)] hover:text-white hover:bg-[rgba(255,255,255,0.06)] transition-all"
           >
-            <X size={16} />
+            <X size={15} />
           </button>
         </div>
 
-        {/* Banner de voz */}
+        {/* Banner de Entrada por Voz */}
         <div
-          style={{
-            background: isListening ? 'rgba(0,255,135,0.08)' : 'rgba(255,255,255,0.02)',
-            border: `1px solid ${isListening ? 'rgba(0,255,135,0.3)' : 'var(--border)'}`,
-            borderRadius: 10,
-            padding: '10px 14px',
-            marginBottom: 20,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: 10,
-          }}
+          className={`border rounded-xl p-3 mb-5 flex items-center justify-between gap-4 transition-all duration-300 ${
+            isListening
+              ? 'bg-[rgba(0,255,153,0.03)] border-[rgba(0,255,153,0.25)] shadow-[0_0_15px_rgba(0,255,153,0.05)]'
+              : 'bg-[rgba(255,255,255,0.01)] border-[var(--border)]'
+          }`}
         >
           <div>
             <p
-              style={{
-                fontSize: '0.8rem',
-                color: isListening ? 'var(--green-neon)' : 'var(--text-secondary)',
-                fontWeight: isListening ? 600 : 400,
-              }}
+              className={`text-xs font-semibold uppercase tracking-wider ${
+                isListening ? 'text-[var(--green-neon)]' : 'text-[var(--text-secondary)]'
+              }`}
             >
-              {isListening ? '🎙️ Ouvindo... fale os times e o detalhe' : '🎙️ Preencher com Voz'}
+              {isListening ? '🎙️ Escutando Áudio...' : '🎙️ Comando de Voz'}
             </p>
-            <p style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>
+            <p className="text-[10px] text-[var(--text-muted)] mt-1 leading-normal">
               {isSupported
-                ? 'Odd e Stake devem ser preenchidos manualmente'
-                : 'Simulação ativa (browser sem suporte à Web Speech API)'}
+                ? 'Diga os times e o detalhe separados por vírgula'
+                : 'Navegador sem suporte. Modo simulação ativo.'}
             </p>
           </div>
           <button
             id="btn-voice-input"
             type="button"
             onClick={isListening ? stopListening : startListening}
-            className={isListening ? 'listening-pulse' : ''}
-            style={{
-              background: isListening ? 'var(--green-neon)' : 'var(--bg-card-hover)',
-              border: `1px solid ${isListening ? 'var(--green-neon)' : 'var(--border)'}`,
-              borderRadius: 8,
-              padding: '7px 14px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 6,
-              fontSize: '0.8rem',
-              fontWeight: 600,
-              color: isListening ? '#0A0E1A' : 'var(--text-secondary)',
-              flexShrink: 0,
-            }}
+            className={`cursor-pointer px-3.5 py-1.5 rounded-lg border text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5 transition-all duration-200 ${
+              isListening
+                ? 'listening-pulse bg-[var(--green-neon)] border-[var(--green-neon)] text-[#050816]'
+                : 'bg-[rgba(255,255,255,0.02)] border-[var(--border)] text-[var(--text-secondary)] hover:text-white hover:border-white/15'
+            }`}
           >
-            {isListening ? <MicOff size={14} /> : <Mic size={14} />}
+            {isListening ? <MicOff size={13} /> : <Mic size={13} />}
             {isListening ? 'Parar' : 'Falar'}
           </button>
         </div>
 
-        {/* Form */}
+        {/* Formulário */}
         <form onSubmit={handleSubmit} noValidate>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-
+          <div className="flex flex-col gap-4">
             {/* Times */}
             <div>
-              <label htmlFor="field-times" style={labelStyle}>Times Apostados</label>
+              <label htmlFor="field-times" className="block text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-2">
+                Times / Evento
+              </label>
               <input
                 id="field-times"
                 type="text"
@@ -252,29 +220,33 @@ export default function NovaApostaForm({ onSave, onClose }: NovaApostaFormProps)
                 onBlur={blur('times_apostados')}
                 style={fieldError('times_apostados') ? { borderColor: 'var(--red-neon)' } : {}}
               />
-              {fieldError('times_apostados') && <ErrMsg msg={fieldError('times_apostados')!} />}
+              {fieldError('times_apostados') && <p className="text-[10px] text-[var(--red-neon)] mt-1.5 font-medium">⚠️ {fieldError('times_apostados')}</p>}
             </div>
 
             {/* Detalhe */}
             <div>
-              <label htmlFor="field-detalhe" style={labelStyle}>Detalhe da Aposta</label>
+              <label htmlFor="field-detalhe" className="block text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-2">
+                Mercado / Detalhe
+              </label>
               <input
                 id="field-detalhe"
                 type="text"
-                placeholder="Ex: Flamengo vence + ambas marcam"
+                placeholder="Ex: Flamengo Vence + Ambas Marcam"
                 className="input-field"
                 value={values.detalhe_aposta}
                 onChange={set('detalhe_aposta')}
                 onBlur={blur('detalhe_aposta')}
                 style={fieldError('detalhe_aposta') ? { borderColor: 'var(--red-neon)' } : {}}
               />
-              {fieldError('detalhe_aposta') && <ErrMsg msg={fieldError('detalhe_aposta')!} />}
+              {fieldError('detalhe_aposta') && <p className="text-[10px] text-[var(--red-neon)] mt-1.5 font-medium">⚠️ {fieldError('detalhe_aposta')}</p>}
             </div>
 
             {/* Odd + Stake */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div className="grid grid-cols-2 gap-4">
               <div>
-                <label htmlFor="field-odd" style={labelStyle}>Odd</label>
+                <label htmlFor="field-odd" className="block text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-2">
+                  Odd (Cotação)
+                </label>
                 <input
                   id="field-odd"
                   type="number"
@@ -286,10 +258,12 @@ export default function NovaApostaForm({ onSave, onClose }: NovaApostaFormProps)
                   onBlur={blur('odd')}
                   style={fieldError('odd') ? { borderColor: 'var(--red-neon)' } : {}}
                 />
-                {fieldError('odd') && <ErrMsg msg={fieldError('odd')!} />}
+                {fieldError('odd') && <p className="text-[10px] text-[var(--red-neon)] mt-1.5 font-medium">⚠️ {fieldError('odd')}</p>}
               </div>
               <div>
-                <label htmlFor="field-stake" style={labelStyle}>Stake (R$)</label>
+                <label htmlFor="field-stake" className="block text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-2">
+                  Stake (Valor)
+                </label>
                 <input
                   id="field-stake"
                   type="number"
@@ -301,79 +275,58 @@ export default function NovaApostaForm({ onSave, onClose }: NovaApostaFormProps)
                   onBlur={blur('stake')}
                   style={fieldError('stake') ? { borderColor: 'var(--red-neon)' } : {}}
                 />
-                {fieldError('stake') && <ErrMsg msg={fieldError('stake')!} />}
+                {fieldError('stake') && <p className="text-[10px] text-[var(--red-neon)] mt-1.5 font-medium">⚠️ {fieldError('stake')}</p>}
               </div>
             </div>
 
-            {/* Preview de retorno */}
+            {/* Preview de Retorno */}
             {retornoPotencial && (
-              <div
-                style={{
-                  background: 'rgba(0,255,135,0.05)',
-                  border: '1px solid rgba(0,255,135,0.15)',
-                  borderRadius: 10,
-                  padding: '10px 14px',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                }}
-              >
+              <div className="bg-[rgba(0,255,153,0.02)] border border-[rgba(0,255,153,0.15)] rounded-xl p-3.5 flex justify-between items-center mt-2">
                 <div>
-                  <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Retorno Total</p>
-                  <p style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                  <p className="text-[9px] text-[var(--text-secondary)] font-bold uppercase tracking-wider">Retorno Total</p>
+                  <p className="text-sm font-extrabold text-[var(--text-primary)] font-mono mt-1">
                     R$ {retornoPotencial}
                   </p>
                 </div>
-                <div style={{ textAlign: 'right' }}>
-                  <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Lucro Potencial</p>
-                  <p style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--green-neon)' }}>
+                <div className="text-right">
+                  <p className="text-[9px] text-[var(--text-secondary)] font-bold uppercase tracking-wider">Lucro Estimado</p>
+                  <p className="text-sm font-extrabold text-[var(--green-neon)] font-mono mt-1">
                     + R$ {lucroPotencial}
                   </p>
                 </div>
               </div>
             )}
 
-            {/* Botões */}
-            <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
-              <button type="button" className="btn-secondary" onClick={onClose} style={{ flex: 1 }}>
+            {/* Ações */}
+            <div className="flex gap-3 mt-4">
+              <button
+                type="button"
+                className="btn-secondary flex-1"
+                onClick={onClose}
+              >
                 Cancelar
               </button>
               <button
                 id="btn-salvar-aposta"
                 type="submit"
-                className="btn-primary"
+                className="btn-primary flex-2"
                 disabled={saving || success}
-                style={{ flex: 2, justifyContent: 'center' }}
               >
                 {saving ? (
-                  <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
-                ) : success ? '✅ Aposta salva!' : (
-                  <><Send size={15} /> Salvar Aposta</>
+                  <Loader2 size={15} className="animate-spin" />
+                ) : success ? (
+                  'Salvo com sucesso! ✅'
+                ) : (
+                  <span className="flex items-center justify-center gap-1.5">
+                    <Send size={13} />
+                    Confirmar Entrada
+                  </span>
                 )}
               </button>
             </div>
           </div>
         </form>
       </div>
-
-      <style>{`
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-      `}</style>
     </div>
-  );
-}
-
-const labelStyle: React.CSSProperties = {
-  display: 'block',
-  fontSize: '0.78rem',
-  fontWeight: 600,
-  color: 'var(--text-secondary)',
-  marginBottom: 6,
-  textTransform: 'uppercase',
-  letterSpacing: '0.05em',
-};
-
-function ErrMsg({ msg }: { msg: string }) {
-  return (
-    <p style={{ fontSize: '0.72rem', color: 'var(--red-neon)', marginTop: 4 }}>{msg}</p>
   );
 }

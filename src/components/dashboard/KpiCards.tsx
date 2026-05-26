@@ -21,7 +21,7 @@ interface KpiCardItem {
   sub: string;
   icon: React.ReactNode;
   color: string;
-  bgGlow: string;
+  glowColor: string;
   trend?: 'up' | 'down' | 'neutral';
 }
 
@@ -31,13 +31,10 @@ export default function KpiCards({ kpis }: KpiCardsProps) {
       id: 'kpi-lucro',
       label: 'Lucro Total',
       value: formatarMoeda(kpis.lucroTotal),
-      sub: `${kpis.greens}G · ${kpis.reds}R · ${kpis.voids}V`,
+      sub: `${kpis.greens} Greens · ${kpis.reds} Reds · ${kpis.voids} Voids`,
       icon: <DollarSign size={20} />,
       color: kpis.lucroTotal >= 0 ? 'var(--green-neon)' : 'var(--red-neon)',
-      bgGlow:
-        kpis.lucroTotal >= 0
-          ? 'rgba(0,255,135,0.08)'
-          : 'rgba(255,77,109,0.08)',
+      glowColor: kpis.lucroTotal >= 0 ? 'rgba(0, 255, 153, 0.15)' : 'rgba(255, 77, 109, 0.15)',
       trend: kpis.lucroTotal >= 0 ? 'up' : 'down',
     },
     {
@@ -46,80 +43,82 @@ export default function KpiCards({ kpis }: KpiCardsProps) {
       value: formatarPorcentagem(kpis.taxaAcerto),
       sub: `${kpis.greens} de ${kpis.greens + kpis.reds} resolvidas`,
       icon: <Target size={20} />,
-      color:
-        kpis.taxaAcerto >= 55
-          ? 'var(--green-neon)'
-          : kpis.taxaAcerto >= 40
-          ? 'var(--gold)'
-          : 'var(--red-neon)',
-      bgGlow:
-        kpis.taxaAcerto >= 55
-          ? 'rgba(0,255,135,0.08)'
-          : 'rgba(255,209,102,0.08)',
+      color: 'var(--text-primary)',
+      glowColor: 'rgba(255, 255, 255, 0.08)',
       trend: kpis.taxaAcerto >= 50 ? 'up' : 'down',
     },
     {
       id: 'kpi-roi',
       label: 'ROI',
       value: formatarPorcentagem(kpis.roi),
-      sub: `Investido: ${formatarMoeda(kpis.totalInvestido)}`,
-      icon: <BarChart2 size={20} />,
-      color:
-        kpis.roi >= 0 ? 'var(--green-neon)' : 'var(--red-neon)',
-      bgGlow:
-        kpis.roi >= 0 ? 'rgba(0,255,135,0.08)' : 'rgba(255,77,109,0.08)',
+      sub: `Total investido: ${formatarMoeda(kpis.totalInvestido)}`,
+      icon: <TrendingUp size={20} />,
+      color: kpis.roi >= 0 ? 'var(--green-neon)' : 'var(--red-neon)',
+      glowColor: kpis.roi >= 0 ? 'rgba(0, 255, 153, 0.15)' : 'rgba(255, 77, 109, 0.15)',
       trend: kpis.roi >= 0 ? 'up' : 'down',
     },
     {
       id: 'kpi-apostas',
       label: 'Total de Apostas',
       value: String(kpis.totalApostas),
-      sub: `${kpis.abertas} abertas · ${kpis.voids} void`,
+      sub: `${kpis.abertas} em andamento · ${kpis.voids} anuladas`,
       icon: <BarChart2 size={20} />,
       color: 'var(--blue-accent)',
-      bgGlow: 'rgba(76,201,240,0.08)',
+      glowColor: 'rgba(76, 201, 240, 0.15)',
       trend: 'neutral',
     },
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+    <div className="grid grid-cols-2 gap-4 md:gap-6">
       {cards.map((card) => (
         <div
           key={card.id}
           id={card.id}
-          className="bg-[#0A1C17] border border-[rgba(0,255,135,0.05)] rounded-2xl p-4 flex flex-col justify-between relative overflow-hidden"
+          className="glass-card p-6 md:p-8 flex flex-col justify-between min-h-[140px] md:min-h-[180px]"
+          style={{
+            background: 'linear-gradient(135deg, rgba(14, 22, 40, 0.5) 0%, rgba(10, 15, 30, 0.8) 100%)',
+          }}
         >
-          {/* Faint background watermark icon (Simulated by large opacity-5 icon) */}
-          <div className="absolute -right-4 -bottom-4 opacity-[0.03] transform scale-[3] pointer-events-none" style={{ color: card.color }}>
+          {/* Faint background watermark icon inside card */}
+          <div 
+            className="absolute -right-4 -bottom-4 opacity-[0.02] transform scale-[4] pointer-events-none transition-transform duration-500 group-hover:scale-[4.5]" 
+            style={{ color: card.color }}
+          >
             {card.icon}
           </div>
 
-          {/* Header do card: Icon + Label */}
-          <div className="flex items-center gap-1.5 mb-2 relative z-10">
-            <div style={{ color: card.color }} className="opacity-80">
+          {/* Top of Card: Label and Small Trend Icon */}
+          <div className="flex items-center justify-between mb-4 relative z-10">
+            <span className="text-[0.68rem] md:text-[0.75rem] text-[var(--text-secondary)] font-semibold uppercase tracking-wider">
+              {card.label}
+            </span>
+            <div 
+              className="w-8 h-8 rounded-xl flex items-center justify-center bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.04)]"
+              style={{ color: card.color }}
+            >
               {card.trend === 'up' && <TrendingUp size={14} />}
               {card.trend === 'down' && <TrendingDown size={14} />}
               {card.trend === 'neutral' && <BarChart2 size={14} />}
             </div>
-            <span className="text-[0.65rem] sm:text-[0.7rem] text-[var(--text-secondary)] font-medium uppercase tracking-wider truncate">
-              {card.label}
-            </span>
           </div>
 
-          {/* Valor */}
-          <div
-            className="text-[1.35rem] sm:text-[1.8rem] font-bold tracking-tight mb-2 relative z-10 truncate"
-            style={{ color: card.color }}
-          >
-            {card.value}
-          </div>
+          {/* Primary Big Value */}
+          <div className="relative z-10">
+            <div
+              className="text-2xl md:text-4xl font-extrabold tracking-tight mb-2 font-mono"
+              style={{ 
+                color: card.color,
+                textShadow: card.glowColor !== 'rgba(255,255,255,0.08)' ? `0 0 15px ${card.glowColor}` : 'none'
+              }}
+            >
+              {card.value}
+            </div>
 
-          {/* Subtítulo */}
-          <div className="flex items-center gap-1.5 opacity-60 relative z-10">
-            <span className="text-[0.6rem] sm:text-[0.7rem] text-white truncate">
+            {/* Subtext info */}
+            <div className="text-[0.72rem] md:text-[0.78rem] text-[var(--text-secondary)] font-medium mt-1">
               {card.sub}
-            </span>
+            </div>
           </div>
         </div>
       ))}

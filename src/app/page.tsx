@@ -21,6 +21,7 @@ export default function DashboardPage() {
   const { apostas, inserirAposta, atualizarAposta, excluirAposta, isMockMode, fetchApostas } =
     useApostas();
   const [showForm, setShowForm] = useState(false);
+  const [startVoiceImmediately, setStartVoiceImmediately] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [filtros, setFiltros] = useState<FiltrosState>({
     busca: '',
@@ -66,77 +67,57 @@ export default function DashboardPage() {
 
   return (
     <div className="flex min-h-screen bg-[var(--bg-base)]">
-      {/* Sidebar */}
-      <Sidebar mobileOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
+      {/* Sidebar - Passando modo dinâmico */}
+      <Sidebar 
+        mobileOpen={isMobileMenuOpen} 
+        onClose={() => setIsMobileMenuOpen(false)} 
+        isMockMode={isMockMode} 
+      />
 
       {/* Conteúdo principal */}
       <div className="flex-1 flex flex-col md:ml-[240px] w-full max-w-[100vw]">
         <Header 
-          onNovaAposta={() => setShowForm(true)} 
+          onNovaAposta={() => {
+            setStartVoiceImmediately(false);
+            setShowForm(true);
+          }} 
           onMenuToggle={() => setIsMobileMenuOpen(true)}
         />
 
-        <main className="flex-1 p-4 md:p-7 pb-24">
-          <div className="mb-6 mt-2">
-            <h1 className="text-3xl font-black italic tracking-tight uppercase mb-1">Dashboard</h1>
-            <p className="text-[var(--text-secondary)] text-sm">Visão geral do seu desempenho nas apostas</p>
+        <main className="flex-1 p-6 md:p-8 pb-32">
+          {/* Header Interno do Dashboard */}
+          <div className="mb-8 mt-2">
+            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-[var(--text-primary)]">
+              Visão Geral
+            </h1>
+            <p className="text-xs md:text-sm text-[var(--text-secondary)] mt-1.5 font-medium">
+              Acompanhe o desempenho consolidado da sua banca de apostas
+            </p>
           </div>
 
           {/* Banner modo mock */}
           {isMockMode && (
-            <div
-              style={{
-                background: 'rgba(255,209,102,0.06)',
-                border: '1px solid rgba(255,209,102,0.2)',
-                borderRadius: 10,
-                padding: '10px 16px',
-                marginBottom: 20,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
-                fontSize: '0.8rem',
-                color: 'var(--gold)',
-              }}
-            >
+            <div className="bg-[rgba(255,209,102,0.03)] border border-[rgba(255,209,102,0.15)] rounded-2xl p-4 mb-6 flex items-center gap-3 text-xs text-[var(--gold)]">
               <span>⚠️</span>
-              <span>
-                Modo demonstração ativo — dados de exemplo. Configure{' '}
-                <code
-                  style={{
-                    background: 'rgba(255,255,255,0.08)',
-                    padding: '1px 6px',
-                    borderRadius: 4,
-                    fontFamily: 'monospace',
-                  }}
-                >
-                  NEXT_PUBLIC_SUPABASE_ANON_KEY
-                </code>{' '}
-                no <code
-                  style={{
-                    background: 'rgba(255,255,255,0.08)',
-                    padding: '1px 6px',
-                    borderRadius: 4,
-                    fontFamily: 'monospace',
-                  }}
-                >.env.local</code>{' '}
-                para conectar ao Supabase real.
+              <span className="leading-relaxed">
+                Você está visualizando a dashboard em <strong>modo de demonstração</strong> com dados fictícios. Configure a variável <code className="bg-white/5 px-1.5 py-0.5 rounded font-mono text-[10px]">NEXT_PUBLIC_SUPABASE_ANON_KEY</code> no seu arquivo <code className="bg-white/5 px-1.5 py-0.5 rounded font-mono text-[10px]">.env.local</code> para carregar dados reais.
               </span>
             </div>
           )}
 
           {/* KPIs */}
-          <section className="mb-6">
+          <section className="mb-8">
             <KpiCards kpis={kpis} />
           </section>
 
           {/* Gráficos */}
-          <section className="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-4 mb-6">
+          <section className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-6 mb-8">
             <BancaLineChart dados={evolucao} />
             <StatusPieChart kpis={kpis} />
           </section>
 
           {/* Filtros */}
-          <section className="mb-6">
+          <section className="mb-5">
             <Filters filtros={filtros} onChange={setFiltros} />
           </section>
 
@@ -151,37 +132,56 @@ export default function DashboardPage() {
         </main>
 
         {/* Footer */}
-        <footer className="px-4 md:px-7 py-4 border-t border-[var(--border)] flex items-center justify-between mt-auto">
-          <span className="text-[0.65rem] md:text-[0.72rem] text-[var(--text-muted)]">
+        <footer className="px-6 md:px-8 py-4 border-t border-[var(--border)] flex items-center justify-between mt-auto bg-[var(--bg-base)]/30">
+          <span className="text-[10px] md:text-xs text-[var(--text-muted)] font-semibold tracking-wider uppercase">
             BetFala © {new Date().getFullYear()} — Gestão de Banca de Apostas
           </span>
-          <span className="text-[0.65rem] md:text-[0.72rem] text-[var(--text-muted)]">
-            {apostas.length} apostas registradas
+          <span className="text-[10px] md:text-xs text-[var(--text-muted)] font-semibold tracking-wider uppercase">
+            {apostas.length} {apostas.length === 1 ? 'aposta registrada' : 'apostas registradas'}
           </span>
         </footer>
       </div>
 
-      {/* FAB - Floating Action Button (Mobile) */}
-      <div className="fixed bottom-6 right-6 flex items-center gap-2 z-50 md:hidden bg-[#0A1C17] p-2 rounded-2xl border border-[rgba(0,255,135,0.1)] shadow-2xl">
-        <button 
-          onClick={() => setShowForm(true)}
-          className="w-12 h-12 flex items-center justify-center rounded-xl bg-[rgba(255,255,255,0.05)] text-white hover:bg-[rgba(255,255,255,0.1)] transition-colors"
+      {/* Painel Flutuante de Ações Rápidas (FAB) */}
+      <div className="fixed bottom-6 right-6 md:right-8 z-40 flex items-center gap-2.5 p-1.5 rounded-2xl bg-[rgba(14,22,40,0.85)] border border-[rgba(255,255,255,0.08)] shadow-[0_12px_40px_rgba(0,0,0,0.5)] backdrop-blur-md">
+        {/* Inserção por Voz */}
+        <button
+          onClick={() => {
+            setStartVoiceImmediately(true);
+            setShowForm(true);
+          }}
+          className="w-12 h-12 flex items-center justify-center rounded-xl bg-[rgba(255,255,255,0.02)] border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--green-neon)] hover:bg-[rgba(255,255,255,0.05)] hover:border-[rgba(0,255,153,0.18)] transition-all cursor-pointer group"
+          title="Inserir por comando de voz"
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2h0a3.13 3.13 0 0 1 3 3.88Z"/></svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-105 transition-transform">
+            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+            <line x1="12" x2="12" y1="19" y2="22"/>
+          </svg>
         </button>
-        <button 
-          onClick={() => setShowForm(true)}
-          className="w-14 h-14 flex items-center justify-center rounded-xl bg-[var(--green-neon)] text-[#0A1C17] hover:brightness-110 transition-colors"
+
+        {/* Adicionar Manual */}
+        <button
+          onClick={() => {
+            setStartVoiceImmediately(false);
+            setShowForm(true);
+          }}
+          className="w-12 h-12 flex items-center justify-center rounded-xl bg-gradient-to-br from-[var(--green-neon)] to-[var(--green-dim)] text-[#050816] hover:shadow-[0_0_20px_rgba(0,255,153,0.35)] hover:scale-105 duration-200 transition-all cursor-pointer"
+          title="Nova aposta manual"
         >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="12" x2="12" y1="5" y2="19"/>
+            <line x1="5" x2="19" y1="12" y2="12"/>
+          </svg>
         </button>
       </div>
 
-      {/* Modal nova aposta */}
+      {/* Modal Nova Aposta */}
       {showForm && (
         <NovaApostaForm
           onSave={inserirAposta}
           onClose={() => setShowForm(false)}
+          autoStartVoice={startVoiceImmediately}
         />
       )}
     </div>

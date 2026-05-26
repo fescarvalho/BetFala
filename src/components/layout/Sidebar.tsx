@@ -17,13 +17,13 @@ const navItems = [
   { href: '/?tab=config', label: 'Configurações', icon: Settings },
 ];
 
-export default function Sidebar({
-  mobileOpen,
-  onClose,
-}: {
+interface SidebarProps {
   mobileOpen?: boolean;
   onClose?: () => void;
-}) {
+  isMockMode?: boolean;
+}
+
+export default function Sidebar({ mobileOpen, onClose, isMockMode = true }: SidebarProps) {
   const pathname = usePathname();
 
   return (
@@ -31,49 +31,27 @@ export default function Sidebar({
       {/* Overlay Mobile */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 bg-black/60 z-40 md:hidden backdrop-blur-sm transition-opacity"
+          className="fixed inset-0 bg-black/75 z-40 md:hidden backdrop-blur-md transition-opacity"
           onClick={onClose}
         />
       )}
 
       <aside
-        className={`fixed top-0 left-0 bottom-0 z-50 w-[240px] bg-[var(--bg-surface)] border-r border-[var(--border)] flex flex-col transition-transform duration-300 md:translate-x-0 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'
-          }`}
+        className={`fixed top-0 left-0 bottom-0 z-50 w-[240px] bg-[var(--bg-surface)] border-r border-[var(--border)] flex flex-col transition-transform duration-300 md:translate-x-0 ${
+          mobileOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
       >
         {/* Logo */}
-        <div
-          style={{
-            padding: '24px 20px',
-            borderBottom: '1px solid var(--border)',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div
-              style={{
-                width: 36,
-                height: 36,
-                background: 'linear-gradient(135deg, var(--green-neon), #00A8FF)',
-                borderRadius: 10,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Zap size={20} color="#0A0E1A" strokeWidth={2.5} />
+        <div className="p-6 border-b border-[var(--border)]">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 bg-gradient-to-br from-[var(--green-neon)] to-[var(--blue-accent)] rounded-xl flex items-center justify-center shadow-[0_4px_12px_rgba(0,255,153,0.15)]">
+              <Zap size={18} color="#050816" strokeWidth={2.5} />
             </div>
             <div>
-              <div
-                style={{
-                  fontSize: '1.1rem',
-                  fontWeight: 800,
-                  letterSpacing: '-0.02em',
-                  lineHeight: 1.1,
-                }}
-                className="gradient-text"
-              >
+              <div className="text-[1.1rem] font-black tracking-tight leading-none gradient-text">
                 BetFala
               </div>
-              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 500 }}>
+              <div className="text-[0.68rem] text-[var(--text-secondary)] font-medium mt-1">
                 Gestão de Banca
               </div>
             </div>
@@ -81,18 +59,8 @@ export default function Sidebar({
         </div>
 
         {/* Navegação */}
-        <nav style={{ flex: 1, padding: '16px 12px' }}>
-          <div
-            style={{
-              fontSize: '0.65rem',
-              fontWeight: 700,
-              letterSpacing: '0.1em',
-              color: 'var(--text-muted)',
-              padding: '0 8px',
-              marginBottom: 8,
-              textTransform: 'uppercase',
-            }}
-          >
+        <nav className="flex-1 py-6 px-4 flex flex-col gap-1">
+          <div className="text-[0.62rem] font-bold tracking-widest text-[var(--text-muted)] px-3 mb-2 uppercase">
             Menu Principal
           </div>
           {navItems.map((item) => {
@@ -102,68 +70,45 @@ export default function Sidebar({
               <Link
                 key={item.href}
                 href={item.href}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 10,
-                  padding: '10px 12px',
-                  borderRadius: 10,
-                  marginBottom: 4,
-                  textDecoration: 'none',
-                  fontSize: '0.875rem',
-                  fontWeight: isActive ? 600 : 400,
-                  color: isActive ? 'var(--green-neon)' : 'var(--text-secondary)',
-                  background: isActive ? 'rgba(0,255,135,0.08)' : 'transparent',
-                  border: isActive
-                    ? '1px solid rgba(0,255,135,0.15)'
-                    : '1px solid transparent',
-                  transition: 'all 0.15s ease',
-                }}
-                onMouseEnter={(e) => {
-                  if (!isActive) {
-                    e.currentTarget.style.background = 'var(--bg-card-hover)';
-                    e.currentTarget.style.color = 'var(--text-primary)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!isActive) {
-                    e.currentTarget.style.background = 'transparent';
-                    e.currentTarget.style.color = 'var(--text-secondary)';
-                  }
-                }}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-200 group border ${
+                  isActive
+                    ? 'bg-[rgba(0,255,153,0.04)] text-[var(--green-neon)] border-[rgba(0,255,153,0.12)] font-semibold shadow-xs'
+                    : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] border-transparent hover:bg-[rgba(255,255,255,0.02)]'
+                }`}
+                onClick={onClose}
               >
-                <Icon size={16} />
+                <Icon size={16} className={isActive ? 'text-[var(--green-neon)]' : 'text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]'} />
                 {item.label}
               </Link>
             );
           })}
         </nav>
 
-        {/* Footer da sidebar */}
-        <div
-          style={{
-            padding: '16px 20px',
-            borderTop: '1px solid var(--border)',
-          }}
-        >
-          <div
-            style={{
-              background: 'rgba(0,255,135,0.06)',
-              border: '1px solid rgba(0,255,135,0.12)',
-              borderRadius: 10,
-              padding: '10px 12px',
-            }}
-          >
-            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: 4 }}>
-              Modo
+        {/* Footer da sidebar com estado dinâmico */}
+        <div className="p-4 border-t border-[var(--border)] mt-auto bg-[var(--bg-base)]/30">
+          {isMockMode ? (
+            <div className="bg-[rgba(255,209,102,0.03)] border border-[rgba(255,209,102,0.12)] rounded-xl p-3">
+              <div className="text-[0.6rem] text-[var(--text-muted)] mb-1 uppercase tracking-wider font-semibold">Conexão</div>
+              <div className="text-xs font-semibold text-[var(--gold)] flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-[var(--gold)] animate-pulse" />
+                Modo de Demonstração
+              </div>
+              <div className="text-[0.65rem] text-[var(--text-secondary)] mt-1.5 leading-relaxed">
+                Usando dados de exemplo. Configure o banco no seu <code className="bg-[rgba(255,255,255,0.06)] px-1 rounded">.env.local</code>.
+              </div>
             </div>
-            <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--green-neon)' }}>
-              📊 Demo com Mock Data
+          ) : (
+            <div className="bg-[rgba(0,255,153,0.03)] border border-[rgba(0,255,153,0.12)] rounded-xl p-3">
+              <div className="text-[0.6rem] text-[var(--text-muted)] mb-1 uppercase tracking-wider font-semibold">Conexão</div>
+              <div className="text-xs font-semibold text-[var(--green-neon)] flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-[var(--green-neon)] shadow-[0_0_8px_var(--green-neon)] animate-pulse" />
+                Supabase Conectado
+              </div>
+              <div className="text-[0.65rem] text-[var(--text-secondary)] mt-1.5 leading-relaxed">
+                Sincronizando em tempo real com seu banco de dados.
+              </div>
             </div>
-            <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginTop: 2 }}>
-              Configure o Supabase no .env.local
-            </div>
-          </div>
+          )}
         </div>
       </aside>
     </>
