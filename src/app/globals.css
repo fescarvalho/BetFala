@@ -37,11 +37,11 @@
   --color-on-error: #690005;
   --color-on-error-container: #ffdad6;
   
-  --font-headline-md: 'Inter', sans-serif;
-  --font-headline-lg-mobile: 'Inter', sans-serif;
-  --font-body-md: 'Inter', sans-serif;
-  --font-label-sm: 'Inter', sans-serif;
-  --font-label-md: 'Inter', sans-serif;
+  --font-headline-md: var(--font-outfit), 'Outfit', sans-serif;
+  --font-headline-lg-mobile: var(--font-outfit), 'Outfit', sans-serif;
+  --font-body-md: var(--font-outfit), 'Outfit', sans-serif;
+  --font-label-sm: var(--font-outfit), 'Outfit', sans-serif;
+  --font-label-md: var(--font-outfit), 'Outfit', sans-serif;
 
   --font-size-headline-md: 24px;
   --font-size-headline-lg-mobile: 24px;
@@ -57,25 +57,25 @@
 
 :root {
   /* Color Palette */
-  --green-neon: #00FF99;
-  --green-dim: #00CC7A;
+  --green-accent: #00FF88;
+  --green-dim: #00CC70;
   --red-neon: #FF4D6D;
   --red-dim: #D93856;
   --gold: #FFD166;
   --blue-accent: #4CC9F0;
 
   /* Surfaces & Backgrounds */
-  --bg-base: #0a0c14;
-  --bg-surface: #11131b;
-  --bg-card: rgba(22, 27, 38, 0.7);
-  --bg-card-hover: rgba(33, 41, 58, 0.85);
-  --border: rgba(255, 255, 255, 0.05);
-  --border-hover: rgba(0, 255, 153, 0.2);
+  --bg-base: #050816;
+  --bg-card: #0F172A;
+  --bg-card-hover: #162035;
+  --border-subtle: rgba(255, 255, 255, 0.05);
+  --border-accent: rgba(0, 255, 136, 0.25);
+  --shadow-card: 0 4px 20px rgba(0,0,0,0.18);
 
   /* Typography */
   --text-primary: #FFFFFF;
-  --text-secondary: #8A94A6;
-  --text-muted: #525C6C;
+  --text-secondary: #94A3B8;
+  --text-muted: #4A5568;
 }
 
 * {
@@ -89,8 +89,8 @@ html {
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  background-color: #0a0c14;
+  font-family: var(--font-outfit), 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: var(--bg-base);
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -102,6 +102,10 @@ body {
 ::-webkit-scrollbar {
   display: none;
 }
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
 
 /* ============================================================
    Prototype Specific Styles
@@ -163,3 +167,20 @@ body {
     linear-gradient(to right, rgba(255, 255, 255, 0.015) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
 }
+
+/* Bottom-sheet slide-up */
+@keyframes sheetUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.sheet-enter {
+  animation: sheetUp 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Dot pulse for listening */
+@keyframes dot-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(0.75); }
+}
+

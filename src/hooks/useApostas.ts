@@ -236,6 +236,82 @@ export function useApostas() {
     [supabase, bancas]
   );
 
+  // --- Atualizar banca ---
+  const atualizarBanca = useCallback(
+    async (id: string, nome: string, saldoInicial: number): Promise<boolean> => {
+      if (USE_MOCK || id.startsWith('banca-')) {
+        const updated = bancas.map((b) =>
+          b.id === id ? { ...b, nome, saldo_inicial: saldoInicial } : b
+        );
+        setBancas(updated);
+        localStorage.setItem('betfala_bancas', JSON.stringify(updated));
+        return true;
+      }
+      setLoading(true);
+      setError(null);
+      try {
+        const { error: err } = await supabase!
+          .from('bancas')
+          .update({ nome, saldo_inicial: saldoInicial })
+          .eq('id', id);
+        if (err) throw err;
+        setBancas((prev) =>
+          prev.map((b) => (b.id === id ? { ...b, nome, saldo_inicial: saldoInicial } : b))
+        );
+        return true;
+      } catch (e: unknown) {
+        setError(e instanceof Error ? e.message : 'Erro ao atualizar banca');
+        return false;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [supabase, bancas]
+  );
+
+  // --- Excluir banca ---
+  const excluirBanca = useCallback(
+    async (id: string): Promise<boolean> => {
+      if (bancas.length <= 1) {
+        setError('Não é possível excluir a única banca.');
+        return false;
+      }
+      if (USE_MOCK || id.startsWith('banca-')) {
+        const updated = bancas.filter((b) => b.id !== id);
+        setBancas(updated);
+        localStorage.setItem('betfala_bancas', JSON.stringify(updated));
+        // Se a banca excluída era a ativa, seleciona a primeira restante
+        if (activeBancaId === id) {
+          const newActive = updated[0]?.id || '';
+          setActiveBancaId(newActive);
+          localStorage.setItem('betfala_active_banca_id', newActive);
+        }
+        return true;
+      }
+      setLoading(true);
+      setError(null);
+      try {
+        const { error: err } = await supabase!
+          .from('bancas')
+          .delete()
+          .eq('id', id);
+        if (err) throw err;
+        const updated = bancas.filter((b) => b.id !== id);
+        setBancas(updated);
+        if (activeBancaId === id) {
+          setActiveBancaId(updated[0]?.id || '');
+        }
+        return true;
+      } catch (e: unknown) {
+        setError(e instanceof Error ? e.message : 'Erro ao excluir banca');
+        return false;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [supabase, bancas, activeBancaId]
+  );
+
   // --- Inserir aposta ---
   const inserirAposta = useCallback(
     async (nova: ApostaInsert): Promise<boolean> => {
@@ -366,6 +442,8 @@ export function useApostas() {
     atualizarAposta,
     excluirAposta,
     inserirBanca,
+    atualizarBanca,
+    excluirBanca,
     setActiveBanca,
     isMockMode: USE_MOCK,
   };

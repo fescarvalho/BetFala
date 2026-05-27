@@ -1,6 +1,6 @@
 'use client';
 
-import { CalendarDays, Search, SlidersHorizontal, X } from 'lucide-react';
+import { Search, X } from 'lucide-react';
 import { FiltrosState } from '@/types/aposta';
 
 interface FiltersProps {
@@ -11,8 +11,8 @@ interface FiltersProps {
 const PERIODOS: { value: FiltrosState['periodo']; label: string }[] = [
   { value: 'todos', label: 'Todos' },
   { value: '7dias', label: '7 dias' },
-  { value: 'mes', label: 'Este mes' },
-  { value: 'personalizado', label: 'Personalizado' },
+  { value: 'mes', label: 'Este mês' },
+  { value: 'personalizado', label: 'Período' },
 ];
 
 export default function Filters({ filtros, onChange }: FiltersProps) {
@@ -34,104 +34,215 @@ export default function Filters({ filtros, onChange }: FiltersProps) {
   };
 
   return (
-    <div className="w-full space-y-4">
-      <div className="relative">
-        <Search
-          size={17}
-          className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#7f8ca3]"
-        />
-        <input
-          id="filtro-busca"
-          type="text"
-          placeholder="Buscar partida, time ou mercado..."
-          value={filtros.busca}
-          onChange={(e) => onChange({ ...filtros, busca: e.target.value })}
-          className="h-12 w-full rounded-2xl border border-white/[0.08] bg-[#0f1420] pl-11 pr-11 text-[14px] font-semibold text-white outline-none transition placeholder:text-[#596274] focus:border-[#00ff88]/50"
-        />
-        {filtros.busca && (
-          <button
-            onClick={() => onChange({ ...filtros, busca: '' })}
-            className="absolute right-3 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-xl text-[#8a94a6] transition hover:bg-white/[0.06] hover:text-white"
-            aria-label="Limpar busca"
-          >
-            <X size={15} />
-          </button>
-        )}
-      </div>
+    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '14px' }}>
 
-      <div className="rounded-[20px] border border-white/[0.07] bg-[#0f1420] p-3.5">
-        <div className="mb-3 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.12em] text-[#8a94a6]">
-            <SlidersHorizontal size={14} className="text-[#60ff99]" />
-            Periodo
-          </div>
-
-          {hasActiveFilters && (
+      {/* ── Single row: search + period chips ── */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          overflowX: 'auto',
+          /* hide scrollbar */
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
+        }}
+        className="no-scrollbar"
+      >
+        {/* Search pill */}
+        <div style={{ position: 'relative', flexShrink: 0 }}>
+          <Search
+            size={15}
+            strokeWidth={1.8}
+            style={{
+              position: 'absolute',
+              left: '14px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              color: 'rgba(148,163,184,0.55)',
+              pointerEvents: 'none',
+            }}
+          />
+          <input
+            id="filtro-busca"
+            type="text"
+            placeholder="Buscar..."
+            value={filtros.busca}
+            onChange={(e) => onChange({ ...filtros, busca: e.target.value })}
+            style={{
+              height: '44px',
+              width: filtros.busca ? '180px' : '130px',
+              borderRadius: '22px',
+              background: '#0F172A',
+              border: 'none',
+              outline: 'none',
+              paddingLeft: '36px',
+              paddingRight: filtros.busca ? '36px' : '16px',
+              fontSize: '13px',
+              fontWeight: 500,
+              color: '#FFFFFF',
+              boxSizing: 'border-box',
+              transition: 'width 0.2s ease',
+            }}
+            className="placeholder:text-[#94A3B8]/45"
+          />
+          {filtros.busca && (
             <button
-              onClick={clear}
-              className="inline-flex items-center gap-1.5 rounded-full bg-[#ff4d6d]/10 px-3 py-1.5 text-[11px] font-bold text-[#ff9aae]"
+              onClick={() => onChange({ ...filtros, busca: '' })}
+              aria-label="Limpar busca"
+              style={{
+                position: 'absolute',
+                right: '10px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                height: '22px',
+                width: '22px',
+                display: 'grid',
+                placeItems: 'center',
+                borderRadius: '11px',
+                color: '#94A3B8',
+                background: 'rgba(255,255,255,0.08)',
+                border: 'none',
+                cursor: 'pointer',
+              }}
             >
-              <X size={12} />
-              Limpar
+              <X size={11} />
             </button>
           )}
         </div>
 
-        <div className="grid grid-cols-2 gap-2 min-[420px]:grid-cols-4">
-          {PERIODOS.map((periodo) => {
-            const isActive = filtros.periodo === periodo.value;
-            return (
-              <button
-                key={periodo.value}
-                onClick={() => setPeriodo(periodo.value)}
-                className={`h-10 rounded-2xl text-[12px] font-black transition active:scale-[0.98] ${
-                  isActive
-                    ? 'bg-[#00ff88] text-[#04110c]'
-                    : 'border border-white/[0.07] bg-white/[0.035] text-[#b9cbb9]'
-                }`}
-              >
-                {periodo.label}
-              </button>
-            );
-          })}
-        </div>
+        {/* Vertical divider */}
+        <div
+          style={{
+            width: '1px',
+            height: '22px',
+            background: 'rgba(255,255,255,0.08)',
+            flexShrink: 0,
+          }}
+        />
 
-        {filtros.periodo === 'personalizado' && (
-          <div className="mt-3 grid grid-cols-1 gap-3 min-[420px]:grid-cols-2">
-            <div>
-              <label htmlFor="filtro-data-inicio" className="mb-1.5 flex items-center gap-1.5 text-[11px] font-bold text-[#8a94a6]">
-                <CalendarDays size={13} />
-                Inicio
-              </label>
-              <input
-                id="filtro-data-inicio"
-                type="date"
-                value={filtros.dataInicio || ''}
-                onChange={(e) =>
-                  onChange({ ...filtros, periodo: 'personalizado', dataInicio: e.target.value || undefined })
-                }
-                className="h-11 w-full rounded-2xl border border-white/[0.08] bg-[#171d2b] px-3 text-sm font-bold text-white outline-none focus:border-[#00ff88]/50"
-              />
-            </div>
+        {/* Period chips */}
+        {PERIODOS.map((periodo) => {
+          const isActive = filtros.periodo === periodo.value;
+          return (
+            <button
+              key={periodo.value}
+              onClick={() => setPeriodo(periodo.value)}
+              style={{
+                height: '44px',
+                paddingLeft: '18px',
+                paddingRight: '18px',
+                borderRadius: '22px',
+                fontSize: '13px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.15s',
+                border: 'none',
+                outline: 'none',
+                background: isActive ? '#00FF88' : '#0F172A',
+                color: isActive ? '#050816' : '#94A3B8',
+                flexShrink: 0,
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {periodo.label}
+            </button>
+          );
+        })}
 
-            <div>
-              <label htmlFor="filtro-data-fim" className="mb-1.5 flex items-center gap-1.5 text-[11px] font-bold text-[#8a94a6]">
-                <CalendarDays size={13} />
-                Fim
-              </label>
-              <input
-                id="filtro-data-fim"
-                type="date"
-                value={filtros.dataFim || ''}
-                onChange={(e) =>
-                  onChange({ ...filtros, periodo: 'personalizado', dataFim: e.target.value || undefined })
-                }
-                className="h-11 w-full rounded-2xl border border-white/[0.08] bg-[#171d2b] px-3 text-sm font-bold text-white outline-none focus:border-[#00ff88]/50"
-              />
-            </div>
-          </div>
+        {/* Clear — só aparece se há filtro ativo */}
+        {hasActiveFilters && (
+          <button
+            onClick={clear}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '5px',
+              height: '44px',
+              paddingLeft: '12px',
+              paddingRight: '12px',
+              borderRadius: '22px',
+              fontSize: '12px',
+              fontWeight: 500,
+              color: '#94A3B8',
+              background: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+              flexShrink: 0,
+              whiteSpace: 'nowrap',
+            }}
+          >
+            <X size={12} />
+            Limpar
+          </button>
         )}
       </div>
+
+      {/* ── Custom date range (só aparece se 'personalizado') ── */}
+      {filtros.periodo === 'personalizado' && (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          <div>
+            <label
+              htmlFor="filtro-data-inicio"
+              style={{ display: 'block', fontSize: '11px', fontWeight: 500, color: '#94A3B8', marginBottom: '8px' }}
+            >
+              Início
+            </label>
+            <input
+              id="filtro-data-inicio"
+              type="date"
+              value={filtros.dataInicio || ''}
+              onChange={(e) =>
+                onChange({ ...filtros, periodo: 'personalizado', dataInicio: e.target.value || undefined })
+              }
+              style={{
+                height: '46px',
+                width: '100%',
+                borderRadius: '16px',
+                background: '#0F172A',
+                border: 'none',
+                outline: 'none',
+                paddingLeft: '14px',
+                paddingRight: '14px',
+                fontSize: '13px',
+                fontWeight: 500,
+                color: '#FFFFFF',
+                boxSizing: 'border-box',
+              }}
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="filtro-data-fim"
+              style={{ display: 'block', fontSize: '11px', fontWeight: 500, color: '#94A3B8', marginBottom: '8px' }}
+            >
+              Fim
+            </label>
+            <input
+              id="filtro-data-fim"
+              type="date"
+              value={filtros.dataFim || ''}
+              onChange={(e) =>
+                onChange({ ...filtros, periodo: 'personalizado', dataFim: e.target.value || undefined })
+              }
+              style={{
+                height: '46px',
+                width: '100%',
+                borderRadius: '16px',
+                background: '#0F172A',
+                border: 'none',
+                outline: 'none',
+                paddingLeft: '14px',
+                paddingRight: '14px',
+                fontSize: '13px',
+                fontWeight: 500,
+                color: '#FFFFFF',
+                boxSizing: 'border-box',
+              }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -19,74 +19,132 @@ export default function KpiCards({ kpis }: KpiCardsProps) {
       id: 'kpi-lucro',
       label: 'Lucro',
       value: `${lucroPositivo ? '+' : ''}${formatarMoeda(kpis.lucroTotal)}`,
-      hint: `ROI ${kpis.roi >= 0 ? '+' : ''}${kpis.roi.toFixed(1)}%`,
+      sub: `ROI ${kpis.roi >= 0 ? '+' : ''}${kpis.roi.toFixed(1)}%`,
       icon: ProfitIcon,
-      valueClass: lucroPositivo ? 'text-[#60ff99]' : 'text-[#ff9aae]',
-      iconClass: lucroPositivo ? 'text-[#60ff99] bg-[#60ff99]/10' : 'text-[#ff9aae] bg-[#ff4d6d]/10',
+      valueColor: lucroPositivo ? '#00FF88' : '#ff9aae',
+      iconColor: lucroPositivo ? '#00FF88' : '#ff9aae',
+      iconBg: lucroPositivo ? 'rgba(0,255,136,0.12)' : 'rgba(255,77,109,0.12)',
     },
     {
       id: 'kpi-taxa',
       label: 'Acerto',
       value: `${winRate}%`,
-      hint: `${kpis.greens} green / ${kpis.reds} red`,
+      sub: `${kpis.greens}G / ${kpis.reds}R`,
       icon: Target,
-      valueClass: 'text-white',
-      iconClass: 'text-[#adc6ff] bg-[#adc6ff]/10',
+      valueColor: '#FFFFFF',
+      iconColor: '#adc6ff',
+      iconBg: 'rgba(173,198,255,0.12)',
       progress: winRate,
     },
     {
       id: 'kpi-roi',
       label: 'ROI',
       value: `${roiPositivo ? '+' : ''}${kpis.roi.toFixed(1)}%`,
-      hint: roiPositivo ? 'Acima da meta' : 'Abaixo da meta',
+      sub: roiPositivo ? 'Acima da meta' : 'Abaixo da meta',
       icon: Percent,
-      valueClass: roiPositivo ? 'text-[#adc6ff]' : 'text-[#ff9aae]',
-      iconClass: 'text-[#adc6ff] bg-[#adc6ff]/10',
+      valueColor: roiPositivo ? '#adc6ff' : '#ff9aae',
+      iconColor: '#adc6ff',
+      iconBg: 'rgba(173,198,255,0.12)',
     },
     {
       id: 'kpi-apostas',
       label: 'Apostas',
       value: String(kpis.totalApostas),
-      hint: `${kpis.abertas} em aberto`,
+      sub: `${kpis.abertas} em aberto`,
       icon: Activity,
-      valueClass: 'text-white',
-      iconClass: 'text-[#ffd166] bg-[#ffd166]/10',
+      valueColor: '#FFFFFF',
+      iconColor: '#ffd166',
+      iconBg: 'rgba(255,209,102,0.12)',
     },
   ];
 
   return (
-    <section className="grid grid-cols-1 gap-3.5 min-[390px]:grid-cols-2 md:gap-4">
+    <section className="grid grid-cols-2 gap-4">
       {cards.map((card) => {
         const Icon = card.icon;
         return (
           <div
             key={card.id}
             id={card.id}
-            className="flex min-w-0 flex-col items-center justify-center overflow-hidden rounded-[22px] border border-white/[0.07] bg-[#111722] px-4 py-5 text-center shadow-[0_16px_42px_rgba(0,0,0,0.22)] md:rounded-2xl md:px-5"
+            className="flex flex-col"
+            style={{
+              background: '#0F172A',
+              borderRadius: '24px',
+              padding: '22px 20px',
+              minHeight: '140px',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.18)',
+            }}
           >
-            <div className="flex w-full items-center justify-center gap-2">
-              <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-xl ${card.iconClass}`}>
-                <Icon size={16} strokeWidth={2.4} />
-              </span>
-              <span className="text-[12px] font-bold uppercase tracking-[0.08em] text-[#8a94a6]">
-                {card.label}
-              </span>
-            </div>
+            {/* Icon */}
+            <span
+              className="grid place-items-center"
+              style={{
+                height: '36px',
+                width: '36px',
+                borderRadius: '12px',
+                background: card.iconBg,
+                color: card.iconColor,
+                marginBottom: '14px',
+                flexShrink: 0,
+              }}
+            >
+              <Icon size={17} strokeWidth={2} />
+            </span>
 
-            <div className="mt-4 flex w-full min-w-0 flex-col items-center">
-              <p className={`max-w-full overflow-hidden text-ellipsis whitespace-nowrap font-mono text-[clamp(1.05rem,5vw,1.35rem)] font-black leading-tight tracking-normal md:text-[24px] ${card.valueClass}`}>
-                {card.value}
-              </p>
-              <p className="mt-2 max-w-full text-[11px] font-semibold leading-snug text-[#8793a8]">
-                {card.hint}
-              </p>
-            </div>
+            {/* Label */}
+            <p
+              className="font-medium"
+              style={{
+                fontSize: '12px',
+                color: '#94A3B8',
+                lineHeight: '1',
+                marginBottom: '8px',
+                letterSpacing: '0.01em',
+              }}
+            >
+              {card.label}
+            </p>
 
+            {/* Value */}
+            <p
+              className="font-mono font-bold"
+              style={{
+                fontSize: 'clamp(20px, 5.5vw, 26px)',
+                color: card.valueColor,
+                lineHeight: '1.15',
+                marginBottom: '6px',
+                wordBreak: 'break-all',
+              }}
+            >
+              {card.value}
+            </p>
+
+            {/* Sub */}
+            <p
+              className="font-medium"
+              style={{
+                fontSize: '11px',
+                color: '#94A3B8',
+                lineHeight: '1.4',
+                marginTop: 'auto',
+              }}
+            >
+              {card.sub}
+            </p>
+
+            {/* Progress bar */}
             {'progress' in card && (
-              <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-white/[0.08]">
+              <div
+                className="overflow-hidden rounded-full"
+                style={{
+                  marginTop: '12px',
+                  height: '3px',
+                  background: 'rgba(255,255,255,0.07)',
+                }}
+              >
                 <div
-                  className="h-full rounded-full bg-[#00ff88] transition-all duration-700"
-                  style={{ width: `${card.progress}%` }}
+                  className="h-full rounded-full transition-all duration-700"
+                  style={{ width: `${card.progress}%`, background: '#00FF88' }}
                 />
               </div>
             )}

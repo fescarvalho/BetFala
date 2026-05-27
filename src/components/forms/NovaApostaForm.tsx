@@ -1,23 +1,18 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  BadgeDollarSign,
   CheckCircle2,
   ChevronDown,
-  Goal,
-  Landmark,
-  ListChecks,
   Loader2,
   Mic,
   MicOff,
-  Trophy,
   X,
-  Zap,
 } from 'lucide-react';
 import { ApostaInsert, Banca } from '@/types/aposta';
 import { useVoiceInput } from '@/hooks/useVoiceInput';
 
+/* ─── Types ──────────────────────────────────────────────── */
 interface FormValues {
   times_apostados: string;
   detalhe_aposta: string;
@@ -33,14 +28,6 @@ interface FormErrors {
   stake?: string;
 }
 
-const INITIAL: FormValues = {
-  times_apostados: '',
-  detalhe_aposta: '',
-  odd: '',
-  stake: '',
-  banca_id: '',
-};
-
 interface NovaApostaFormProps {
   onSave: (aposta: ApostaInsert) => Promise<boolean>;
   onClose: () => void;
@@ -50,31 +37,139 @@ interface NovaApostaFormProps {
   defaultBancaId?: string;
 }
 
-function validate(values: FormValues): FormErrors {
-  const errors: FormErrors = {};
-  if (values.times_apostados.trim().length < 2) {
-    errors.times_apostados = 'Informe o evento.';
-  }
-  if (values.detalhe_aposta.trim().length < 2) {
-    errors.detalhe_aposta = 'Informe o mercado.';
-  }
+const INITIAL: FormValues = {
+  times_apostados: '',
+  detalhe_aposta: '',
+  odd: '',
+  stake: '',
+  banca_id: '',
+};
 
-  const odd = parseFloat(values.odd);
-  if (!values.odd || Number.isNaN(odd) || odd < 1.01) {
-    errors.odd = 'Odd minima 1.01';
-  }
-  if (odd > 1000) {
-    errors.odd = 'Odd maxima 1000';
-  }
+/* Stake quick-pick chips */
+const STAKE_CHIPS = [10, 25, 50, 100, 200];
 
-  const stake = parseFloat(values.stake);
-  if (!values.stake || Number.isNaN(stake) || stake < 0.01) {
-    errors.stake = 'Minimo R$ 0,01';
-  }
-
-  return errors;
+function validate(v: FormValues): FormErrors {
+  const e: FormErrors = {};
+  if (v.times_apostados.trim().length < 2) e.times_apostados = 'Informe o evento.';
+  if (v.detalhe_aposta.trim().length < 2) e.detalhe_aposta = 'Informe o mercado.';
+  const odd = parseFloat(v.odd);
+  if (!v.odd || isNaN(odd) || odd < 1.01) e.odd = 'Mín. 1.01';
+  if (odd > 1000) e.odd = 'Máx. 1000';
+  const stake = parseFloat(v.stake);
+  if (!v.stake || isNaN(stake) || stake < 0.01) e.stake = 'Mín. R$0,01';
+  return e;
 }
 
+function formatBRL(val: number) {
+  return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+
+/* ─── Floating-label input ───────────────────────────────── */
+function FloatInput({
+  id,
+  label,
+  type = 'text',
+  step,
+  placeholder,
+  value,
+  onChange,
+  onBlur,
+  error,
+  inputMode,
+}: {
+  id: string;
+  label: string;
+  type?: string;
+  step?: string;
+  placeholder?: string;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onBlur?: () => void;
+  error?: string;
+  inputMode?: React.HTMLAttributes<HTMLInputElement>['inputMode'];
+}) {
+  const [focused, setFocused] = useState(false);
+  const raised = focused || value.length > 0;
+  const borderColor = error
+    ? 'rgba(255,77,109,0.5)'
+    : focused
+    ? 'rgba(0,255,136,0.4)'
+    : 'rgba(255,255,255,0.07)';
+
+  return (
+    <div style={{ position: 'relative' }}>
+      <div
+        style={{
+          position: 'relative',
+          borderRadius: '16px',
+          background: 'rgba(255,255,255,0.04)',
+          border: `1.5px solid ${borderColor}`,
+          transition: 'border-color 0.2s',
+          overflow: 'hidden',
+        }}
+      >
+        {/* Floating label */}
+        <label
+          htmlFor={id}
+          style={{
+            position: 'absolute',
+            left: '16px',
+            top: raised ? '8px' : '50%',
+            transform: raised ? 'none' : 'translateY(-50%)',
+            fontSize: raised ? '10px' : '14px',
+            fontWeight: raised ? 600 : 500,
+            color: focused ? '#00FF88' : '#94A3B8',
+            letterSpacing: raised ? '0.05em' : '0',
+            textTransform: raised ? 'uppercase' : 'none',
+            transition: 'all 0.18s cubic-bezier(0.4,0,0.2,1)',
+            pointerEvents: 'none',
+            lineHeight: '1',
+            zIndex: 1,
+          }}
+        >
+          {label}
+        </label>
+
+        <input
+          id={id}
+          type={type}
+          step={step}
+          placeholder={raised ? placeholder : ''}
+          value={value}
+          onChange={onChange}
+          onFocus={() => setFocused(true)}
+          onBlur={() => { setFocused(false); onBlur?.(); }}
+          inputMode={inputMode}
+          style={{
+            display: 'block',
+            width: '100%',
+            height: '62px',
+            paddingTop: raised ? '22px' : '0',
+            paddingBottom: '10px',
+            paddingLeft: '16px',
+            paddingRight: '16px',
+            fontSize: '16px',
+            fontWeight: 600,
+            color: '#FFFFFF',
+            background: 'transparent',
+            border: 'none',
+            outline: 'none',
+            boxSizing: 'border-box',
+            WebkitAppearance: 'none',
+          }}
+          className="placeholder:text-[#94A3B8]/30"
+        />
+      </div>
+      {error && (
+        <p style={{ marginTop: '5px', fontSize: '11px', fontWeight: 600, color: '#ff9aae', paddingLeft: '4px' }}>
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}
+
+/* ─── Component ──────────────────────────────────────────── */
 export default function NovaApostaForm({
   onSave,
   onClose,
@@ -83,73 +178,70 @@ export default function NovaApostaForm({
   bancas,
   defaultBancaId,
 }: NovaApostaFormProps) {
-  const [values, setValues] = useState<FormValues>(() => ({
+  const [values, setValues] = useState<FormValues>({
     ...INITIAL,
     banca_id: defaultBancaId || bancas[0]?.id || '',
-  }));
+  });
   const [touched, setTouched] = useState<Partial<Record<keyof FormValues, boolean>>>({});
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
-  const errors = useMemo(() => validate(values), [values]);
+  const sheetRef = useRef<HTMLDivElement>(null);
 
-  const fieldError = (field: keyof FormValues) => (touched[field] ? errors[field as keyof FormErrors] : undefined);
+  const errors = useMemo(() => validate(values), [values]);
+  const fieldError = (f: keyof FormValues) => (touched[f] ? errors[f as keyof FormErrors] : undefined);
 
   const setInput = (field: keyof FormValues) => (e: React.ChangeEvent<HTMLInputElement>) => {
-    setValues((current) => ({ ...current, [field]: e.target.value }));
-    setTouched((current) => ({ ...current, [field]: true }));
+    setValues((c) => ({ ...c, [field]: e.target.value }));
+    setTouched((c) => ({ ...c, [field]: true }));
   };
 
-  const setSelect = (field: keyof FormValues) => (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setValues((current) => ({ ...current, [field]: e.target.value }));
-    setTouched((current) => ({ ...current, [field]: true }));
-  };
+  const blur = (field: keyof FormValues) => () =>
+    setTouched((c) => ({ ...c, [field]: true }));
 
-  const blur = (field: keyof FormValues) => () => {
-    setTouched((current) => ({ ...current, [field]: true }));
-  };
+  /* Retorno automático */
+  const retorno = useMemo(() => {
+    const odd = parseFloat(values.odd);
+    const stake = parseFloat(values.stake);
+    if (!isNaN(odd) && !isNaN(stake) && odd >= 1.01 && stake > 0) {
+      return stake * odd;
+    }
+    return null;
+  }, [values.odd, values.stake]);
 
+  const lucro = retorno !== null ? retorno - parseFloat(values.stake) : null;
+
+  /* Voice */
   const { isListening, startListening, stopListening, isSupported } = useVoiceInput((transcript) => {
     const parts = transcript.split(',');
     if (parts.length >= 2) {
-      setValues((current) => ({
-        ...current,
+      setValues((c) => ({
+        ...c,
         times_apostados: parts[0].trim(),
         detalhe_aposta: parts.slice(1).join(',').trim(),
       }));
-      setTouched((current) => ({ ...current, times_apostados: true, detalhe_aposta: true }));
-      return;
+      setTouched((c) => ({ ...c, times_apostados: true, detalhe_aposta: true }));
+    } else {
+      setValues((c) => ({ ...c, times_apostados: transcript }));
+      setTouched((c) => ({ ...c, times_apostados: true }));
     }
-
-    setValues((current) => ({ ...current, times_apostados: transcript }));
-    setTouched((current) => ({ ...current, times_apostados: true }));
   });
 
   useEffect(() => {
     if (!autoStartVoice) return;
-    const timer = setTimeout(() => startListening(), 300);
-    return () => clearTimeout(timer);
+    const t = setTimeout(() => startListening(), 300);
+    return () => clearTimeout(t);
   }, [autoStartVoice, startListening]);
 
   useEffect(() => {
-    const handleKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
+    const fn = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', fn);
+    return () => window.removeEventListener('keydown', fn);
   }, [onClose]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setTouched({
-      times_apostados: true,
-      detalhe_aposta: true,
-      odd: true,
-      stake: true,
-    });
-
-    const validation = validate(values);
-    if (Object.keys(validation).length > 0) return;
-
+    setTouched({ times_apostados: true, detalhe_aposta: true, odd: true, stake: true });
+    if (Object.keys(validate(values)).length > 0) return;
     setSaving(true);
     const ok = await onSave({
       times_apostados: values.times_apostados.trim(),
@@ -159,217 +251,461 @@ export default function NovaApostaForm({
       banca_id: values.banca_id || undefined,
     });
     setSaving(false);
-
     if (ok) {
       setSuccess(true);
       setValues({ ...INITIAL, banca_id: values.banca_id });
-      setTimeout(() => {
-        setSuccess(false);
-        onClose();
-      }, 1200);
+      setTimeout(() => { setSuccess(false); onClose(); }, 1300);
     }
   };
 
-  const inputClass = (hasError?: string) =>
-    `h-12 w-full rounded-2xl border bg-[#0f1420] px-4 text-[15px] font-semibold text-white outline-none transition placeholder:text-[#596274] ${
-      hasError
-        ? 'border-[#ff4d6d]/55 focus:border-[#ff4d6d]'
-        : 'border-white/[0.08] focus:border-[#00ff88]/55'
-    }`;
-
   return (
+    /* ── Backdrop ── */
     <div
-      className="fixed inset-0 z-[100] flex items-end justify-center p-0 sm:items-center sm:p-4"
-      onClick={(event) => event.target === event.currentTarget && onClose()}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 200,
+        display: 'flex',
+        alignItems: 'flex-end',
+        justifyContent: 'center',
+      }}
+      onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
+      {/* Blur backdrop */}
+      <div
+        onClick={onClose}
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'rgba(0,0,0,0.65)',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
+        }}
+      />
 
-      <div className="relative z-10 flex max-h-[92dvh] w-full max-w-[480px] flex-col overflow-hidden rounded-t-[28px] border border-white/[0.08] bg-[#151a27] shadow-[0_-20px_70px_rgba(0,0,0,0.55)] sm:rounded-[28px]">
-        <div className="flex items-center justify-between border-b border-white/[0.07] bg-[#101521] px-5 py-4">
-          <div className="flex min-w-0 items-center gap-3">
-            <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl border border-[#00ff88]/20 bg-[#00ff88]/10 text-[#00ff88]">
-              <Zap size={20} />
-            </div>
-            <div className="min-w-0">
-              <h2 className="text-lg font-black leading-tight text-white">Nova aposta</h2>
-              <p className="mt-1 flex items-center gap-1.5 text-[11px] font-black uppercase tracking-[0.08em] text-[#00ff88]">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#00ff88]" />
-                Aberta
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            className="grid h-9 w-9 place-items-center rounded-2xl bg-white/[0.06] text-[#b9cbb9] transition hover:text-white"
-            aria-label="Fechar"
-          >
-            <X size={16} />
-          </button>
+      {/* ── Bottom sheet ── */}
+      <div
+        ref={sheetRef}
+        style={{
+          position: 'relative',
+          zIndex: 10,
+          width: '100%',
+          maxWidth: '520px',
+          maxHeight: '94dvh',
+          display: 'flex',
+          flexDirection: 'column',
+          background: '#0F172A',
+          borderRadius: '32px 32px 0 0',
+          boxShadow: '0 -24px 80px rgba(0,0,0,0.6)',
+          overflow: 'hidden',
+        }}
+        className="sheet-enter sm:!rounded-[32px] sm:!mb-4 sm:!max-h-[90dvh]"
+      >
+        {/* ── Drag handle ── */}
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            paddingTop: '12px',
+            paddingBottom: '4px',
+            flexShrink: 0,
+          }}
+        >
+          <div style={{ width: '40px', height: '4px', borderRadius: '2px', background: 'rgba(255,255,255,0.15)' }} />
         </div>
 
-        <div className="overflow-y-auto px-5 py-5">
-          <button
-            type="button"
-            onClick={isListening ? stopListening : startListening}
-            className={`mb-5 flex w-full items-center gap-3 rounded-2xl border p-3.5 text-left transition ${
-              isListening
-                ? 'border-[#00ff88]/35 bg-[#00ff88]/10'
-                : 'border-white/[0.08] bg-[#1a2030]'
-            }`}
+        {/* ── Header ── */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '16px 24px 20px 24px',
+            flexShrink: 0,
+          }}
+        >
+          <div>
+            <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#FFFFFF', lineHeight: '1.2' }}>
+              Nova aposta
+            </h2>
+            <p style={{ fontSize: '13px', fontWeight: 500, color: '#94A3B8', marginTop: '3px', lineHeight: '1' }}>
+              Preencha os dados rapidamente
+            </p>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {/* Voice toggle — compact */}
+            {isSupported && (
+              <button
+                type="button"
+                onClick={isListening ? stopListening : startListening}
+                title={isListening ? 'Parar voz' : 'Entrada por voz'}
+                style={{
+                  height: '40px',
+                  width: '40px',
+                  display: 'grid',
+                  placeItems: 'center',
+                  borderRadius: '14px',
+                  background: isListening ? 'rgba(0,255,136,0.15)' : 'rgba(255,255,255,0.06)',
+                  color: isListening ? '#00FF88' : '#94A3B8',
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s',
+                  flexShrink: 0,
+                }}
+                className={isListening ? 'listening-pulse' : ''}
+              >
+                {isListening ? <MicOff size={17} strokeWidth={2} /> : <Mic size={17} strokeWidth={1.8} />}
+              </button>
+            )}
+
+            {/* Close */}
+            <button
+              onClick={onClose}
+              aria-label="Fechar"
+              style={{
+                height: '40px',
+                width: '40px',
+                display: 'grid',
+                placeItems: 'center',
+                borderRadius: '14px',
+                background: 'rgba(255,255,255,0.06)',
+                color: '#94A3B8',
+                border: 'none',
+                cursor: 'pointer',
+                flexShrink: 0,
+              }}
+            >
+              <X size={17} strokeWidth={1.8} />
+            </button>
+          </div>
+        </div>
+
+        {/* Listening indicator bar */}
+        {isListening && (
+          <div
+            style={{
+              marginLeft: '24px',
+              marginRight: '24px',
+              marginBottom: '16px',
+              padding: '10px 16px',
+              borderRadius: '14px',
+              background: 'rgba(0,255,136,0.08)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              flexShrink: 0,
+            }}
           >
             <span
-              className={`grid h-10 w-10 shrink-0 place-items-center rounded-2xl ${
-                isListening ? 'bg-[#00ff88] text-[#101521] listening-pulse' : 'bg-white/[0.06] text-[#adc6ff]'
-              }`}
-            >
-              {isListening ? <MicOff size={18} /> : <Mic size={18} />}
+              style={{
+                width: '8px',
+                height: '8px',
+                borderRadius: '50%',
+                background: '#00FF88',
+                flexShrink: 0,
+                animation: 'fab-pulse 1.2s ease-in-out infinite',
+              }}
+            />
+            <span style={{ fontSize: '13px', fontWeight: 500, color: '#00FF88' }}>
+              Escutando... diga o evento e o mercado
             </span>
-            <span className="min-w-0 flex-1">
-              <span className={`block text-sm font-black ${isListening ? 'text-[#00ff88]' : 'text-white'}`}>
-                {isListening ? 'Escutando agora' : 'Entrada por voz'}
-              </span>
-              <span className="mt-0.5 block text-xs font-medium leading-snug text-[#8a94a6]">
-                {isSupported ? 'Diga: times, mercado separados por virgula' : 'Voz simulada neste navegador'}
-              </span>
-            </span>
-          </button>
+          </div>
+        )}
 
-          <form onSubmit={handleSubmit} noValidate className="space-y-4">
-            <div>
-              <label htmlFor="f-banca" className="mb-2 flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.1em] text-[#8a94a6]">
-                <Landmark size={14} />
-                Banca
-              </label>
-              <div className="relative">
+        {/* ── Scrollable body ── */}
+        <form
+          onSubmit={handleSubmit}
+          noValidate
+          style={{
+            flex: 1,
+            overflowY: 'auto',
+            padding: '0 24px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '14px',
+            paddingBottom: '8px',
+          }}
+        >
+          {/* Banca selector — only if multiple */}
+          {bancas.length > 1 && (
+            <div style={{ position: 'relative' }}>
+              <div
+                style={{
+                  borderRadius: '16px',
+                  background: 'rgba(255,255,255,0.04)',
+                  border: '1.5px solid rgba(255,255,255,0.07)',
+                  overflow: 'hidden',
+                  position: 'relative',
+                }}
+              >
+                <label
+                  htmlFor="f-banca"
+                  style={{
+                    position: 'absolute',
+                    top: '8px',
+                    left: '16px',
+                    fontSize: '10px',
+                    fontWeight: 600,
+                    color: '#94A3B8',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    pointerEvents: 'none',
+                    zIndex: 1,
+                    lineHeight: '1',
+                  }}
+                >
+                  Banca
+                </label>
                 <select
                   id="f-banca"
                   value={values.banca_id}
-                  onChange={setSelect('banca_id')}
-                  className={`${inputClass()} appearance-none pr-10`}
+                  onChange={(e) => setValues((c) => ({ ...c, banca_id: e.target.value }))}
+                  style={{
+                    display: 'block',
+                    width: '100%',
+                    height: '62px',
+                    paddingTop: '22px',
+                    paddingBottom: '10px',
+                    paddingLeft: '16px',
+                    paddingRight: '40px',
+                    fontSize: '15px',
+                    fontWeight: 600,
+                    color: '#FFFFFF',
+                    background: 'transparent',
+                    border: 'none',
+                    outline: 'none',
+                    appearance: 'none',
+                    WebkitAppearance: 'none',
+                    boxSizing: 'border-box',
+                    cursor: 'pointer',
+                  }}
                 >
-                  {bancas.map((banca) => (
-                    <option key={banca.id} value={banca.id} className="bg-[#151a27] text-white">
-                      {banca.nome}
+                  {bancas.map((b) => (
+                    <option key={b.id} value={b.id} style={{ background: '#0F172A', color: '#FFFFFF' }}>
+                      {b.nome}
                     </option>
                   ))}
                 </select>
-                <ChevronDown size={16} className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[#8a94a6]" />
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="f-times" className="mb-2 flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.1em] text-[#8a94a6]">
-                <Trophy size={14} />
-                Times / evento
-              </label>
-              <input
-                id="f-times"
-                type="text"
-                placeholder="Ex: Flamengo vs Palmeiras"
-                value={values.times_apostados}
-                onChange={setInput('times_apostados')}
-                onBlur={blur('times_apostados')}
-                className={inputClass(fieldError('times_apostados'))}
-              />
-              {fieldError('times_apostados') && (
-                <p className="mt-1.5 text-xs font-semibold text-[#ff8da0]">{fieldError('times_apostados')}</p>
-              )}
-            </div>
-
-            <div>
-              <label htmlFor="f-detalhe" className="mb-2 flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.1em] text-[#8a94a6]">
-                <ListChecks size={14} />
-                Mercado / detalhe
-              </label>
-              <input
-                id="f-detalhe"
-                type="text"
-                placeholder="Ex: Resultado final, Over 2.5"
-                value={values.detalhe_aposta}
-                onChange={setInput('detalhe_aposta')}
-                onBlur={blur('detalhe_aposta')}
-                className={inputClass(fieldError('detalhe_aposta'))}
-              />
-              {fieldError('detalhe_aposta') && (
-                <p className="mt-1.5 text-xs font-semibold text-[#ff8da0]">{fieldError('detalhe_aposta')}</p>
-              )}
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label htmlFor="f-odd" className="mb-2 flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.1em] text-[#8a94a6]">
-                  <Goal size={14} />
-                  Odd
-                </label>
-                <input
-                  id="f-odd"
-                  type="number"
-                  step="0.01"
-                  placeholder="1.85"
-                  value={values.odd}
-                  onChange={setInput('odd')}
-                  onBlur={blur('odd')}
-                  className={inputClass(fieldError('odd'))}
+                <ChevronDown
+                  size={16}
+                  strokeWidth={1.8}
+                  style={{
+                    position: 'absolute',
+                    right: '16px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    color: '#94A3B8',
+                    pointerEvents: 'none',
+                  }}
                 />
-                {fieldError('odd') && (
-                  <p className="mt-1.5 text-xs font-semibold text-[#ff8da0]">{fieldError('odd')}</p>
-                )}
-              </div>
-
-              <div>
-                <label htmlFor="f-stake" className="mb-2 flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.1em] text-[#8a94a6]">
-                  <BadgeDollarSign size={14} />
-                  Stake
-                </label>
-                <input
-                  id="f-stake"
-                  type="number"
-                  step="0.01"
-                  placeholder="100.00"
-                  value={values.stake}
-                  onChange={setInput('stake')}
-                  onBlur={blur('stake')}
-                  className={inputClass(fieldError('stake'))}
-                />
-                {fieldError('stake') && (
-                  <p className="mt-1.5 text-xs font-semibold text-[#ff8da0]">{fieldError('stake')}</p>
-                )}
               </div>
             </div>
+          )}
 
-            {error && (
-              <div className="rounded-2xl border border-[#ff4d6d]/25 bg-[#ff4d6d]/10 p-3 text-xs font-semibold leading-relaxed text-[#ff8da0]">
-                {error}
+          {/* Evento */}
+          <FloatInput
+            id="f-times"
+            label="Evento"
+            placeholder="Flamengo vs Palmeiras"
+            value={values.times_apostados}
+            onChange={setInput('times_apostados')}
+            onBlur={blur('times_apostados')}
+            error={fieldError('times_apostados')}
+          />
+
+          {/* Mercado */}
+          <FloatInput
+            id="f-detalhe"
+            label="Mercado / detalhe"
+            placeholder="Resultado final, Over 2.5…"
+            value={values.detalhe_aposta}
+            onChange={setInput('detalhe_aposta')}
+            onBlur={blur('detalhe_aposta')}
+            error={fieldError('detalhe_aposta')}
+          />
+
+          {/* Odd + Stake — grid 2 cols */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <FloatInput
+              id="f-odd"
+              label="Odd"
+              type="number"
+              step="0.01"
+              placeholder="1.85"
+              inputMode="decimal"
+              value={values.odd}
+              onChange={setInput('odd')}
+              onBlur={blur('odd')}
+              error={fieldError('odd')}
+            />
+            <FloatInput
+              id="f-stake"
+              label="Stake (R$)"
+              type="number"
+              step="0.01"
+              placeholder="100"
+              inputMode="decimal"
+              value={values.stake}
+              onChange={setInput('stake')}
+              onBlur={blur('stake')}
+              error={fieldError('stake')}
+            />
+          </div>
+
+          {/* Stake quick chips */}
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            {STAKE_CHIPS.map((chip) => {
+              const active = values.stake === String(chip);
+              return (
+                <button
+                  key={chip}
+                  type="button"
+                  onClick={() => {
+                    setValues((c) => ({ ...c, stake: String(chip) }));
+                    setTouched((c) => ({ ...c, stake: true }));
+                  }}
+                  style={{
+                    height: '34px',
+                    paddingLeft: '14px',
+                    paddingRight: '14px',
+                    borderRadius: '17px',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    border: 'none',
+                    cursor: 'pointer',
+                    transition: 'all 0.12s',
+                    background: active ? '#00FF88' : 'rgba(255,255,255,0.06)',
+                    color: active ? '#050816' : '#94A3B8',
+                  }}
+                >
+                  R${chip}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Retorno automático */}
+          {retorno !== null && (
+            <div
+              style={{
+                borderRadius: '18px',
+                background: 'rgba(0,255,136,0.06)',
+                padding: '16px 18px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}
+            >
+              <div>
+                <p style={{ fontSize: '11px', fontWeight: 600, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.07em', lineHeight: '1', marginBottom: '5px' }}>
+                  Retorno potencial
+                </p>
+                <p style={{ fontSize: '22px', fontWeight: 700, color: '#00FF88', fontFamily: 'monospace', lineHeight: '1' }}>
+                  {formatBRL(retorno)}
+                </p>
               </div>
+              <div style={{ textAlign: 'right' }}>
+                <p style={{ fontSize: '11px', fontWeight: 600, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.07em', lineHeight: '1', marginBottom: '5px' }}>
+                  Lucro
+                </p>
+                <p style={{ fontSize: '17px', fontWeight: 700, color: lucro! >= 0 ? '#00FF88' : '#ff9aae', fontFamily: 'monospace', lineHeight: '1' }}>
+                  +{formatBRL(lucro!)}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* API error */}
+          {error && (
+            <div
+              style={{
+                borderRadius: '14px',
+                background: 'rgba(255,77,109,0.08)',
+                padding: '12px 16px',
+                fontSize: '12px',
+                fontWeight: 500,
+                color: '#ff9aae',
+                lineHeight: '1.5',
+              }}
+            >
+              {error}
+            </div>
+          )}
+        </form>
+
+        {/* ── Footer — sticky CTA ── */}
+        <div
+          style={{
+            flexShrink: 0,
+            padding: '16px 24px',
+            paddingBottom: 'calc(16px + env(safe-area-inset-bottom))',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '10px',
+            borderTop: '1px solid rgba(255,255,255,0.05)',
+            background: '#0F172A',
+          }}
+        >
+          <button
+            id="btn-salvar-aposta"
+            type="submit"
+            form=""
+            onClick={handleSubmit}
+            disabled={saving || success}
+            style={{
+              height: '58px',
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              borderRadius: '18px',
+              background: success ? 'rgba(0,255,136,0.15)' : '#00FF88',
+              color: success ? '#00FF88' : '#050816',
+              fontSize: '16px',
+              fontWeight: 700,
+              border: 'none',
+              cursor: saving || success ? 'default' : 'pointer',
+              opacity: saving ? 0.75 : 1,
+              transition: 'all 0.2s',
+              boxShadow: success ? 'none' : '0 8px 28px rgba(0,255,136,0.22)',
+              letterSpacing: '-0.1px',
+            }}
+          >
+            {saving ? (
+              <Loader2 size={20} className="animate-spin" />
+            ) : success ? (
+              <>
+                <CheckCircle2 size={20} strokeWidth={2} />
+                Aposta salva!
+              </>
+            ) : (
+              'Confirmar aposta'
             )}
+          </button>
 
-            <div className="sticky bottom-0 -mx-5 mt-2 grid grid-cols-[0.85fr_1.15fr] gap-3 border-t border-white/[0.06] bg-[#151a27]/95 px-5 pb-5 pt-4 backdrop-blur">
-              <button
-                type="button"
-                onClick={onClose}
-                className="h-12 rounded-2xl border border-white/[0.08] bg-[#202638] text-sm font-black text-white"
-              >
-                Cancelar
-              </button>
-              <button
-                id="btn-salvar-aposta"
-                type="submit"
-                disabled={saving || success}
-                className="flex h-12 items-center justify-center gap-2 rounded-2xl bg-[#00ff88] text-sm font-black text-[#04110c] shadow-[0_10px_28px_rgba(0,255,136,0.25)] disabled:opacity-70"
-              >
-                {saving ? (
-                  <Loader2 size={17} className="animate-spin" />
-                ) : success ? (
-                  <>
-                    <CheckCircle2 size={17} />
-                    Salvo
-                  </>
-                ) : (
-                  'Confirmar'
-                )}
-              </button>
-            </div>
-          </form>
+          <button
+            type="button"
+            onClick={onClose}
+            style={{
+              height: '46px',
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: '14px',
+              background: 'transparent',
+              color: '#94A3B8',
+              fontSize: '14px',
+              fontWeight: 600,
+              border: 'none',
+              cursor: 'pointer',
+              transition: 'color 0.15s',
+            }}
+          >
+            Cancelar
+          </button>
         </div>
       </div>
     </div>

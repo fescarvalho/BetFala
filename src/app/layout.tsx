@@ -1,6 +1,14 @@
 import type { Metadata } from 'next';
 import './globals.css';
 
+import { Outfit } from 'next/font/google';
+
+const outfit = Outfit({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-outfit',
+});
+
 export const metadata: Metadata = {
   title: 'BetFala — Gestão de Banca de Apostas',
   description:
@@ -14,8 +22,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="pt-BR">
-      <body>{children}</body>
+    <html lang="pt-BR" className={`${outfit.variable}`}>
+      <body className="font-sans antialiased bg-[#050816] text-[#FFFFFF]">
+        {children}
+      </body>
     </html>
   );
 }
