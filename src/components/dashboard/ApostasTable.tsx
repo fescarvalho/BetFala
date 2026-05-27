@@ -74,6 +74,13 @@ function formatarEvento(evento: string) {
     .trim();
 }
 
+function getCardBackground(status: ApostaStatus) {
+  if (status === 'Green') return '#0e2b20';
+  if (status === 'Red') return '#2b161c';
+  if (status === 'Void') return '#1e232e';
+  return '#0F172A';
+}
+
 export default function ApostasTable({ apostas, onStatusChange, onDelete }: ApostasTableProps) {
   const [page, setPage] = useState(1);
   const [loadingId, setLoadingId] = useState<string | null>(null);
@@ -128,10 +135,11 @@ export default function ApostasTable({ apostas, onStatusChange, onDelete }: Apos
                 <article
                   key={aposta.id}
                   style={{
-                    background: '#0F172A',
+                    background: getCardBackground(aposta.status),
                     borderRadius: '24px',
                     boxShadow: '0 4px 20px rgba(0,0,0,0.18)',
                     overflow: 'hidden',
+                    transition: 'background 0.3s ease',
                   }}
                 >
                   {/* Main row — tap to expand */}
