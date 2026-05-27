@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useCallback, useRef } from 'react';
-import { VOICE_SUGGESTIONS } from '@/lib/mock-data';
 
 interface UseVoiceInputReturn {
   isListening: boolean;
@@ -46,10 +45,9 @@ export function useVoiceInput(
         setIsListening(false);
       };
 
-      recognition.onerror = () => {
+      recognition.onerror = (event: Event) => {
+        console.error('Speech recognition error', event);
         setIsListening(false);
-        // Fallback para mock em caso de erro
-        simulateVoiceInput();
       };
 
       recognition.onend = () => {
@@ -59,20 +57,8 @@ export function useVoiceInput(
       recognitionRef.current = recognition;
       recognition.start();
     } else {
-      // Simulação para browsers sem suporte
-      simulateVoiceInput();
-    }
-
-    function simulateVoiceInput() {
-      mockTimerRef.current = setTimeout(() => {
-        const mockText =
-          VOICE_SUGGESTIONS[
-            Math.floor(Math.random() * VOICE_SUGGESTIONS.length)
-          ];
-        setTranscript(mockText);
-        onResult(mockText);
-        setIsListening(false);
-      }, 2000);
+      console.warn('Speech recognition not supported in this browser.');
+      setIsListening(false);
     }
   }, [isSupported, onResult]);
 
