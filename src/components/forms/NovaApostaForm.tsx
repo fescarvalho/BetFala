@@ -94,8 +94,8 @@ function FloatInput({
   const borderColor = error
     ? 'rgba(255,77,109,0.5)'
     : focused
-    ? 'rgba(0,255,136,0.4)'
-    : 'rgba(255,255,255,0.07)';
+      ? 'rgba(0,255,136,0.4)'
+      : 'rgba(255,255,255,0.07)';
 
   return (
     <div style={{ position: 'relative' }}>
@@ -216,10 +216,10 @@ export default function NovaApostaForm({
   /* Voice */
   const handleVoiceResult = useCallback((transcript: string) => {
     // Tenta encontrar palavras-chave
-    const eventoRegex = /(?:evento|jogo|partida)[:\s]+(.*?)(?:,|$|(?=\s*(?:mercado|mrecado|odd|stake)[:\s]))/i;
-    const mercadoRegex = /(?:mercado|mrecado|detalhe)[:\s]+(.*?)(?:,|$|(?=\s*(?:evento|jogo|partida|odd|stake)[:\s]))/i;
-    const oddRegex = /(?:odd|cotação)[:\s]+(.*?)(?:,|$|(?=\s*(?:evento|jogo|partida|mercado|mrecado|stake)[:\s]))/i;
-    const stakeRegex = /(?:stake|valor|aposta)[:\s]+(.*?)(?:,|$|(?=\s*(?:evento|jogo|partida|mercado|mrecado|odd)[:\s]))/i;
+    const eventoRegex = /(?:evento|jogo|partida)[:\s]+(.*?)(?:,|$|(?=\s*(?:mercado|mercado|odd|stake)[:\s]))/i;
+    const mercadoRegex = /(?:mercado|mercado|detalhe)[:\s]+(.*?)(?:,|$|(?=\s*(?:evento|jogo|partida|odd|stake)[:\s]))/i;
+    const oddRegex = /(?:odd|cotação)[:\s]+(.*?)(?:,|$|(?=\s*(?:evento|jogo|partida|mercado|mercado|stake)[:\s]))/i;
+    const stakeRegex = /(?:stake|valor|aposta)[:\s]+(.*?)(?:,|$|(?=\s*(?:evento|jogo|partida|mercado|mercado|odd)[:\s]))/i;
 
     const eventoMatch = transcript.match(eventoRegex);
     const mercadoMatch = transcript.match(mercadoRegex);
@@ -236,7 +236,7 @@ export default function NovaApostaForm({
       newTouched.times_apostados = true;
       hasKeywordMatch = true;
     }
-    
+
     if (mercadoMatch && mercadoMatch[1].trim()) {
       newValues.detalhe_aposta = mercadoMatch[1].trim();
       newTouched.detalhe_aposta = true;
@@ -311,14 +311,14 @@ export default function NovaApostaForm({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ image: base64Image }),
         });
-        
+
         const data = await res.json();
         if (!res.ok) {
           alert(data.error || 'Erro ao processar imagem');
           setIsAnalyzingImage(false);
           return;
         }
-        
+
         setValues((prev) => ({
           ...prev,
           times_apostados: data.times_apostados || prev.times_apostados,
