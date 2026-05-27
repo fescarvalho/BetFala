@@ -47,34 +47,43 @@ export function calcularKpis(apostas: Aposta[]): KpiData {
  */
 export function calcularEvolucaoBanca(
   apostas: Aposta[],
+  transacoes: import('@/types/aposta').Transacao[] = [],
   bancaInicial: number = 0
-): { data: string; banca: number; label: string }[] {
-  // Apenas apostas resolvidas, ordenadas por data
-  const resolvidas = apostas
-    .filter((a) => a.status === 'Green' || a.status === 'Red')
-    .sort(
-      (a, b) =>
-        new Date(a.data_criacao).getTime() - new Date(b.data_criacao).getTime()
-    );
+): { data: string; banca: number; label: string; timestamp?: number }[] {
+  // Apenas apostas resolvidas
+  const resolvidas = apostas.filter((a) => a.status === 'Green' || a.status === 'Red');
+
+  // Cria eventos para apostas
+  const eventos: { tipo: 'aposta' | 'deposito' | 'saque'; valor: number; date: Date; timestamp: number }[] = resolvidas.map(a => {
+    const valor = a.status === 'Green' ? (a.stake * (a.odd - 1)) : -a.stake;
+    const date = new Date(a.data_criacao);
+    return { tipo: 'aposta', valor, date, timestamp: date.getTime() };
+  });
+
+  // Cria eventos para transacoes
+  transacoes.forEach(t => {
+    const valor = t.tipo === 'deposito' ? t.valor : -t.valor;
+    const date = new Date(t.data_criacao);
+    eventos.push({ tipo: t.tipo, valor, date, timestamp: date.getTime() });
+  });
+
+  // Ordena todos os eventos cronologicamente
+  eventos.sort((a, b) => a.timestamp - b.timestamp);
 
   let bancaAtual = bancaInicial;
-  const pontos: { data: string; banca: number; label: string }[] = [
+  const pontos: { data: string; banca: number; label: string; timestamp?: number }[] = [
     {
       data: 'Início',
       banca: bancaInicial,
       label: `R$ ${bancaInicial.toFixed(2)}`,
+      timestamp: 0,
     },
   ];
 
-  resolvidas.forEach((aposta) => {
-    if (aposta.status === 'Green') {
-      bancaAtual += aposta.stake * (aposta.odd - 1);
-    } else {
-      bancaAtual -= aposta.stake;
-    }
+  eventos.forEach((evento) => {
+    bancaAtual += evento.valor;
 
-    const date = new Date(aposta.data_criacao);
-    const label = date.toLocaleDateString('pt-BR', {
+    const label = evento.date.toLocaleDateString('pt-BR', {
       day: '2-digit',
       month: '2-digit',
     });
@@ -83,6 +92,7 @@ export function calcularEvolucaoBanca(
       data: label,
       banca: parseFloat(bancaAtual.toFixed(2)),
       label: `R$ ${bancaAtual.toFixed(2)}`,
+      timestamp: evento.timestamp,
     });
   });
 
@@ -127,10 +137,12 @@ export function filtrarPorPeriodo(
  * Formata valor monetário em BRL
  */
 export function formatarMoeda(valor: number): string {
+  // Evita exibir -R$ 0,00 para valores muito próximos de zero
+  const v = Math.abs(valor) < 0.01 ? 0 : valor;
   return new Intl.NumberFormat('pt-BR', {
     style: 'currency',
     currency: 'BRL',
-  }).format(valor);
+  }).format(v);
 }
 
 /**

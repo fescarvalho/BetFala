@@ -132,14 +132,43 @@ function DashboardPageContent() {
   }, [apostasDaBanca, filtros]);
 
   const kpis = useMemo(() => calcularKpis(apostasFiltradas), [apostasFiltradas]);
-  const evolucao = useMemo(() => {
+  const evolucaoTotal = useMemo(() => {
     if (!activeBanca) return [];
     const bancaTransacoes = transacoes.filter((t) => t.banca_id === activeBanca.id);
-    const depositos = bancaTransacoes.filter(t => t.tipo === 'deposito').reduce((acc, t) => acc + t.valor, 0);
-    const saques = bancaTransacoes.filter(t => t.tipo === 'saque').reduce((acc, t) => acc + t.valor, 0);
-    const baseline = activeBanca.saldo_inicial + depositos - saques;
-    return calcularEvolucaoBanca(apostasDaBanca, baseline);
+    return calcularEvolucaoBanca(apostasDaBanca, bancaTransacoes, activeBanca.saldo_inicial);
   }, [apostasDaBanca, activeBanca, transacoes]);
+
+  const evolucao = useMemo(() => {
+    if (filtros.periodo === 'todos') return evolucaoTotal;
+    
+    let startTimestamp = 0;
+    const agora = new Date();
+    
+    if (filtros.periodo === '7dias') {
+      startTimestamp = agora.getTime() - 7 * 86400000;
+    } else if (filtros.periodo === 'mes') {
+      startTimestamp = new Date(agora.getFullYear(), agora.getMonth(), 1).getTime();
+    } else if (filtros.periodo === 'personalizado' && filtros.dataInicio) {
+      startTimestamp = new Date(filtros.dataInicio).getTime();
+    }
+    
+    if (startTimestamp === 0) return evolucaoTotal;
+    
+    const filteredPoints = evolucaoTotal.filter(p => p.timestamp && p.timestamp >= startTimestamp);
+    
+    if (filteredPoints.length > 0) {
+      const firstFilteredIndex = evolucaoTotal.findIndex(p => p === filteredPoints[0]);
+      if (firstFilteredIndex > 0) {
+        const pointBefore = evolucaoTotal[firstFilteredIndex - 1];
+        return [ { ...pointBefore, data: 'Início', label: pointBefore.label }, ...filteredPoints ];
+      }
+    } else if (evolucaoTotal.length > 0) {
+      const lastPoint = evolucaoTotal[evolucaoTotal.length - 1];
+      return [{ ...lastPoint, data: 'Atual' }];
+    }
+    
+    return filteredPoints;
+  }, [evolucaoTotal, filtros]);
 
   const handleStatusChange = async (id: string, status: ApostaStatus) =>
     await atualizarAposta({ id, status });

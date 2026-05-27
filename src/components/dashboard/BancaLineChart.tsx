@@ -1,6 +1,5 @@
 'use client';
 
-import { useState, useMemo } from 'react';
 import {
   AreaChart,
   Area,
@@ -48,31 +47,12 @@ function CustomTooltip({ active, payload, label }: {
   return null;
 }
 
-const PERIOD_OPTIONS = [
-  { label: '7D', days: 7 },
-  { label: '30D', days: 30 },
-];
-
 export default function BancaLineChart({ dados, onAddAposta }: BancaLineChartProps) {
-  const [activePeriod, setActivePeriod] = useState('7D');
+  const hasData = dados.length > 1;
+  const maxBanca = hasData ? Math.max(...dados.map((d) => d.banca)) : 100;
+  const minBanca = hasData ? Math.min(...dados.map((d) => d.banca)) : -100;
 
-  const dadosFiltrados = useMemo(() => {
-    if (dados.length <= 1) return dados;
-    const limit = activePeriod === '7D' ? 7 : 30;
-    if (dados.length <= limit + 1) return dados;
-    
-    const sliced = dados.slice(-limit);
-    const beforeSliced = dados[dados.length - limit - 1];
-    
-    return [
-      { ...beforeSliced, data: 'Ant.' },
-      ...sliced
-    ];
-  }, [dados, activePeriod]);
-
-  const hasData = dadosFiltrados.length > 1;
-  const maxBanca = hasData ? Math.max(...dadosFiltrados.map((d) => d.banca)) : 100;
-  const minBanca = hasData ? Math.min(...dadosFiltrados.map((d) => d.banca)) : -100;
+  const dadosComId = dados.map((d, index) => ({ ...d, uniqueId: index }));
 
   return (
     <div
@@ -99,38 +79,13 @@ export default function BancaLineChart({ dados, onAddAposta }: BancaLineChartPro
         <h2 style={{ fontSize: '15px', fontWeight: 600, color: '#FFFFFF', lineHeight: '1' }}>
           Evolução da banca
         </h2>
-        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-          {PERIOD_OPTIONS.map((opt) => {
-            const isActive = activePeriod === opt.label;
-            return (
-              <button
-                key={opt.label}
-                onClick={() => setActivePeriod(opt.label)}
-                style={{
-                  fontSize: '12px',
-                  fontWeight: 600,
-                  padding: '6px 14px',
-                  borderRadius: '20px',
-                  cursor: 'pointer',
-                  transition: 'all 0.15s',
-                  background: isActive ? 'rgba(0,255,136,0.12)' : 'transparent',
-                  color: isActive ? '#00FF88' : '#94A3B8',
-                  border: 'none',
-                  outline: 'none',
-                }}
-              >
-                {opt.label}
-              </button>
-            );
-          })}
-        </div>
       </div>
 
       {/* Chart area */}
       <div style={{ flex: 1, minHeight: '180px', position: 'relative' }}>
         {hasData ? (
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={dadosFiltrados} margin={{ top: 8, right: 4, left: -24, bottom: 0 }}>
+            <AreaChart data={dadosComId} margin={{ top: 8, right: 4, left: -24, bottom: 0 }}>
               <defs>
                 <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%"   stopColor="rgba(0,255,136,0.3)" stopOpacity={1} />
@@ -139,7 +94,8 @@ export default function BancaLineChart({ dados, onAddAposta }: BancaLineChartPro
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
               <XAxis
-                dataKey="data"
+                dataKey="uniqueId"
+                tickFormatter={(id) => dadosComId[id]?.data || ''}
                 tick={{ fill: '#94A3B8', fontSize: 10, fontWeight: 500 }}
                 axisLine={false}
                 tickLine={false}
