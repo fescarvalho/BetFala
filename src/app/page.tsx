@@ -138,8 +138,8 @@ function DashboardPageContent() {
     const depositos = bancaTransacoes.filter(t => t.tipo === 'deposito').reduce((acc, t) => acc + t.valor, 0);
     const saques = bancaTransacoes.filter(t => t.tipo === 'saque').reduce((acc, t) => acc + t.valor, 0);
     const baseline = activeBanca.saldo_inicial + depositos - saques;
-    return calcularEvolucaoBanca(apostasFiltradas, baseline);
-  }, [apostasFiltradas, activeBanca, transacoes]);
+    return calcularEvolucaoBanca(apostasDaBanca, baseline);
+  }, [apostasDaBanca, activeBanca, transacoes]);
 
   const handleStatusChange = async (id: string, status: ApostaStatus) =>
     await atualizarAposta({ id, status });
@@ -583,7 +583,7 @@ function DashboardPageContent() {
             className="grid gap-5 lg:grid-cols-[1fr_280px]"
           >
             <BancaLineChart dados={evolucao} onAddAposta={openManualForm} />
-            <div className="hidden lg:block">
+            <div>
               <StatusPieChart kpis={kpis} />
             </div>
           </section>

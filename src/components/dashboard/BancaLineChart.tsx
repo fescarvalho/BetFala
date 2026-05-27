@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   AreaChart,
   Area,
@@ -56,9 +56,23 @@ const PERIOD_OPTIONS = [
 export default function BancaLineChart({ dados, onAddAposta }: BancaLineChartProps) {
   const [activePeriod, setActivePeriod] = useState('7D');
 
-  const hasData = dados.length > 1;
-  const maxBanca = hasData ? Math.max(...dados.map((d) => d.banca)) : 100;
-  const minBanca = hasData ? Math.min(...dados.map((d) => d.banca)) : -100;
+  const dadosFiltrados = useMemo(() => {
+    if (dados.length <= 1) return dados;
+    const limit = activePeriod === '7D' ? 7 : 30;
+    if (dados.length <= limit + 1) return dados;
+    
+    const sliced = dados.slice(-limit);
+    const beforeSliced = dados[dados.length - limit - 1];
+    
+    return [
+      { ...beforeSliced, data: 'Ant.' },
+      ...sliced
+    ];
+  }, [dados, activePeriod]);
+
+  const hasData = dadosFiltrados.length > 1;
+  const maxBanca = hasData ? Math.max(...dadosFiltrados.map((d) => d.banca)) : 100;
+  const minBanca = hasData ? Math.min(...dadosFiltrados.map((d) => d.banca)) : -100;
 
   return (
     <div
@@ -116,7 +130,7 @@ export default function BancaLineChart({ dados, onAddAposta }: BancaLineChartPro
       <div style={{ flex: 1, minHeight: '180px', position: 'relative' }}>
         {hasData ? (
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={dados} margin={{ top: 8, right: 4, left: -24, bottom: 0 }}>
+            <AreaChart data={dadosFiltrados} margin={{ top: 8, right: 4, left: -24, bottom: 0 }}>
               <defs>
                 <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%"   stopColor="rgba(0,255,136,0.3)" stopOpacity={1} />
