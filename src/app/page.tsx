@@ -294,17 +294,15 @@ function DashboardPageContent() {
               <div
                 style={{
                   marginTop: '28px',
-                  display: 'flex',
+                  display: 'grid',
+                  gridTemplateColumns: '1fr auto',
                   gap: '10px',
-                  flexWrap: 'wrap'
                 }}
               >
                 <button
                   id="btn-nova-aposta"
                   onClick={openManualForm}
                   style={{
-                    flex: 1,
-                    minWidth: '130px',
                     height: '52px',
                     display: 'flex',
                     alignItems: 'center',
@@ -343,40 +341,51 @@ function DashboardPageContent() {
                 >
                   <Mic size={18} strokeWidth={1.8} />
                 </button>
-                <button
-                  onClick={() => openTransaction('deposito')}
-                  style={{
-                    width: '52px',
-                    height: '52px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderRadius: '16px',
-                    background: 'rgba(0,255,136,0.15)',
-                    color: '#00FF88',
-                    border: 'none',
-                    cursor: 'pointer',
-                  }}
-                >
-                  <ArrowUpRight size={18} strokeWidth={2} />
-                </button>
-                <button
-                  onClick={() => openTransaction('saque')}
-                  style={{
-                    width: '52px',
-                    height: '52px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderRadius: '16px',
-                    background: 'rgba(255,77,109,0.15)',
-                    color: '#ff9aae',
-                    border: 'none',
-                    cursor: 'pointer',
-                  }}
-                >
-                  <ArrowDownRight size={18} strokeWidth={2} />
-                </button>
+                
+                <div style={{ gridColumn: '1 / -1', display: 'flex', gap: '10px' }}>
+                  <button
+                    onClick={() => openTransaction('deposito')}
+                    style={{
+                      flex: 1,
+                      height: '52px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      borderRadius: '16px',
+                      background: 'rgba(0,255,136,0.15)',
+                      color: '#00FF88',
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      border: 'none',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <ArrowUpRight size={18} strokeWidth={2} />
+                    Depositar
+                  </button>
+                  <button
+                    onClick={() => openTransaction('saque')}
+                    style={{
+                      flex: 1,
+                      height: '52px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      borderRadius: '16px',
+                      background: 'rgba(255,77,109,0.15)',
+                      color: '#ff9aae',
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      border: 'none',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <ArrowDownRight size={18} strokeWidth={2} />
+                    Sacar
+                  </button>
+                </div>
               </div>
             </div>
           </section>

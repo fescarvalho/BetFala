@@ -215,17 +215,73 @@ export default function NovaApostaForm({
 
   /* Voice */
   const { isListening, startListening, stopListening, isSupported } = useVoiceInput((transcript) => {
-    const parts = transcript.split(',');
-    if (parts.length >= 2) {
-      setValues((c) => ({
-        ...c,
-        times_apostados: parts[0].trim(),
-        detalhe_aposta: parts.slice(1).join(',').trim(),
-      }));
-      setTouched((c) => ({ ...c, times_apostados: true, detalhe_aposta: true }));
+    // Tenta encontrar palavras-chave
+    const eventoRegex = /(?:evento|jogo|partida)[:\s]+(.*?)(?:,|$|(?=\s*(?:mercado|mrecado|odd|stake)[:\s]))/i;
+    const mercadoRegex = /(?:mercado|mrecado|detalhe)[:\s]+(.*?)(?:,|$|(?=\s*(?:evento|jogo|partida|odd|stake)[:\s]))/i;
+    const oddRegex = /(?:odd|cotação)[:\s]+(.*?)(?:,|$|(?=\s*(?:evento|jogo|partida|mercado|mrecado|stake)[:\s]))/i;
+    const stakeRegex = /(?:stake|valor|aposta)[:\s]+(.*?)(?:,|$|(?=\s*(?:evento|jogo|partida|mercado|mrecado|odd)[:\s]))/i;
+
+    const eventoMatch = transcript.match(eventoRegex);
+    const mercadoMatch = transcript.match(mercadoRegex);
+    const oddMatch = transcript.match(oddRegex);
+    const stakeMatch = transcript.match(stakeRegex);
+
+    const newValues: Partial<FormValues> = {};
+    const newTouched: Partial<Record<keyof FormValues, boolean>> = {};
+
+    let hasKeywordMatch = false;
+
+    if (eventoMatch && eventoMatch[1].trim()) {
+      newValues.times_apostados = eventoMatch[1].trim();
+      newTouched.times_apostados = true;
+      hasKeywordMatch = true;
+    }
+    
+    if (mercadoMatch && mercadoMatch[1].trim()) {
+      newValues.detalhe_aposta = mercadoMatch[1].trim();
+      newTouched.detalhe_aposta = true;
+      hasKeywordMatch = true;
+    }
+
+    const extractNumber = (str: string) => {
+      const cleanStr = str.replace(/[^\d,.]/g, '').replace(',', '.');
+      return cleanStr;
+    };
+
+    if (oddMatch && oddMatch[1].trim()) {
+      const num = extractNumber(oddMatch[1]);
+      if (num && !isNaN(parseFloat(num))) {
+        newValues.odd = num;
+        newTouched.odd = true;
+        hasKeywordMatch = true;
+      }
+    }
+
+    if (stakeMatch && stakeMatch[1].trim()) {
+      const num = extractNumber(stakeMatch[1]);
+      if (num && !isNaN(parseFloat(num))) {
+        newValues.stake = num;
+        newTouched.stake = true;
+        hasKeywordMatch = true;
+      }
+    }
+
+    if (hasKeywordMatch) {
+      setValues((c) => ({ ...c, ...newValues }));
+      setTouched((c) => ({ ...c, ...newTouched }));
     } else {
-      setValues((c) => ({ ...c, times_apostados: transcript }));
-      setTouched((c) => ({ ...c, times_apostados: true }));
+      const parts = transcript.split(',');
+      if (parts.length >= 2) {
+        setValues((c) => ({
+          ...c,
+          times_apostados: parts[0].trim(),
+          detalhe_aposta: parts.slice(1).join(',').trim(),
+        }));
+        setTouched((c) => ({ ...c, times_apostados: true, detalhe_aposta: true }));
+      } else {
+        setValues((c) => ({ ...c, times_apostados: transcript }));
+        setTouched((c) => ({ ...c, times_apostados: true }));
+      }
     }
   });
 
