@@ -372,14 +372,15 @@ export default function DashboardPage() {
             </div>
           </section>
 
-          {/* ══ MULTI-BANK SELECTOR (mobile, only if > 1) ══ */}
+          {/* ══ MULTI-BANK SELECTOR (only if > 1) ══ */}
           {bancas.length > 1 && (
-            <section className="md:hidden">
+            <section className="mb-6">
               <div
                 style={{
                   display: 'flex',
                   gap: '10px',
                   overflowX: 'auto',
+                  paddingTop: '4px',
                   paddingBottom: '4px',
                   marginLeft: '-24px',
                   marginRight: '-24px',

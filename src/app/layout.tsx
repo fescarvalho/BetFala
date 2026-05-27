@@ -14,6 +14,16 @@ export const metadata: Metadata = {
   description:
     'Gerencie sua banca de apostas esportivas com inteligência. Dashboard completo com KPIs, gráficos e histórico de apostas.',
   keywords: 'apostas esportivas, gestão de banca, ROI, análise de apostas, futebol, NBA',
+  icons: {
+    icon: [
+      { url: '/favicon.ico' },
+      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/apple-touch-icon.png' }
+    ],
+  },
 };
 
 export default function RootLayout({
