@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import {
   CheckCircle2,
   ChevronDown,
@@ -214,7 +214,7 @@ export default function NovaApostaForm({
   const lucro = retorno !== null ? retorno - parseFloat(values.stake) : null;
 
   /* Voice */
-  const { isListening, startListening, stopListening, isSupported } = useVoiceInput((transcript) => {
+  const handleVoiceResult = useCallback((transcript: string) => {
     // Tenta encontrar palavras-chave
     const eventoRegex = /(?:evento|jogo|partida)[:\s]+(.*?)(?:,|$|(?=\s*(?:mercado|mrecado|odd|stake)[:\s]))/i;
     const mercadoRegex = /(?:mercado|mrecado|detalhe)[:\s]+(.*?)(?:,|$|(?=\s*(?:evento|jogo|partida|odd|stake)[:\s]))/i;
@@ -283,7 +283,9 @@ export default function NovaApostaForm({
         setTouched((c) => ({ ...c, times_apostados: true }));
       }
     }
-  });
+  }, []);
+
+  const { isListening, startListening, stopListening, isSupported } = useVoiceInput(handleVoiceResult);
 
   useEffect(() => {
     if (!autoStartVoice) return;
