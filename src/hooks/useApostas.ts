@@ -2,7 +2,7 @@
 
 import { startTransition, useState, useCallback, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { Banca, Aposta, ApostaInsert, ApostaUpdate } from '@/types/aposta';
+import { Banca, Aposta, ApostaInsert, ApostaUpdate, Transacao, TipoTransacao } from '@/types/aposta';
 import { MOCK_APOSTAS } from '@/lib/mock-data';
 
 const USE_MOCK =
@@ -20,6 +20,11 @@ const normalizeAposta = (aposta: Aposta): Aposta => ({
   stake: Number(aposta.stake),
 });
 
+const normalizeTransacao = (t: Transacao): Transacao => ({
+  ...t,
+  valor: Number(t.valor),
+});
+
 // ============================================================
 // Hook de CRUD de apostas e bancas — suporta modo mock e Supabase
 // ============================================================
@@ -27,6 +32,7 @@ export function useApostas() {
   const [bancas, setBancas] = useState<Banca[]>([]);
   const [activeBancaId, setActiveBancaId] = useState<string>('');
   const [apostas, setApostas] = useState<Aposta[]>([]);
+  const [transacoes, setTransacoes] = useState<Transacao[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -81,10 +87,20 @@ export function useApostas() {
         localStorage.setItem('betfala_apostas', JSON.stringify(loadedApostas));
       }
 
+      // 4. Carregar transacoes
+      const savedTransacoes = localStorage.getItem('betfala_transacoes');
+      let loadedTransacoes: Transacao[] = [];
+      if (savedTransacoes) {
+        loadedTransacoes = JSON.parse(savedTransacoes);
+      } else {
+        localStorage.setItem('betfala_transacoes', JSON.stringify([]));
+      }
+
       startTransition(() => {
         setBancas(loadedBancas);
         setActiveBancaId(activeId);
         setApostas(loadedApostas);
+        setTransacoes(loadedTransacoes);
       });
     }
   }, []);
@@ -164,14 +180,30 @@ export function useApostas() {
     }
   }, [supabase]);
 
+  // --- Buscar Transações ---
+  const fetchTransacoes = useCallback(async () => {
+    if (USE_MOCK) return;
+    try {
+      const { data, error: err } = await supabase!
+        .from('transacoes')
+        .select('*')
+        .order('data_criacao', { ascending: true });
+
+      if (err) throw err;
+      setTransacoes((data as Transacao[]).map(normalizeTransacao));
+    } catch (e: unknown) {
+      console.warn('Erro ao buscar transacoes ou tabela não existe:', e);
+    }
+  }, [supabase]);
+
   // Carregar dados iniciais para o Supabase
   useEffect(() => {
     if (!USE_MOCK) {
       queueMicrotask(() => {
-        fetchBancas().then(() => fetchApostas());
+        fetchBancas().then(() => { fetchApostas(); fetchTransacoes(); });
       });
     }
-  }, [fetchBancas, fetchApostas]);
+  }, [fetchBancas, fetchApostas, fetchTransacoes]);
 
   // --- Inserir banca ---
   const inserirBanca = useCallback(
@@ -431,6 +463,47 @@ export function useApostas() {
     }
   }, []);
 
+  // --- Inserir Transação ---
+  const inserirTransacao = useCallback(
+    async (banca_id: string, tipo: TipoTransacao, valor: number): Promise<boolean> => {
+      const nova = { banca_id, tipo, valor, data_criacao: new Date().toISOString() };
+
+      if (USE_MOCK) {
+        const transacaoCompleta: Transacao = {
+          id: `transacao-${Date.now()}`,
+          user_id: 'mock-user',
+          ...nova,
+        };
+        const updated = [...transacoes, transacaoCompleta];
+        setTransacoes(updated);
+        localStorage.setItem('betfala_transacoes', JSON.stringify(updated));
+        return true;
+      }
+      setLoading(true);
+      setError(null);
+      try {
+        const { data: { user } } = await supabase!.auth.getUser();
+        if (!user) throw new Error('Usuário não autenticado');
+
+        const { data, error: err } = await supabase!
+          .from('transacoes')
+          .insert({ ...nova, user_id: user.id })
+          .select()
+          .single();
+
+        if (err) throw err;
+        setTransacoes((prev) => [...prev, normalizeTransacao(data as Transacao)]);
+        return true;
+      } catch (e: unknown) {
+        setError(e instanceof Error ? e.message : 'Erro ao inserir transação');
+        return false;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [supabase, transacoes]
+  );
+
   return {
     apostas,
     bancas,
@@ -445,6 +518,8 @@ export function useApostas() {
     atualizarBanca,
     excluirBanca,
     setActiveBanca,
+    transacoes,
+    inserirTransacao,
     isMockMode: USE_MOCK,
   };
 }

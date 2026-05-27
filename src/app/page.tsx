@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import {
   AlertCircle,
   ChevronRight,
@@ -8,9 +9,11 @@ import {
   Plus,
   TrendingUp,
   WalletCards,
+  ArrowUpRight,
+  ArrowDownRight,
 } from 'lucide-react';
 import { useApostas } from '@/hooks/useApostas';
-import { Aposta, ApostaStatus, Banca, FiltrosState } from '@/types/aposta';
+import { Aposta, ApostaStatus, Banca, FiltrosState, Transacao, TipoTransacao } from '@/types/aposta';
 import {
   calcularEvolucaoBanca,
   calcularKpis,
@@ -27,8 +30,9 @@ import ApostasTable from '@/components/dashboard/ApostasTable';
 import NovaApostaForm from '@/components/forms/NovaApostaForm';
 import BancaManagerSheet from '@/components/forms/BancaManagerSheet';
 import BottomNavBar from '@/components/layout/BottomNavBar';
+import RelatoriosTab from '@/components/dashboard/RelatoriosTab';
 
-function calcularSaldoBanca(banca: Banca | null, bancas: Banca[], apostas: Aposta[]) {
+function calcularSaldoBanca(banca: Banca | null, bancas: Banca[], apostas: Aposta[], transacoes: Transacao[] = []) {
   if (!banca) return 0;
   const defaultBancaId = bancas[0]?.id;
   const bancaBets = apostas.filter(
@@ -40,10 +44,15 @@ function calcularSaldoBanca(banca: Banca | null, bancas: Banca[], apostas: Apost
   const prejuizoReds = bancaBets
     .filter((aposta) => aposta.status === 'Red')
     .reduce((acc, aposta) => acc + aposta.stake, 0);
-  return banca.saldo_inicial + lucroGreens - prejuizoReds;
+
+  const bancaTransacoes = transacoes.filter((t) => t.banca_id === banca.id);
+  const depositos = bancaTransacoes.filter(t => t.tipo === 'deposito').reduce((acc, t) => acc + t.valor, 0);
+  const saques = bancaTransacoes.filter(t => t.tipo === 'saque').reduce((acc, t) => acc + t.valor, 0);
+
+  return banca.saldo_inicial + depositos - saques + lucroGreens - prejuizoReds;
 }
 
-export default function DashboardPage() {
+function DashboardPageContent() {
   const {
     apostas,
     bancas,
@@ -58,27 +67,41 @@ export default function DashboardPage() {
     atualizarBanca,
     excluirBanca,
     setActiveBanca,
+    transacoes,
+    inserirTransacao,
     isMockMode,
   } = useApostas();
 
   const [showForm, setShowForm] = useState(false);
   const [showBancaManager, setShowBancaManager] = useState(false);
+  const [quickTransactionType, setQuickTransactionType] = useState<TipoTransacao | null>(null);
   const [startVoiceImmediately, setStartVoiceImmediately] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [filtros, setFiltros] = useState<FiltrosState>({ busca: '', periodo: 'todos' });
 
+  // Fallback para build/SSR (evitar erro de useSearchParams fora de Suspense, porém Next 13+ lida ok,
+  // mas como estamos num Client Component no root app dir, embrulhar o DashboardPage num Suspense depois seria o ideal.
+  // Como é Client-side rendered safe, usaremos useSearchParams direto)
+  const searchParams = useSearchParams();
+  const currentTab = searchParams.get('tab') || 'visao-geral';
+
   useEffect(() => { fetchApostas(); }, [fetchApostas]);
+
+  const openTransaction = (tipo: TipoTransacao) => {
+    if (!activeBanca) return;
+    setQuickTransactionType(tipo);
+    setShowBancaManager(true);
+  };
+
+  const closeManager = () => {
+    setShowBancaManager(false);
+    setTimeout(() => setQuickTransactionType(null), 300);
+  };
 
   /* balance helper shared with BancaManagerSheet */
   const getBancaBalance = useMemo(() => (banca: Banca) => {
-    const defaultBancaId = bancas[0]?.id;
-    const bets = apostas.filter(
-      (a) => a.banca_id === banca.id || (!a.banca_id && banca.id === defaultBancaId)
-    );
-    const greens = bets.filter((a) => a.status === 'Green').reduce((s, a) => s + a.stake * (a.odd - 1), 0);
-    const reds = bets.filter((a) => a.status === 'Red').reduce((s, a) => s + a.stake, 0);
-    return banca.saldo_inicial + greens - reds;
-  }, [apostas, bancas]);
+    return calcularSaldoBanca(banca, bancas, apostas, transacoes);
+  }, [apostas, bancas, transacoes]);
 
   const apostasDaBanca = useMemo(() => {
     if (!activeBanca) return [];
@@ -91,8 +114,8 @@ export default function DashboardPage() {
   }, [apostas, activeBanca, bancas]);
 
   const activeBancaBalance = useMemo(
-    () => calcularSaldoBanca(activeBanca, bancas, apostas),
-    [activeBanca, bancas, apostas]
+    () => calcularSaldoBanca(activeBanca, bancas, apostas, transacoes),
+    [activeBanca, bancas, apostas, transacoes]
   );
 
   const apostasFiltradas = useMemo(() => {
@@ -109,10 +132,14 @@ export default function DashboardPage() {
   }, [apostasDaBanca, filtros]);
 
   const kpis = useMemo(() => calcularKpis(apostasFiltradas), [apostasFiltradas]);
-  const evolucao = useMemo(
-    () => calcularEvolucaoBanca(apostasFiltradas, activeBanca?.saldo_inicial || 0),
-    [apostasFiltradas, activeBanca]
-  );
+  const evolucao = useMemo(() => {
+    if (!activeBanca) return [];
+    const bancaTransacoes = transacoes.filter((t) => t.banca_id === activeBanca.id);
+    const depositos = bancaTransacoes.filter(t => t.tipo === 'deposito').reduce((acc, t) => acc + t.valor, 0);
+    const saques = bancaTransacoes.filter(t => t.tipo === 'saque').reduce((acc, t) => acc + t.valor, 0);
+    const baseline = activeBanca.saldo_inicial + depositos - saques;
+    return calcularEvolucaoBanca(apostasFiltradas, baseline);
+  }, [apostasFiltradas, activeBanca, transacoes]);
 
   const handleStatusChange = async (id: string, status: ApostaStatus) =>
     await atualizarAposta({ id, status });
@@ -267,16 +294,18 @@ export default function DashboardPage() {
               <div
                 style={{
                   marginTop: '28px',
-                  display: 'grid',
-                  gridTemplateColumns: '1fr 1fr',
-                  gap: '12px',
+                  display: 'flex',
+                  gap: '10px',
+                  flexWrap: 'wrap'
                 }}
               >
                 <button
                   id="btn-nova-aposta"
                   onClick={openManualForm}
                   style={{
-                    height: '56px',
+                    flex: 1,
+                    minWidth: '130px',
+                    height: '52px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -299,23 +328,54 @@ export default function DashboardPage() {
                   id="btn-voz"
                   onClick={openVoiceForm}
                   style={{
-                    height: '56px',
+                    width: '52px',
+                    height: '52px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '8px',
-                    borderRadius: '18px',
+                    borderRadius: '16px',
                     background: 'rgba(0,255,136,0.08)',
                     color: '#00FF88',
-                    fontSize: '14px',
-                    fontWeight: 600,
                     border: 'none',
                     cursor: 'pointer',
                     transition: 'opacity 0.15s',
                   }}
                 >
-                  <Mic size={17} strokeWidth={1.8} />
-                  Voz
+                  <Mic size={18} strokeWidth={1.8} />
+                </button>
+                <button
+                  onClick={() => openTransaction('deposito')}
+                  style={{
+                    width: '52px',
+                    height: '52px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: '16px',
+                    background: 'rgba(0,255,136,0.15)',
+                    color: '#00FF88',
+                    border: 'none',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <ArrowUpRight size={18} strokeWidth={2} />
+                </button>
+                <button
+                  onClick={() => openTransaction('saque')}
+                  style={{
+                    width: '52px',
+                    height: '52px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: '16px',
+                    background: 'rgba(255,77,109,0.15)',
+                    color: '#ff9aae',
+                    border: 'none',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <ArrowDownRight size={18} strokeWidth={2} />
                 </button>
               </div>
             </div>
@@ -354,8 +414,25 @@ export default function DashboardPage() {
             </div>
             <div className="flex items-center gap-3">
               <button
+                onClick={() => openTransaction('saque')}
+                className="inline-flex h-11 items-center gap-2 rounded-2xl px-5 text-sm font-semibold text-[#ff9aae] transition hover:opacity-80 flex-shrink-0"
+                style={{ background: 'rgba(255,77,109,0.1)' }}
+              >
+                <ArrowDownRight size={16} strokeWidth={2} />
+                Sacar
+              </button>
+              <button
+                onClick={() => openTransaction('deposito')}
+                className="inline-flex h-11 items-center gap-2 rounded-2xl px-5 text-sm font-semibold text-[#00FF88] transition hover:opacity-80 flex-shrink-0"
+                style={{ background: 'rgba(0,255,136,0.1)' }}
+              >
+                <ArrowUpRight size={16} strokeWidth={2} />
+                Depositar
+              </button>
+              <div style={{ width: '1px', height: '24px', background: 'rgba(255,255,255,0.1)', margin: '0 4px' }} />
+              <button
                 onClick={openVoiceForm}
-                className="inline-flex h-11 items-center gap-2 rounded-2xl px-5 text-sm font-semibold text-[#94A3B8] transition hover:text-white"
+                className="inline-flex h-11 items-center gap-2 rounded-2xl px-5 text-sm font-semibold text-[#94A3B8] transition hover:text-white flex-shrink-0"
                 style={{ background: 'rgba(255,255,255,0.04)' }}
               >
                 <Mic size={16} strokeWidth={1.8} />
@@ -363,7 +440,7 @@ export default function DashboardPage() {
               </button>
               <button
                 onClick={openManualForm}
-                className="inline-flex h-11 items-center gap-2 rounded-2xl px-5 text-sm font-bold text-[#050816] transition hover:opacity-90"
+                className="inline-flex h-11 items-center gap-2 rounded-2xl px-5 text-sm font-bold text-[#050816] transition hover:opacity-90 flex-shrink-0"
                 style={{ background: '#00FF88', boxShadow: '0 8px 24px rgba(0,255,136,0.2)' }}
               >
                 <Plus size={17} strokeWidth={2.5} />
@@ -390,7 +467,7 @@ export default function DashboardPage() {
               >
                 {bancas.map((banca) => {
                   const isActive = activeBanca?.id === banca.id;
-                  const saldo = calcularSaldoBanca(banca, bancas, apostas);
+                  const saldo = calcularSaldoBanca(banca, bancas, apostas, transacoes);
                   return (
                     <button
                       key={banca.id}
@@ -434,7 +511,16 @@ export default function DashboardPage() {
             </section>
           )}
 
-          {/* ══ ALERTS ══ */}
+          {currentTab === 'relatorios' ? (
+            <RelatoriosTab
+              activeBanca={activeBanca}
+              apostas={apostas}
+              transacoes={transacoes}
+              bancas={bancas}
+            />
+          ) : (
+            <>
+              {/* ══ ALERTS ══ */}
           {isMockMode && (
             <div
               style={{
@@ -538,14 +624,16 @@ export default function DashboardPage() {
 
             <Filters filtros={filtros} onChange={setFiltros} />
 
-            <div style={{ marginTop: '20px' }}>
-              <ApostasTable
-                apostas={apostasFiltradas}
-                onStatusChange={handleStatusChange}
-                onDelete={excluirAposta}
-              />
-            </div>
-          </section>
+              <div style={{ marginTop: '20px' }}>
+                <ApostasTable
+                  apostas={apostasFiltradas}
+                  onStatusChange={handleStatusChange}
+                  onDelete={excluirAposta}
+                />
+              </div>
+            </section>
+            </>
+          )}
 
         </main>
       </div>
@@ -572,10 +660,21 @@ export default function DashboardPage() {
           onAddBanca={inserirBanca}
           onUpdateBanca={atualizarBanca}
           onDeleteBanca={excluirBanca}
-          onClose={() => setShowBancaManager(false)}
+          onClose={closeManager}
+          onAddTransaction={inserirTransacao}
+          initialView={quickTransactionType ? 'transaction' : 'list'}
+          initialTransactionType={quickTransactionType || 'deposito'}
+          initialTargetBancaId={activeBanca?.id}
         />
       )}
     </div>
+  );
+}
 
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#050816] w-full flex items-center justify-center text-[#00FF88]">Carregando...</div>}>
+      <DashboardPageContent />
+    </Suspense>
   );
 }

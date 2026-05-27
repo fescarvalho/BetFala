@@ -7,6 +7,7 @@ import {
   Loader2,
   Mic,
   MicOff,
+  ImagePlus,
   X,
 } from 'lucide-react';
 import { ApostaInsert, Banca } from '@/types/aposta';
@@ -185,7 +186,9 @@ export default function NovaApostaForm({
   const [touched, setTouched] = useState<Partial<Record<keyof FormValues, boolean>>>({});
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
   const sheetRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const errors = useMemo(() => validate(values), [values]);
   const fieldError = (f: keyof FormValues) => (touched[f] ? errors[f as keyof FormErrors] : undefined);
@@ -237,6 +240,60 @@ export default function NovaApostaForm({
     window.addEventListener('keydown', fn);
     return () => window.removeEventListener('keydown', fn);
   }, [onClose]);
+
+  /* Imagem (Print) handler */
+  const handleImageUpload = async (file: File) => {
+    setIsAnalyzingImage(true);
+    try {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const base64Image = e.target?.result as string;
+        const res = await fetch('/api/parse-print', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image: base64Image }),
+        });
+        
+        const data = await res.json();
+        if (!res.ok) {
+          alert(data.error || 'Erro ao processar imagem');
+          setIsAnalyzingImage(false);
+          return;
+        }
+        
+        setValues((prev) => ({
+          ...prev,
+          times_apostados: data.times_apostados || prev.times_apostados,
+          detalhe_aposta: data.detalhe_aposta || prev.detalhe_aposta,
+          odd: data.odd ? String(data.odd) : prev.odd,
+          stake: data.stake ? String(data.stake) : prev.stake,
+        }));
+        setTouched({ times_apostados: true, detalhe_aposta: true, odd: true, stake: true });
+        setIsAnalyzingImage(false);
+      };
+      reader.readAsDataURL(file);
+    } catch (err) {
+      console.error(err);
+      alert('Erro ao ler a imagem');
+      setIsAnalyzingImage(false);
+    }
+  };
+
+  useEffect(() => {
+    const handlePaste = (e: ClipboardEvent) => {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf('image') !== -1) {
+          const file = items[i].getAsFile();
+          if (file) handleImageUpload(file);
+          break;
+        }
+      }
+    };
+    window.addEventListener('paste', handlePaste);
+    return () => window.removeEventListener('paste', handlePaste);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -334,6 +391,40 @@ export default function NovaApostaForm({
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {/* Image Upload toggle */}
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              title="Ler aposta por print/imagem"
+              disabled={isAnalyzingImage}
+              style={{
+                height: '40px',
+                width: '40px',
+                display: 'grid',
+                placeItems: 'center',
+                borderRadius: '14px',
+                background: 'rgba(255,255,255,0.06)',
+                color: isAnalyzingImage ? '#00FF88' : '#94A3B8',
+                border: 'none',
+                cursor: isAnalyzingImage ? 'wait' : 'pointer',
+                transition: 'all 0.15s',
+                flexShrink: 0,
+              }}
+              className={isAnalyzingImage ? 'listening-pulse' : ''}
+            >
+              {isAnalyzingImage ? <Loader2 size={17} className="animate-spin" /> : <ImagePlus size={17} strokeWidth={1.8} />}
+            </button>
+            <input
+              type="file"
+              accept="image/*"
+              ref={fileInputRef}
+              style={{ display: 'none' }}
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) handleImageUpload(file);
+              }}
+            />
+
             {/* Voice toggle — compact */}
             {isSupported && (
               <button
@@ -381,8 +472,8 @@ export default function NovaApostaForm({
           </div>
         </div>
 
-        {/* Listening indicator bar */}
-        {isListening && (
+        {/* Listening / Analyzing indicator bar */}
+        {(isListening || isAnalyzingImage) && (
           <div
             style={{
               marginLeft: '24px',
@@ -408,7 +499,7 @@ export default function NovaApostaForm({
               }}
             />
             <span style={{ fontSize: '13px', fontWeight: 500, color: '#00FF88' }}>
-              Escutando... diga o evento e o mercado
+              {isAnalyzingImage ? 'Lendo o bilhete com IA...' : 'Escutando... diga o evento e o mercado'}
             </span>
           </div>
         )}

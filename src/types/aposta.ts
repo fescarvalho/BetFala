@@ -12,6 +12,17 @@ export interface Banca {
   data_criacao: string;
 }
 
+export type TipoTransacao = 'deposito' | 'saque';
+
+export interface Transacao {
+  id: string;
+  user_id: string;
+  banca_id: string;
+  tipo: TipoTransacao;
+  valor: number;
+  data_criacao: string;
+}
+
 export interface Aposta {
   id: string;
   user_id: string;

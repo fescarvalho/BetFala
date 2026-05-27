@@ -8,9 +8,11 @@ import {
   Plus,
   Trash2,
   WalletCards,
+  ArrowUpRight,
+  ArrowDownRight,
   X,
 } from 'lucide-react';
-import { Banca } from '@/types/aposta';
+import { Banca, TipoTransacao } from '@/types/aposta';
 import { formatarMoeda } from '@/lib/calculations';
 
 /* ─── Types ──────────────────────────────────────────────── */
@@ -22,10 +24,14 @@ interface BancaManagerSheetProps {
   onAddBanca: (nome: string, saldo: number) => Promise<boolean>;
   onUpdateBanca: (id: string, nome: string, saldo: number) => Promise<boolean>;
   onDeleteBanca: (id: string) => Promise<boolean>;
+  onAddTransaction: (banca_id: string, tipo: TipoTransacao, valor: number) => Promise<boolean>;
   onClose: () => void;
+  initialView?: View;
+  initialTransactionType?: TipoTransacao;
+  initialTargetBancaId?: string;
 }
 
-type View = 'list' | 'add' | 'edit';
+type View = 'list' | 'add' | 'edit' | 'transaction';
 
 /* ─── Floating-label field (reusable) ───────────────────── */
 function Field({
@@ -127,10 +133,16 @@ export default function BancaManagerSheet({
   onAddBanca,
   onUpdateBanca,
   onDeleteBanca,
+  onAddTransaction,
   onClose,
+  initialView = 'list',
+  initialTransactionType = 'deposito',
+  initialTargetBancaId,
 }: BancaManagerSheetProps) {
-  const [view, setView] = useState<View>('list');
-  const [editTarget, setEditTarget] = useState<Banca | null>(null);
+  const [view, setView] = useState<View>(initialView);
+  const initialTarget = bancas.find(b => b.id === initialTargetBancaId) || null;
+  const [editTarget, setEditTarget] = useState<Banca | null>(initialTarget);
+  const [transactionType, setTransactionType] = useState<TipoTransacao>(initialTransactionType);
 
   // Form state (shared add/edit)
   const [nome, setNome] = useState('');
@@ -161,13 +173,24 @@ export default function BancaManagerSheet({
     setView('edit');
   };
 
+  /* ── Open Transaction ── */
+  const openTransaction = (b: Banca, tipo: TipoTransacao) => {
+    setSaldo('');
+    setFormError('');
+    setSuccess(false);
+    setEditTarget(b);
+    setTransactionType(tipo);
+    setView('transaction');
+  };
+
   /* ── Submit ── */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError('');
-    if (!nome.trim()) { setFormError('Informe o nome da banca.'); return; }
+    const isTransaction = view === 'transaction';
+    if (!isTransaction && !nome.trim()) { setFormError('Informe o nome da banca.'); return; }
     const s = parseFloat(saldo || '0');
-    if (isNaN(s) || s < 0) { setFormError('Saldo inválido.'); return; }
+    if (isNaN(s) || s <= 0) { setFormError('Valor inválido.'); return; }
 
     setSaving(true);
     let ok = false;
@@ -175,6 +198,8 @@ export default function BancaManagerSheet({
       ok = await onAddBanca(nome.trim(), s);
     } else if (view === 'edit' && editTarget) {
       ok = await onUpdateBanca(editTarget.id, nome.trim(), s);
+    } else if (view === 'transaction' && editTarget) {
+      ok = await onAddTransaction(editTarget.id, transactionType, s);
     }
     setSaving(false);
 
@@ -204,7 +229,8 @@ export default function BancaManagerSheet({
 
   const isAdd = view === 'add';
   const isEdit = view === 'edit';
-  const isForm = isAdd || isEdit;
+  const isTransaction = view === 'transaction';
+  const isForm = isAdd || isEdit || isTransaction;
 
   return (
     /* Backdrop */
@@ -249,11 +275,12 @@ export default function BancaManagerSheet({
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px 20px', flexShrink: 0 }}>
           <div>
             <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#FFFFFF', lineHeight: '1.2' }}>
-              {isAdd ? 'Nova banca' : isEdit ? 'Editar banca' : 'Suas bancas'}
+              {isAdd ? 'Nova banca' : isEdit ? 'Editar banca' : isTransaction ? (transactionType === 'deposito' ? 'Depositar na Banca' : 'Sacar da Banca') : 'Suas bancas'}
             </h2>
             <p style={{ fontSize: '13px', fontWeight: 500, color: '#94A3B8', marginTop: '3px', lineHeight: '1' }}>
               {isAdd ? 'Configure o nome e saldo inicial'
                 : isEdit ? `Editando: ${editTarget?.nome}`
+                : isTransaction ? `Banca: ${editTarget?.nome}`
                 : `${bancas.length} banca${bancas.length !== 1 ? 's' : ''} cadastrada${bancas.length !== 1 ? 's' : ''}`}
             </p>
           </div>
@@ -386,6 +413,28 @@ export default function BancaManagerSheet({
                     {/* Actions */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
                       <button
+                        onClick={(e) => { e.stopPropagation(); openTransaction(b, 'deposito'); }}
+                        title="Depositar"
+                        style={{
+                          height: '36px', width: '36px', display: 'grid', placeItems: 'center',
+                          borderRadius: '12px', background: 'rgba(0,255,136,0.1)', color: '#00FF88',
+                          border: 'none', cursor: 'pointer', transition: 'all 0.12s'
+                        }}
+                      >
+                        <ArrowUpRight size={16} strokeWidth={2} />
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); openTransaction(b, 'saque'); }}
+                        title="Sacar"
+                        style={{
+                          height: '36px', width: '36px', display: 'grid', placeItems: 'center',
+                          borderRadius: '12px', background: 'rgba(255,77,109,0.1)', color: '#ff9aae',
+                          border: 'none', cursor: 'pointer', transition: 'all 0.12s'
+                        }}
+                      >
+                        <ArrowDownRight size={16} strokeWidth={2} />
+                      </button>
+                      <button
                         onClick={() => openEdit(b)}
                         title="Editar"
                         style={{
@@ -449,29 +498,31 @@ export default function BancaManagerSheet({
           </div>
         )}
 
-        {/* ──── FORM VIEW (add / edit) ──── */}
+        {/* ──── FORM VIEW (add / edit / transaction) ──── */}
         {isForm && (
           <form
             onSubmit={handleSubmit}
             noValidate
             style={{ flex: 1, overflowY: 'auto', padding: '0 24px', display: 'flex', flexDirection: 'column', gap: '14px' }}
           >
-            <Field
-              id="banca-nome"
-              label="Nome da banca"
-              placeholder="Ex: Banca Principal, Betano…"
-              value={nome}
-              onChange={setNome}
-              error={formError && !nome.trim() ? formError : undefined}
-            />
+            {(isAdd || isEdit) && (
+              <Field
+                id="banca-nome"
+                label="Nome da banca"
+                placeholder="Ex: Banca Principal, Betano…"
+                value={nome}
+                onChange={setNome}
+                error={formError && !nome.trim() ? formError : undefined}
+              />
+            )}
             <Field
               id="banca-saldo"
-              label="Saldo inicial (R$)"
+              label={isTransaction ? `Valor do ${transactionType}` : "Saldo inicial (R$)"}
               type="number"
-              placeholder="1000"
+              placeholder={isTransaction ? "100" : "1000"}
               value={saldo}
               onChange={setSaldo}
-              error={formError && nome.trim() ? formError : undefined}
+              error={formError && (isTransaction || nome.trim()) ? formError : undefined}
             />
 
             {/* Quick saldo chips */}
@@ -576,6 +627,8 @@ export default function BancaManagerSheet({
                   <><CheckCircle2 size={20} strokeWidth={2} /> Salvo!</>
                 ) : isAdd ? (
                   'Criar banca'
+                ) : isTransaction ? (
+                  `Confirmar ${transactionType}`
                 ) : (
                   'Salvar alterações'
                 )}
