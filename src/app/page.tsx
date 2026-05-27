@@ -134,7 +134,7 @@ export default function DashboardPage() {
         bets={apostas}
       />
 
-      <div style={{ minHeight: '100svh' }} className="md:pl-[240px]">
+      <div style={{ minHeight: '100svh' }} className="w-full">
 
         {/* ── Sticky Header (mobile) ── */}
         <Header
@@ -154,10 +154,9 @@ export default function DashboardPage() {
             gap: '24px',
             paddingLeft: '24px',
             paddingRight: '24px',
-            paddingTop: '20px',
+            paddingTop: '24px',
             paddingBottom: '140px',
           }}
-          className="md:!px-8 md:!pt-8 md:!pb-12 md:!gap-7"
         >
 
           {/* ══ HERO CARD (mobile) ══ */}
@@ -324,12 +323,34 @@ export default function DashboardPage() {
 
           {/* ══ DESKTOP PAGE HEADER ══ */}
           <section className="hidden md:flex items-end justify-between gap-6">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#00FF88]">BetFala</p>
-              <h1 className="mt-2 text-3xl font-black tracking-tight text-white">Visão Geral</h1>
-              <p className="mt-1 text-sm font-medium text-[#94A3B8]">
-                Acompanhe banca, desempenho e histórico.
-              </p>
+            <div className="flex items-center gap-5">
+              <button
+                onClick={() => setIsMobileMenuOpen(true)}
+                className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/[0.04] text-[#94A3B8] transition hover:bg-white/[0.08] hover:text-white"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="22"
+                  height="22"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <line x1="4" x2="20" y1="12" y2="12" />
+                  <line x1="4" x2="20" y1="6" y2="6" />
+                  <line x1="4" x2="20" y1="18" y2="18" />
+                </svg>
+              </button>
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#00FF88]">BetFala</p>
+                <h1 className="mt-2 text-3xl font-black tracking-tight text-white">Visão Geral</h1>
+                <p className="mt-1 text-sm font-medium text-[#94A3B8]">
+                  Acompanhe banca, desempenho e histórico.
+                </p>
+              </div>
             </div>
             <div className="flex items-center gap-3">
               <button

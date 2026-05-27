@@ -78,13 +78,13 @@ export default function Sidebar({
       {/* Overlay Mobile */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 bg-black/75 z-[55] md:hidden backdrop-blur-md transition-opacity"
+          className="fixed inset-0 bg-black/75 z-[55] backdrop-blur-md transition-opacity"
           onClick={onClose}
         />
       )}
 
       <aside
-        className={`fixed top-0 left-0 bottom-0 z-[60] w-[260px] bg-[#050816] border-r border-white/[0.03] flex flex-col transition-transform duration-300 md:translate-x-0 ${
+        className={`fixed top-0 left-0 bottom-0 z-[60] w-[260px] bg-[#050816] border-r border-white/[0.03] flex flex-col transition-transform duration-300 ${
           mobileOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
