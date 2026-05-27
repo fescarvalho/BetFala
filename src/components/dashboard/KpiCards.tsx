@@ -109,11 +109,13 @@ export default function KpiCards({ kpis }: KpiCardsProps) {
             <p
               className="font-mono font-bold"
               style={{
-                fontSize: 'clamp(20px, 5.5vw, 26px)',
+                fontSize: 'clamp(16px, 4.5vw, 26px)',
                 color: card.valueColor,
                 lineHeight: '1.15',
                 marginBottom: '6px',
-                wordBreak: 'break-all',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
               }}
             >
               {card.value}
