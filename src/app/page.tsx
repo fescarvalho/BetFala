@@ -225,11 +225,10 @@ export default function DashboardPage() {
                   <button
                     key={banca.id}
                     onClick={() => setActiveBanca(banca.id)}
-                    className={`min-w-[176px] rounded-2xl border p-3.5 text-left transition ${
-                      isActive
+                    className={`min-w-[176px] rounded-2xl border p-3.5 text-left transition ${isActive
                         ? 'border-[#00ff88]/30 bg-[#00ff88]/10'
                         : 'border-white/[0.06] bg-white/[0.025]'
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center gap-2">
                       <WalletCards size={15} className={isActive ? 'text-[#60ff99]' : 'text-[#7f8ca3]'} />
