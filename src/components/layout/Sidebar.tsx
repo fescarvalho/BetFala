@@ -12,11 +12,9 @@ import {
   HelpCircle,
   LogOut,
   Landmark,
-  Plus,
-  X,
-  Loader2
+  Plus
 } from 'lucide-react';
-import { Banca, Aposta } from '@/types/aposta';
+import { Banca, Aposta, Transacao } from '@/types/aposta';
 import { formatarMoeda } from '@/lib/calculations';
 
 const navItems = [
@@ -37,6 +35,7 @@ interface SidebarProps {
   onSelectBanca: (id: string) => void;
   onManageBancas?: () => void;
   bets: Aposta[];
+  transacoes?: Transacao[];
 }
 
 export default function Sidebar({
@@ -49,6 +48,7 @@ export default function Sidebar({
   onSelectBanca,
   onManageBancas,
   bets,
+  transacoes = [],
 }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
@@ -70,9 +70,14 @@ export default function Sidebar({
     const lucroGreens = greens.reduce((acc, a) => acc + a.stake * (a.odd - 1), 0);
     const prejuizoReds = reds.reduce((acc, a) => acc + a.stake, 0);
     const stakeAbertas = abertas.reduce((acc, a) => acc + a.stake, 0);
+
+    const bancaTransacoes = transacoes.filter((t) => t.banca_id === banca.id);
+    const depositos = bancaTransacoes.filter(t => t.tipo === 'deposito').reduce((acc, t) => acc + t.valor, 0);
+    const saques = bancaTransacoes.filter(t => t.tipo === 'saque').reduce((acc, t) => acc + t.valor, 0);
+
     const profitLoss = lucroGreens - prejuizoReds - stakeAbertas;
 
-    return banca.saldo_inicial + profitLoss;
+    return banca.saldo_inicial + depositos - saques + profitLoss;
   };
 
   return (
@@ -105,85 +110,88 @@ export default function Sidebar({
         </div>
 
         {/* Connection/Banca Switcher Selector */}
-        <div className="px-8 relative" style={{ padding: "10px" }}>
-          <button
-            onClick={() => setShowDropdown(!showDropdown)}
-            className="w-full flex items-center justify-between bg-[#0F172A] border border-white/[0.05] rounded-[24px] p-4 text-left transition-all active:scale-[0.98] cursor-pointer group shadow-[0_4px_20px_rgba(0,0,0,0.18)]"
-          >
-            <div className="flex items-center gap-3.5 min-w-0">
-              <div className="w-10 h-10 rounded-[14px] bg-[rgba(0,255,136,0.1)] text-[#00FF88] flex items-center justify-center shrink-0">
-                <Landmark size={18} strokeWidth={2} />
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-[0.08em] leading-none mb-1.5 truncate">
-                  Banca Ativa
-                </div>
-                <div className="text-[14px] font-bold text-white truncate">
-                  {activeBanca ? activeBanca.nome : 'Sem Banca'}
-                </div>
-              </div>
-            </div>
-            {/* Custom SVG Down Arrow */}
-            <svg
-              className="text-[#94A3B8] group-hover:text-white transition-transform duration-200 shrink-0"
-              style={{ transform: showDropdown ? 'rotate(180deg)' : 'rotate(0)' }}
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+        <div className="px-6 w-full" style={{ padding: "10px", position: "relative", zIndex: 100 }}>
+          <div className="relative z-[100] w-full">
+            <button
+              onClick={() => setShowDropdown(!showDropdown)}
+              className="w-full flex items-center justify-between bg-[#0F172A] border border-white/[0.05] rounded-[24px] p-5 text-left transition-all active:scale-[0.98] cursor-pointer group shadow-[0_4px_20px_rgba(0,0,0,0.18)]"
             >
-              <path d="m6 9 6 6 6-6" />
-            </svg>
-          </button>
-
-          {/* Switcher Dropdown */}
-          {showDropdown && (
-            <div className="absolute left-8 right-8 top-full mt-3 bg-[#0F172A] border border-white/[0.08] rounded-[20px] shadow-2xl z-50 overflow-hidden animate-fade-in flex flex-col max-h-[260px]" >
-              <div className="overflow-y-auto p-2 flex-1 flex flex-col gap-1">
-                {bancas.length === 0 ? (
-                  <div className="px-4 py-3 text-xs text-[#94A3B8] text-center">Nenhuma banca cadastrada</div>
-                ) : (
-                  bancas.map((b) => {
-                    const isActive = activeBanca?.id === b.id;
-                    return (
-                      <button
-                        key={b.id}
-                        onClick={() => {
-                          onSelectBanca(b.id);
-                          setShowDropdown(false);
-                        }}
-                        className={`w-full px-3 py-3 rounded-[14px] flex flex-col text-left transition-colors cursor-pointer ${isActive
-                          ? 'bg-[rgba(0,255,136,0.08)]'
-                          : 'hover:bg-white/[0.04]'
-                          }`}
-                      >
-                        <div className={`font-semibold text-[13px] truncate w-full ${isActive ? 'text-[#00FF88]' : 'text-white'}`}>
-                          {b.nome}
-                        </div>
-                        <div className={`font-mono text-[11px] font-semibold mt-0.5 ${isActive ? 'text-[#00CC70]' : 'text-[#94A3B8]'}`}>
-                          {formatarMoeda(getBancaBalance(b))}
-                        </div>
-                      </button>
-                    );
-                  })
-                )}
+              <div className="flex items-center gap-3.5 min-w-0 w-full">
+                <div className="w-10 h-10 rounded-[14px] bg-[rgba(0,255,136,0.1)] text-[#00FF88] flex items-center justify-center shrink-0">
+                  <Landmark size={18} strokeWidth={2} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-[0.08em] leading-none mb-1.5 break-words whitespace-normal">
+                    Banca Ativa
+                  </div>
+                  <div className="text-[14px] font-bold text-white break-words whitespace-normal leading-tight pr-2">
+                    {activeBanca ? activeBanca.nome : 'Sem Banca'}
+                  </div>
+                </div>
               </div>
-              <button
-                onClick={() => {
-                  setShowDropdown(false);
-                  onManageBancas?.();
-                }}
-                className="w-full py-4 bg-white/[0.02] hover:bg-white/[0.05] text-[#94A3B8] hover:text-white text-[12px] font-bold border-t border-white/[0.06] flex items-center justify-center gap-2 transition-colors cursor-pointer shrink-0"
+              {/* Custom SVG Down Arrow */}
+              <svg
+                className="text-[#94A3B8] group-hover:text-white transition-transform duration-200 shrink-0"
+                style={{ transform: showDropdown ? 'rotate(180deg)' : 'rotate(0)' }}
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
               >
-                <Settings size={14} strokeWidth={2} />
-                Gerenciar Bancas
-              </button>
-            </div>
-          )}
+                <path d="m6 9 6 6 6-6" />
+              </svg>
+            </button>
+
+            {/* Switcher Dropdown */}
+            {showDropdown && (
+              <div className="absolute left-0 right-0 top-full mt-3 bg-[#0F172A] border border-white/[0.12] rounded-[24px] shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-[999] overflow-hidden animate-fade-in flex flex-col max-h-[320px]" >
+                <div className="overflow-y-auto flex-1 flex flex-col gap-2" style={{ padding: '8px' }}>
+                  {bancas.length === 0 ? (
+                    <div className="py-4 text-xs text-[#94A3B8] text-center" style={{ paddingLeft: '16px', paddingRight: '16px' }}>Nenhuma banca cadastrada</div>
+                  ) : (
+                    bancas.map((b) => {
+                      const isActive = activeBanca?.id === b.id;
+                      return (
+                        <button
+                          key={b.id}
+                          onClick={() => {
+                            onSelectBanca(b.id);
+                            setShowDropdown(false);
+                          }}
+                          className={`w-full flex flex-col text-left transition-all cursor-pointer ${isActive
+                            ? 'bg-[rgba(0,255,136,0.08)] border border-[rgba(0,255,136,0.2)]'
+                            : 'hover:bg-white/[0.04] border border-transparent'
+                            }`}
+                          style={{ padding: '16px 20px', borderRadius: '16px' }}
+                        >
+                          <div className={`font-semibold text-[16px] break-words whitespace-normal leading-tight ${isActive ? 'text-[#00FF88]' : 'text-white'}`}>
+                            {b.nome}
+                          </div>
+                          <div className={`font-mono text-[14px] font-semibold mt-1.5 ${isActive ? 'text-[#00CC70]' : 'text-[#94A3B8]'}`}>
+                            {formatarMoeda(getBancaBalance(b))}
+                          </div>
+                        </button>
+                      );
+                    })
+                  )}
+                </div>
+                <button
+                  onClick={() => {
+                    setShowDropdown(false);
+                    onManageBancas?.();
+                  }}
+                  className="w-full py-4 bg-white/[0.02] hover:bg-white/[0.06] text-[#94A3B8] hover:text-white text-[13px] font-bold border-t border-white/[0.08] flex items-center justify-center gap-2 transition-colors cursor-pointer shrink-0"
+                >
+                  <Settings size={15} strokeWidth={2} />
+                  Gerenciar Bancas
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Separator Line */}

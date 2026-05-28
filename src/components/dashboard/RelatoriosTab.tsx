@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { ArrowDownRight, ArrowUpRight, Search, Activity, WalletCards } from 'lucide-react';
+import { ArrowDownRight, ArrowUpRight, Activity, WalletCards } from 'lucide-react';
 import { Banca, Aposta, Transacao } from '@/types/aposta';
 import { formatarMoeda } from '@/lib/calculations';
 

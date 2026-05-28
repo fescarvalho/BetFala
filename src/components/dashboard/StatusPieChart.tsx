@@ -52,15 +52,30 @@ export default function StatusPieChart({ kpis }: StatusPieChartProps) {
   const winRate = totalResolvidas > 0 ? Math.round((kpis.greens / totalResolvidas) * 100) : 0;
 
   return (
-    <div className="bg-[#11131b] border border-white/[0.06] rounded-2xl relative overflow-hidden transition-all duration-300 hover:border-[#00FF99]/20 p-4 md:p-6 flex flex-col">
+    <div
+      style={{
+        background: '#0F172A',
+        borderRadius: '28px',
+        padding: '26px 24px',
+        minHeight: '260px',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.18)',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
       {/* Header do card */}
-      <div className="mb-3 md:mb-6">
-        <h3 className="text-[11px] md:text-sm font-bold uppercase tracking-wider text-white">
-          Distribuição de Status
-        </h3>
-        <p className="hidden md:block text-xs text-[#8A94A6] mt-1">
-          Proporção e taxa de assertividade
-        </p>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: '20px',
+          flexShrink: 0,
+        }}
+      >
+        <h2 style={{ fontSize: '15px', fontWeight: 600, color: '#FFFFFF', lineHeight: '1' }}>
+          Distribuição de status
+        </h2>
       </div>
 
       {total > 0 ? (

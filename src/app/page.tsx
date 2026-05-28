@@ -191,6 +191,7 @@ function DashboardPageContent() {
         onSelectBanca={setActiveBanca}
         onManageBancas={() => setShowBancaManager(true)}
         bets={apostas}
+        transacoes={transacoes}
       />
 
       <div style={{ minHeight: '100svh' }} className="w-full">

@@ -62,17 +62,18 @@ Retorne apenas o JSON. Não adicione nenhum texto antes ou depois.`;
     let parsedData;
     try {
       parsedData = JSON.parse(cleanedText);
-    } catch (e) {
+    } catch {
       console.error('Failed to parse Gemini output:', cleanedText);
       return NextResponse.json({ error: 'Erro ao interpretar a resposta da IA.' }, { status: 500 });
     }
 
     return NextResponse.json(parsedData);
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error processing image:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Erro interno ao processar a imagem.';
     return NextResponse.json(
-      { error: error.message || 'Erro interno ao processar a imagem.' },
+      { error: errorMessage },
       { status: 500 }
     );
   }
