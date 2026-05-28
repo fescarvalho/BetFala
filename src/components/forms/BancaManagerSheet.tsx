@@ -356,8 +356,27 @@ export default function BancaManagerSheet({
                       gap: '14px',
                       transition: 'all 0.15s',
                       opacity: isDeleting ? 0.4 : 1,
+                      position: 'relative',
+                      overflow: 'hidden',
                     }}
                   >
+                    {isActive && (
+                      <div style={{
+                        position: 'absolute',
+                        top: 0,
+                        right: 0,
+                        background: 'rgba(0,255,136,0.15)',
+                        color: '#00FF88',
+                        fontSize: '9px',
+                        fontWeight: 800,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.08em',
+                        padding: '4px 12px',
+                        borderBottomLeftRadius: '12px',
+                      }}>
+                        Ativa
+                      </div>
+                    )}
                     {/* Icon */}
                     <div
                       style={{
@@ -385,23 +404,20 @@ export default function BancaManagerSheet({
                         cursor: 'pointer',
                         padding: 0,
                         minWidth: 0,
+                        display: 'block',
+                        width: '100%',
                       }}
                     >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                        <span style={{ fontSize: '14px', fontWeight: 600, color: '#FFFFFF', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '160px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '4px', width: '100%' }}>
+                        <span style={{ fontSize: '14px', fontWeight: 600, color: '#FFFFFF', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1, minWidth: 0, paddingRight: '4px' }}>
                           {b.nome}
                         </span>
-                        {isActive && (
-                          <span style={{ fontSize: '9px', fontWeight: 700, color: '#00FF88', textTransform: 'uppercase', letterSpacing: '0.08em', background: 'rgba(0,255,136,0.12)', padding: '2px 8px', borderRadius: '10px', flexShrink: 0 }}>
-                            Ativa
-                          </span>
-                        )}
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                        <span style={{ fontFamily: 'monospace', fontSize: '16px', fontWeight: 700, color: '#FFFFFF' }}>
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', flexWrap: 'wrap' }}>
+                        <span style={{ fontFamily: 'monospace', fontSize: '16px', fontWeight: 700, color: '#FFFFFF', whiteSpace: 'nowrap' }}>
                           {formatarMoeda(balance)}
                         </span>
-                        <span style={{ fontSize: '11px', fontWeight: 500, color: profit >= 0 ? '#00FF88' : '#ff9aae' }}>
+                        <span style={{ fontSize: '11px', fontWeight: 500, color: profit >= 0 ? '#00FF88' : '#ff9aae', whiteSpace: 'nowrap' }}>
                           {profit >= 0 ? '+' : ''}{formatarMoeda(profit)}
                         </span>
                       </div>
@@ -411,7 +427,7 @@ export default function BancaManagerSheet({
                     </button>
 
                     {/* Actions */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
                       <button
                         onClick={(e) => { e.stopPropagation(); openTransaction(b, 'deposito'); }}
                         title="Depositar"
