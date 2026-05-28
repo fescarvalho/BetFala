@@ -227,20 +227,25 @@ export default function NovaApostaForm({
     setTouched((c) => ({ ...c, [field]: true }));
 
   /* Retorno automático */
-  const retorno = useMemo(() => {
+  const { retorno, lucroReal, valorBonus } = useMemo(() => {
     const odd = parseFloat(values.odd);
     const stake = parseFloat(values.stake);
     if (!isNaN(odd) && !isNaN(stake) && odd >= 1.01 && stake > 0) {
-      let calcRetorno = stake * odd;
+      const calcRetornoBase = stake * odd;
+      let calcBonus = 0;
       if (values.bonus_percent) {
         const bonus = parseFloat(values.bonus_percent);
         if (!isNaN(bonus) && bonus > 0) {
-          calcRetorno += calcRetorno * (bonus / 100);
+          calcBonus = calcRetornoBase * (bonus / 100);
         }
       }
-      return calcRetorno;
+      return { 
+        retorno: calcRetornoBase + calcBonus, 
+        lucroReal: calcRetornoBase - stake,
+        valorBonus: calcBonus 
+      };
     }
-    return null;
+    return { retorno: null, lucroReal: null, valorBonus: null };
   }, [values.odd, values.stake, values.bonus_percent]);
 
   const lucro = retorno !== null ? retorno - parseFloat(values.stake) : null;
@@ -837,7 +842,7 @@ export default function NovaApostaForm({
                 background: 'rgba(0,255,136,0.06)',
                 padding: '16px 18px',
                 display: 'flex',
-                alignItems: 'center',
+                alignItems: 'flex-start',
                 justifyContent: 'space-between',
               }}
             >
@@ -851,11 +856,23 @@ export default function NovaApostaForm({
               </div>
               <div style={{ textAlign: 'right' }}>
                 <p style={{ fontSize: '11px', fontWeight: 600, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.07em', lineHeight: '1', marginBottom: '5px' }}>
-                  Lucro
+                  {valorBonus && valorBonus > 0 ? 'Lucro Total' : 'Lucro'}
                 </p>
                 <p style={{ fontSize: '17px', fontWeight: 700, color: lucro! >= 0 ? '#00FF88' : '#ff9aae', fontFamily: 'monospace', lineHeight: '1' }}>
                   +{formatBRL(lucro!)}
                 </p>
+                {valorBonus !== null && valorBonus > 0 && (
+                  <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '3px' }}>
+                    <p style={{ fontSize: '11px', fontWeight: 500, color: '#94A3B8', display: 'flex', gap: '6px' }}>
+                      <span>Real:</span>
+                      <span style={{ color: '#FFFFFF', fontFamily: 'monospace' }}>{formatBRL(lucroReal!)}</span>
+                    </p>
+                    <p style={{ fontSize: '11px', fontWeight: 500, color: '#94A3B8', display: 'flex', gap: '6px' }}>
+                      <span>Bônus:</span>
+                      <span style={{ color: '#00FF88', fontFamily: 'monospace' }}>+{formatBRL(valorBonus)}</span>
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           )}
