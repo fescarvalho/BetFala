@@ -36,6 +36,7 @@ interface SidebarProps {
   onManageBancas?: () => void;
   bets: Aposta[];
   transacoes?: Transacao[];
+  isDataLoaded?: boolean;
 }
 
 export default function Sidebar({
@@ -49,6 +50,7 @@ export default function Sidebar({
   onManageBancas,
   bets,
   transacoes = [],
+  isDataLoaded = true,
 }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
@@ -172,7 +174,7 @@ export default function Sidebar({
                             {b.nome}
                           </div>
                           <div className={`font-mono text-[14px] font-semibold mt-1.5 ${isActive ? 'text-[#00CC70]' : 'text-[#94A3B8]'}`}>
-                            {formatarMoeda(getBancaBalance(b))}
+                            {isDataLoaded ? formatarMoeda(getBancaBalance(b)) : '...'}
                           </div>
                         </button>
                       );

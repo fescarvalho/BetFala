@@ -8,12 +8,14 @@ interface HeaderProps {
   onMenuToggle?: () => void;
   activeBancaNome?: string;
   activeBancaSaldo?: number;
+  isDataLoaded?: boolean;
 }
 
 export default function Header({
   onMenuToggle,
   activeBancaNome = 'Banca Principal',
   activeBancaSaldo = 0,
+  isDataLoaded = true,
 }: HeaderProps) {
   return (
     <header
@@ -73,7 +75,7 @@ export default function Header({
               lineHeight: '1',
             }}
           >
-            {formatarMoeda(activeBancaSaldo)}
+            {isDataLoaded ? formatarMoeda(activeBancaSaldo) : '...'}
           </p>
         </div>
       </div>

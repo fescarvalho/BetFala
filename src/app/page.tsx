@@ -73,6 +73,7 @@ function DashboardPageContent() {
     transacoes,
     inserirTransacao,
     isMockMode,
+    isDataLoaded,
   } = useApostas();
 
   const [showForm, setShowForm] = useState(false);
@@ -193,6 +194,7 @@ function DashboardPageContent() {
         onManageBancas={() => setShowBancaManager(true)}
         bets={apostas}
         transacoes={transacoes}
+        isDataLoaded={isDataLoaded}
       />
 
       <div style={{ minHeight: '100svh' }} className="w-full">
@@ -203,6 +205,7 @@ function DashboardPageContent() {
           onMenuToggle={() => setIsMobileMenuOpen(true)}
           activeBancaNome={activeBanca?.nome || 'Sem banca'}
           activeBancaSaldo={activeBancaBalance}
+          isDataLoaded={isDataLoaded}
         />
 
         {/* ── Main content ── */}
@@ -303,7 +306,7 @@ function DashboardPageContent() {
                   wordBreak: 'break-all',
                 }}
               >
-                {formatarMoeda(activeBancaBalance)}
+                {isDataLoaded ? formatarMoeda(activeBancaBalance) : '...'}
               </h1>
 
               {/* Weekly badge */}
@@ -545,7 +548,7 @@ function DashboardPageContent() {
                         </span>
                       </div>
                       <p style={{ fontFamily: 'monospace', fontSize: '15px', fontWeight: 700, color: '#00FF88' }}>
-                        {formatarMoeda(saldo)}
+                        {isDataLoaded ? formatarMoeda(saldo) : '...'}
                       </p>
                     </button>
                   );

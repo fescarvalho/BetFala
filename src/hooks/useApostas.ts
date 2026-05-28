@@ -196,12 +196,17 @@ export function useApostas() {
     }
   }, [supabase]);
 
+  const [isDataLoaded, setIsDataLoaded] = useState(USE_MOCK);
+
   // Carregar dados iniciais para o Supabase
   useEffect(() => {
     if (!USE_MOCK) {
-      queueMicrotask(() => {
-        fetchBancas().then(() => { fetchApostas(); fetchTransacoes(); });
-      });
+      setLoading(true);
+      Promise.all([fetchBancas(), fetchApostas(), fetchTransacoes()])
+        .finally(() => {
+          setLoading(false);
+          setIsDataLoaded(true);
+        });
     }
   }, [fetchBancas, fetchApostas, fetchTransacoes]);
 
@@ -521,5 +526,6 @@ export function useApostas() {
     transacoes,
     inserirTransacao,
     isMockMode: USE_MOCK,
+    isDataLoaded,
   };
 }
