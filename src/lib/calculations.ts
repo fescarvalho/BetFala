@@ -50,11 +50,11 @@ export function calcularEvolucaoBanca(
   transacoes: import('@/types/aposta').Transacao[] = [],
   bancaInicial: number = 0
 ): { data: string; banca: number; label: string; timestamp?: number }[] {
-  // Apenas apostas resolvidas
-  const resolvidas = apostas.filter((a) => a.status === 'Green' || a.status === 'Red');
+  // Apostas ativas e resolvidas
+  const ativasEResolvidas = apostas.filter((a) => a.status === 'Green' || a.status === 'Red' || a.status === 'Aberta');
 
   // Cria eventos para apostas
-  const eventos: { tipo: 'aposta' | 'deposito' | 'saque'; valor: number; date: Date; timestamp: number }[] = resolvidas.map(a => {
+  const eventos: { tipo: 'aposta' | 'deposito' | 'saque'; valor: number; date: Date; timestamp: number }[] = ativasEResolvidas.map(a => {
     const valor = a.status === 'Green' ? (a.stake * (a.odd - 1)) : -a.stake;
     const date = new Date(a.data_criacao);
     return { tipo: 'aposta', valor, date, timestamp: date.getTime() };

@@ -44,12 +44,15 @@ function calcularSaldoBanca(banca: Banca | null, bancas: Banca[], apostas: Apost
   const prejuizoReds = bancaBets
     .filter((aposta) => aposta.status === 'Red')
     .reduce((acc, aposta) => acc + aposta.stake, 0);
+  const stakeAbertas = bancaBets
+    .filter((aposta) => aposta.status === 'Aberta')
+    .reduce((acc, aposta) => acc + aposta.stake, 0);
 
   const bancaTransacoes = transacoes.filter((t) => t.banca_id === banca.id);
   const depositos = bancaTransacoes.filter(t => t.tipo === 'deposito').reduce((acc, t) => acc + t.valor, 0);
   const saques = bancaTransacoes.filter(t => t.tipo === 'saque').reduce((acc, t) => acc + t.valor, 0);
 
-  return banca.saldo_inicial + depositos - saques + lucroGreens - prejuizoReds;
+  return banca.saldo_inicial + depositos - saques + lucroGreens - prejuizoReds - stakeAbertas;
 }
 
 function DashboardPageContent() {

@@ -67,6 +67,14 @@ export default function RelatoriosTab({ activeBanca, apostas, transacoes, bancas
           valor: -a.stake,
           isGreen: false,
         });
+      } else if (a.status === 'Aberta') {
+        combined.push({
+          id: a.id,
+          data: a.data_criacao || new Date().toISOString(),
+          tipo: 'aposta',
+          descricao: `Aposta (Aberta): ${a.times_apostados}`,
+          valor: -a.stake,
+        });
       }
     });
 
@@ -118,82 +126,130 @@ export default function RelatoriosTab({ activeBanca, apostas, transacoes, bancas
         </div>
       </div>
 
-      <div className="bg-[#0F172A] border border-white/[0.05] rounded-[24px] overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse min-w-[600px]">
-            <thead>
-              <tr className="border-b border-white/[0.05]">
-                <th className="px-6 py-4 text-xs font-semibold text-[#94A3B8] uppercase tracking-wider">Data</th>
-                <th className="px-6 py-4 text-xs font-semibold text-[#94A3B8] uppercase tracking-wider">Descrição</th>
-                <th className="px-6 py-4 text-xs font-semibold text-[#94A3B8] uppercase tracking-wider text-right">Valor</th>
-                <th className="px-6 py-4 text-xs font-semibold text-[#94A3B8] uppercase tracking-wider text-right">Saldo na Banca</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/[0.02]">
-              {extrato.map((item) => {
-                const isPositive = item.valor >= 0;
-                
-                let icon;
-                if (item.tipo === 'deposito' || item.id === 'initial') {
-                  icon = <ArrowUpRight size={14} className="text-[#00FF88]" strokeWidth={2.5} />;
-                } else if (item.tipo === 'saque') {
-                  icon = <ArrowDownRight size={14} className="text-[#ff9aae]" strokeWidth={2.5} />;
-                } else {
-                  icon = <Activity size={14} className={isPositive ? "text-[#00FF88]" : "text-[#ff9aae]"} strokeWidth={2.5} />;
-                }
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {extrato.map((item) => {
+          const isPositive = item.valor >= 0;
+          
+          let icon;
+          if (item.tipo === 'deposito' || item.id === 'initial') {
+            icon = <ArrowUpRight size={18} strokeWidth={2.5} />;
+          } else if (item.tipo === 'saque') {
+            icon = <ArrowDownRight size={18} strokeWidth={2.5} />;
+          } else {
+            icon = <Activity size={18} strokeWidth={2.5} />;
+          }
 
-                return (
-                  <tr key={item.id} className="hover:bg-white/[0.02] transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-[#94A3B8]">
-                        {new Date(item.data).toLocaleDateString('pt-BR', {
-                          day: '2-digit',
-                          month: '2-digit',
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                          item.tipo === 'deposito' || item.id === 'initial' ? 'bg-[#00FF88]/10' :
-                          item.tipo === 'saque' ? 'bg-[#ff9aae]/10' :
-                          isPositive ? 'bg-[#00FF88]/10' : 'bg-[#ff9aae]/10'
-                        }`}>
-                          {icon}
-                        </div>
-                        <span className="text-sm font-semibold text-white">
-                          {item.descricao}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right">
-                      <span className={`text-sm font-bold font-monospace ${
-                        isPositive ? 'text-[#00FF88]' : 'text-[#ff9aae]'
-                      }`}>
-                        {isPositive ? '+' : ''}{formatarMoeda(item.valor)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right">
-                      <span className="text-sm font-bold text-white font-monospace">
-                        {formatarMoeda(item.saldoApos)}
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })}
-              {extrato.length === 0 && (
-                <tr>
-                  <td colSpan={4} className="px-6 py-12 text-center text-[#94A3B8] text-sm">
-                    Nenhuma movimentação encontrada nesta banca.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+          return (
+            <article
+              key={item.id}
+              style={{
+                background: '#0F172A',
+                borderRadius: '24px',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.18)',
+                overflow: 'hidden',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '14px',
+                padding: '18px 20px',
+                transition: 'background 0.3s ease',
+              }}
+            >
+              {/* Ícone */}
+              <div
+                style={{
+                  height: '40px',
+                  width: '40px',
+                  flexShrink: 0,
+                  display: 'grid',
+                  placeItems: 'center',
+                  borderRadius: '14px',
+                  background: item.tipo === 'deposito' || item.id === 'initial' || isPositive ? 'rgba(0,255,136,0.1)' : 'rgba(255,77,109,0.1)',
+                  color: item.tipo === 'deposito' || item.id === 'initial' || isPositive ? '#00FF88' : '#ff9aae',
+                }}
+              >
+                {icon}
+              </div>
+
+              {/* Informações */}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <span
+                  style={{
+                    display: 'block',
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    color: '#FFFFFF',
+                    lineHeight: '1.3',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    marginBottom: '4px',
+                  }}
+                >
+                  {item.descricao}
+                </span>
+                <span
+                  style={{
+                    display: 'block',
+                    fontSize: '11px',
+                    color: 'rgba(148,163,184,0.55)',
+                    lineHeight: '1',
+                  }}
+                >
+                  {new Date(item.data).toLocaleDateString('pt-BR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
+                </span>
+              </div>
+
+              {/* Valores */}
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'flex-end',
+                  gap: '5px',
+                  flexShrink: 0,
+                }}
+              >
+                <span
+                  style={{
+                    fontFamily: 'monospace',
+                    fontSize: '14px',
+                    fontWeight: 700,
+                    color: isPositive ? '#00FF88' : '#ff9aae',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {isPositive ? '+' : ''}{formatarMoeda(item.valor)}
+                </span>
+                <span
+                  style={{
+                    fontFamily: 'monospace',
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    color: '#94A3B8',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  Saldo: {formatarMoeda(item.saldoApos)}
+                </span>
+              </div>
+            </article>
+          );
+        })}
+        {extrato.length === 0 && (
+          <div
+            className="col-span-1 lg:col-span-2 rounded-[24px] px-6 py-12 text-center"
+            style={{ background: '#0F172A' }}
+          >
+            <p className="text-[15px] font-semibold text-white">Nenhuma movimentação encontrada</p>
+            <p className="mt-2 text-[13px] text-[#94A3B8]">As transações desta banca aparecerão aqui.</p>
+          </div>
+        )}
       </div>
     </section>
   );
