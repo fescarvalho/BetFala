@@ -179,7 +179,7 @@ export default function ApostasTable({ apostas, onStatusChange, onDelete }: Apos
                       <span
                         style={{
                           display: 'block',
-                          fontSize: '14px',
+                          fontSize: '16px',
                           fontWeight: 600,
                           color: '#FFFFFF',
                           lineHeight: '1.3',
@@ -194,7 +194,7 @@ export default function ApostasTable({ apostas, onStatusChange, onDelete }: Apos
                       <span
                         style={{
                           display: 'block',
-                          fontSize: '12px',
+                          fontSize: '13px',
                           color: '#94A3B8',
                           lineHeight: '1.4',
                           overflow: 'hidden',
@@ -208,7 +208,7 @@ export default function ApostasTable({ apostas, onStatusChange, onDelete }: Apos
                       <span
                         style={{
                           display: 'block',
-                          fontSize: '11px',
+                          fontSize: '12px',
                           color: 'rgba(148,163,184,0.55)',
                           lineHeight: '1',
                         }}
@@ -232,7 +232,7 @@ export default function ApostasTable({ apostas, onStatusChange, onDelete }: Apos
                         style={{
                           borderRadius: '20px',
                           padding: '4px 10px',
-                          fontSize: '10px',
+                          fontSize: '11px',
                           fontWeight: 600,
                           color: chip.color,
                           background: chip.bg,
@@ -244,7 +244,7 @@ export default function ApostasTable({ apostas, onStatusChange, onDelete }: Apos
                       <span
                         style={{
                           fontFamily: 'monospace',
-                          fontSize: '12px',
+                          fontSize: '14px',
                           fontWeight: 700,
                           color: '#FFFFFF',
                           whiteSpace: 'nowrap',
@@ -255,7 +255,7 @@ export default function ApostasTable({ apostas, onStatusChange, onDelete }: Apos
                       <span
                         style={{
                           fontFamily: 'monospace',
-                          fontSize: '12px',
+                          fontSize: '13px',
                           fontWeight: 600,
                           color: '#00FF88',
                           whiteSpace: 'nowrap',
@@ -297,7 +297,7 @@ export default function ApostasTable({ apostas, onStatusChange, onDelete }: Apos
                           height: '44px',
                           borderRadius: '14px',
                           padding: '0 14px',
-                          fontSize: '13px',
+                          fontSize: '14px',
                           fontWeight: 600,
                           color: '#FFFFFF',
                           background: 'rgba(255,255,255,0.06)',
@@ -322,7 +322,7 @@ export default function ApostasTable({ apostas, onStatusChange, onDelete }: Apos
                           height: '44px',
                           padding: '0 16px',
                           borderRadius: '14px',
-                          fontSize: '13px',
+                          fontSize: '14px',
                           fontWeight: 600,
                           color: '#ff9aae',
                           background: 'rgba(255,77,109,0.08)',
