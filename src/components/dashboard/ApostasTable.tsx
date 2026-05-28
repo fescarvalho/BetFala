@@ -10,6 +10,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronDown,
+  Edit2,
 } from 'lucide-react';
 import { Aposta, ApostaStatus } from '@/types/aposta';
 import { formatarMoeda } from '@/lib/calculations';
@@ -18,6 +19,7 @@ interface ApostasTableProps {
   apostas: Aposta[];
   onStatusChange: (id: string, status: ApostaStatus) => Promise<boolean>;
   onDelete: (id: string) => Promise<boolean>;
+  onEdit?: (aposta: Aposta) => void;
 }
 
 const STATUS_OPTIONS: { value: ApostaStatus; label: string }[] = [
@@ -81,7 +83,7 @@ function getCardBackground(status: ApostaStatus) {
   return '#0F172A';
 }
 
-export default function ApostasTable({ apostas, onStatusChange, onDelete }: ApostasTableProps) {
+export default function ApostasTable({ apostas, onStatusChange, onDelete, onEdit }: ApostasTableProps) {
   const [page, setPage] = useState(1);
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
@@ -312,6 +314,28 @@ export default function ApostasTable({ apostas, onStatusChange, onDelete }: Apos
                           </option>
                         ))}
                       </select>
+                      {onEdit && (
+                        <button
+                          onClick={() => onEdit(aposta)}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            height: '44px',
+                            padding: '0 16px',
+                            borderRadius: '14px',
+                            fontSize: '14px',
+                            fontWeight: 600,
+                            color: '#94A3B8',
+                            background: 'rgba(255,255,255,0.06)',
+                            border: 'none',
+                            cursor: 'pointer',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          <Edit2 size={13} /> Editar
+                        </button>
+                      )}
                       <button
                         onClick={() => handleDelete(aposta.id)}
                         disabled={loadingId === aposta.id}

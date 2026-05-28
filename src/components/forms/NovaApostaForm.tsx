@@ -10,7 +10,7 @@ import {
   ImagePlus,
   X,
 } from 'lucide-react';
-import { ApostaInsert, Banca } from '@/types/aposta';
+import { ApostaInsert, Banca, Aposta, ApostaUpdate } from '@/types/aposta';
 import { useVoiceInput } from '@/hooks/useVoiceInput';
 
 /* ─── Types ──────────────────────────────────────────────── */
@@ -31,11 +31,13 @@ interface FormErrors {
 
 interface NovaApostaFormProps {
   onSave: (aposta: ApostaInsert) => Promise<boolean>;
+  onUpdate?: (aposta: ApostaUpdate) => Promise<boolean>;
   onClose: () => void;
   autoStartVoice?: boolean;
   error?: string | null;
   bancas: Banca[];
   defaultBancaId?: string;
+  initialData?: Aposta;
 }
 
 const INITIAL: FormValues = {
@@ -173,16 +175,28 @@ function FloatInput({
 /* ─── Component ──────────────────────────────────────────── */
 export default function NovaApostaForm({
   onSave,
+  onUpdate,
   onClose,
   autoStartVoice = false,
   error = null,
   bancas,
   defaultBancaId,
+  initialData,
 }: NovaApostaFormProps) {
-  const [values, setValues] = useState<FormValues>({
-    ...INITIAL,
-    banca_id: defaultBancaId || bancas[0]?.id || '',
-  });
+  const [values, setValues] = useState<FormValues>(
+    initialData
+      ? {
+          times_apostados: initialData.times_apostados,
+          detalhe_aposta: initialData.detalhe_aposta || '',
+          odd: String(initialData.odd),
+          stake: String(initialData.stake),
+          banca_id: initialData.banca_id || defaultBancaId || bancas[0]?.id || '',
+        }
+      : {
+          ...INITIAL,
+          banca_id: defaultBancaId || bancas[0]?.id || '',
+        }
+  );
   const [touched, setTouched] = useState<Partial<Record<keyof FormValues, boolean>>>({});
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -358,13 +372,25 @@ export default function NovaApostaForm({
     setTouched({ times_apostados: true, detalhe_aposta: true, odd: true, stake: true });
     if (Object.keys(validate(values)).length > 0) return;
     setSaving(true);
-    const ok = await onSave({
-      times_apostados: values.times_apostados.trim(),
-      detalhe_aposta: values.detalhe_aposta.trim(),
-      odd: parseFloat(values.odd),
-      stake: parseFloat(values.stake),
-      banca_id: values.banca_id || undefined,
-    });
+    let ok = false;
+    if (initialData && onUpdate) {
+      ok = await onUpdate({
+        id: initialData.id,
+        times_apostados: values.times_apostados.trim(),
+        detalhe_aposta: values.detalhe_aposta.trim(),
+        odd: parseFloat(values.odd),
+        stake: parseFloat(values.stake),
+        banca_id: values.banca_id || undefined,
+      });
+    } else {
+      ok = await onSave({
+        times_apostados: values.times_apostados.trim(),
+        detalhe_aposta: values.detalhe_aposta.trim(),
+        odd: parseFloat(values.odd),
+        stake: parseFloat(values.stake),
+        banca_id: values.banca_id || undefined,
+      });
+    }
     setSaving(false);
     if (ok) {
       setSuccess(true);
@@ -441,10 +467,10 @@ export default function NovaApostaForm({
         >
           <div>
             <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#FFFFFF', lineHeight: '1.2' }}>
-              Nova aposta
+              {initialData ? 'Editar aposta' : 'Nova aposta'}
             </h2>
             <p style={{ fontSize: '13px', fontWeight: 500, color: '#94A3B8', marginTop: '3px', lineHeight: '1' }}>
-              Preencha os dados rapidamente
+              {initialData ? 'Atualize os dados da aposta' : 'Preencha os dados rapidamente'}
             </p>
           </div>
 
@@ -822,15 +848,15 @@ export default function NovaApostaForm({
               letterSpacing: '-0.1px',
             }}
           >
-            {saving ? (
-              <Loader2 size={20} className="animate-spin" />
-            ) : success ? (
+            {success ? (
               <>
-                <CheckCircle2 size={20} strokeWidth={2} />
-                Aposta salva!
+                <CheckCircle2 size={20} strokeWidth={2.5} />
+                Salvo com sucesso!
               </>
+            ) : saving ? (
+              <Loader2 size={20} className="animate-spin" />
             ) : (
-              'Confirmar aposta'
+              initialData ? 'Salvar alterações' : 'Salvar aposta'
             )}
           </button>
 

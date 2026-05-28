@@ -76,6 +76,7 @@ function DashboardPageContent() {
   } = useApostas();
 
   const [showForm, setShowForm] = useState(false);
+  const [editingAposta, setEditingAposta] = useState<Aposta | null>(null);
   const [showBancaManager, setShowBancaManager] = useState(false);
   const [quickTransactionType, setQuickTransactionType] = useState<TipoTransacao | null>(null);
   const [startVoiceImmediately, setStartVoiceImmediately] = useState(false);
@@ -176,8 +177,8 @@ function DashboardPageContent() {
   const handleStatusChange = async (id: string, status: ApostaStatus) =>
     await atualizarAposta({ id, status });
 
-  const openManualForm = () => { setStartVoiceImmediately(false); setShowForm(true); };
-  const openVoiceForm = () => { setStartVoiceImmediately(true); setShowForm(true); };
+  const openManualForm = () => { setStartVoiceImmediately(false); setEditingAposta(null); setShowForm(true); };
+  const openVoiceForm = () => { setStartVoiceImmediately(true); setEditingAposta(null); setShowForm(true); };
 
   return (
     <div style={{ minHeight: '100svh', width: '100%', background: '#050816', color: '#FFFFFF' }}>
@@ -671,6 +672,10 @@ function DashboardPageContent() {
                   apostas={apostasFiltradas}
                   onStatusChange={handleStatusChange}
                   onDelete={excluirAposta}
+                  onEdit={(aposta) => {
+                    setEditingAposta(aposta);
+                    setShowForm(true);
+                  }}
                 />
               </div>
             </section>
@@ -684,8 +689,10 @@ function DashboardPageContent() {
 
       {showForm && (
         <NovaApostaForm
+          initialData={editingAposta || undefined}
           onSave={inserirAposta}
-          onClose={() => setShowForm(false)}
+          onUpdate={atualizarAposta}
+          onClose={() => { setShowForm(false); setEditingAposta(null); }}
           autoStartVoice={startVoiceImmediately}
           error={dbError}
           bancas={bancas}
