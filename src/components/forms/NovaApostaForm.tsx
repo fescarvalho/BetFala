@@ -20,6 +20,8 @@ interface FormValues {
   odd: string;
   stake: string;
   banca_id: string;
+  is_freebet: boolean;
+  bonus_percent: string;
 }
 
 interface FormErrors {
@@ -27,6 +29,7 @@ interface FormErrors {
   detalhe_aposta?: string;
   odd?: string;
   stake?: string;
+  bonus_percent?: string;
 }
 
 interface NovaApostaFormProps {
@@ -46,6 +49,8 @@ const INITIAL: FormValues = {
   odd: '',
   stake: '',
   banca_id: '',
+  is_freebet: false,
+  bonus_percent: '',
 };
 
 /* Stake quick-pick chips */
@@ -60,6 +65,10 @@ function validate(v: FormValues): FormErrors {
   if (odd > 1000) e.odd = 'Máx. 1000';
   const stake = parseFloat(v.stake);
   if (!v.stake || isNaN(stake) || stake < 0.01) e.stake = 'Mín. R$0,01';
+  if (v.bonus_percent) {
+    const bonus = parseFloat(v.bonus_percent);
+    if (isNaN(bonus) || bonus < 0) e.bonus_percent = 'Valor inválido';
+  }
   return e;
 }
 
@@ -191,6 +200,8 @@ export default function NovaApostaForm({
           odd: String(initialData.odd),
           stake: String(initialData.stake),
           banca_id: initialData.banca_id || defaultBancaId || bancas[0]?.id || '',
+          is_freebet: initialData.is_freebet || false,
+          bonus_percent: initialData.bonus_percent ? String(initialData.bonus_percent) : '',
         }
       : {
           ...INITIAL,
@@ -220,10 +231,17 @@ export default function NovaApostaForm({
     const odd = parseFloat(values.odd);
     const stake = parseFloat(values.stake);
     if (!isNaN(odd) && !isNaN(stake) && odd >= 1.01 && stake > 0) {
-      return stake * odd;
+      let calcRetorno = stake * odd;
+      if (values.bonus_percent) {
+        const bonus = parseFloat(values.bonus_percent);
+        if (!isNaN(bonus) && bonus > 0) {
+          calcRetorno += calcRetorno * (bonus / 100);
+        }
+      }
+      return calcRetorno;
     }
     return null;
-  }, [values.odd, values.stake]);
+  }, [values.odd, values.stake, values.bonus_percent]);
 
   const lucro = retorno !== null ? retorno - parseFloat(values.stake) : null;
 
@@ -381,6 +399,8 @@ export default function NovaApostaForm({
         odd: parseFloat(values.odd),
         stake: parseFloat(values.stake),
         banca_id: values.banca_id || undefined,
+        is_freebet: values.is_freebet,
+        bonus_percent: values.bonus_percent ? parseFloat(values.bonus_percent) : undefined,
       });
     } else {
       ok = await onSave({
@@ -389,6 +409,8 @@ export default function NovaApostaForm({
         odd: parseFloat(values.odd),
         stake: parseFloat(values.stake),
         banca_id: values.banca_id || undefined,
+        is_freebet: values.is_freebet,
+        bonus_percent: values.bonus_percent ? parseFloat(values.bonus_percent) : undefined,
       });
     }
     setSaving(false);
@@ -758,6 +780,53 @@ export default function NovaApostaForm({
                 </button>
               );
             })}
+          </div>
+
+          {/* Opções Avançadas */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '4px' }}>
+            {/* Freebet Checkbox */}
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                padding: '16px',
+                borderRadius: '16px',
+                background: values.is_freebet ? 'rgba(0,255,136,0.1)' : 'rgba(255,255,255,0.04)',
+                border: `1.5px solid ${values.is_freebet ? 'rgba(0,255,136,0.3)' : 'transparent'}`,
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={values.is_freebet}
+                onChange={(e) => setValues(c => ({ ...c, is_freebet: e.target.checked }))}
+                style={{
+                  width: '18px',
+                  height: '18px',
+                  accentColor: '#00FF88',
+                  cursor: 'pointer',
+                }}
+              />
+              <span style={{ fontSize: '14px', fontWeight: 600, color: values.is_freebet ? '#00FF88' : '#94A3B8' }}>
+                Aposta Grátis
+              </span>
+            </label>
+
+            {/* Bonus Percent */}
+            <FloatInput
+              id="f-bonus"
+              label="Bônus (%)"
+              type="number"
+              step="0.1"
+              placeholder="Ex: 10"
+              inputMode="decimal"
+              value={values.bonus_percent}
+              onChange={setInput('bonus_percent')}
+              onBlur={blur('bonus_percent')}
+              error={fieldError('bonus_percent')}
+            />
           </div>
 
           {/* Retorno automático */}

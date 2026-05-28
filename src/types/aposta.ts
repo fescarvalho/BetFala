@@ -33,6 +33,8 @@ export interface Aposta {
   stake: number;
   status: ApostaStatus;
   banca_id?: string;
+  is_freebet?: boolean;
+  bonus_percent?: number;
 }
 
 export interface ApostaInsert {
@@ -42,6 +44,8 @@ export interface ApostaInsert {
   stake: number;
   status?: ApostaStatus;
   banca_id?: string;
+  is_freebet?: boolean;
+  bonus_percent?: number;
 }
 
 export interface ApostaUpdate {
@@ -52,6 +56,8 @@ export interface ApostaUpdate {
   odd?: number;
   stake?: number;
   banca_id?: string;
+  is_freebet?: boolean;
+  bonus_percent?: number;
 }
 
 export interface KpiData {

@@ -13,14 +13,21 @@ export function calcularKpis(apostas: Aposta[]): KpiData {
   const abertas = apostas.filter((a) => a.status === 'Aberta');
   const voids = apostas.filter((a) => a.status === 'Void');
 
-  // Lucro das greens: stake * (odd - 1) por cada aposta ganha
-  const lucroGreens = greens.reduce((acc, a) => acc + a.stake * (a.odd - 1), 0);
-  // Prejuízo das reds: soma dos stakes perdidos
-  const prejuizoReds = reds.reduce((acc, a) => acc + a.stake, 0);
+  // Lucro das greens: stake * (odd - 1) por cada aposta ganha, mais bônus se houver
+  const lucroGreens = greens.reduce((acc, a) => {
+    let grossReturn = a.stake * a.odd;
+    if (a.bonus_percent) {
+      grossReturn += grossReturn * (a.bonus_percent / 100);
+    }
+    return acc + (grossReturn - a.stake);
+  }, 0);
+  
+  // Prejuízo das reds: soma dos stakes perdidos (0 para freebets)
+  const prejuizoReds = reds.reduce((acc, a) => acc + (a.is_freebet ? 0 : a.stake), 0);
   const lucroTotal = lucroGreens - prejuizoReds;
 
-  // Total investido (apenas resolvidas: Green + Red)
-  const totalInvestido = [...greens, ...reds].reduce((acc, a) => acc + a.stake, 0);
+  // Total investido (apenas resolvidas: Green + Red) - exclui freebets
+  const totalInvestido = [...greens, ...reds].reduce((acc, a) => acc + (a.is_freebet ? 0 : a.stake), 0);
 
   // Taxa de acerto
   const resolvidas = greens.length + reds.length;
@@ -55,7 +62,17 @@ export function calcularEvolucaoBanca(
 
   // Cria eventos para apostas
   const eventos: { tipo: 'aposta' | 'deposito' | 'saque'; valor: number; date: Date; timestamp: number }[] = ativasEResolvidas.map(a => {
-    const valor = a.status === 'Green' ? (a.stake * (a.odd - 1)) : -a.stake;
+    let valor = 0;
+    if (a.status === 'Green') {
+      let grossReturn = a.stake * a.odd;
+      if (a.bonus_percent) {
+        grossReturn += grossReturn * (a.bonus_percent / 100);
+      }
+      valor = grossReturn - a.stake;
+    } else {
+      // Red ou Aberta
+      valor = a.is_freebet ? 0 : -a.stake;
+    }
     const date = new Date(a.data_criacao);
     return { tipo: 'aposta', valor, date, timestamp: date.getTime() };
   });

@@ -207,6 +207,20 @@ export default function ApostasTable({ apostas, onStatusChange, onDelete, onEdit
                       >
                         {aposta.detalhe_aposta || getSportLabel(aposta.times_apostados, aposta.detalhe_aposta || '')}
                       </span>
+                      {(aposta.is_freebet || aposta.bonus_percent) && (
+                        <div style={{ display: 'flex', gap: '6px', marginBottom: '4px' }}>
+                          {aposta.is_freebet && (
+                            <span style={{ fontSize: '10px', fontWeight: 600, padding: '2px 6px', borderRadius: '4px', background: 'rgba(0,255,136,0.1)', color: '#00FF88' }}>
+                              GRÁTIS
+                            </span>
+                          )}
+                          {!!aposta.bonus_percent && (
+                            <span style={{ fontSize: '10px', fontWeight: 600, padding: '2px 6px', borderRadius: '4px', background: 'rgba(255,209,102,0.1)', color: '#ffd166' }}>
+                              +{aposta.bonus_percent}% BÔNUS
+                            </span>
+                          )}
+                        </div>
+                      )}
                       <span
                         style={{
                           display: 'block',
