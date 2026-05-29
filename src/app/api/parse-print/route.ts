@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
 
     // image is expected to be a base64 string starting with "data:image/png;base64,..."
     const base64Data = image.split(',')[1] || image;
-    
+
     // Determine mime type if present in the data URI
     let mimeType = 'image/png';
     const matches = image.match(/^data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+).*,.*/);
@@ -38,10 +38,10 @@ export async function POST(req: NextRequest) {
 Analise a imagem enviada, que é um print de uma aposta (ex: bet365, betano, superbet, etc).
 Extraia os seguintes campos e retorne APENAS um objeto JSON válido, sem markdown (\`\`\`json), contendo:
 {
-  "times_apostados": "Nome do evento ou times jogando (ex: Flamengo vs Vasco)",
-  "detalhe_aposta": "O mercado ou palpite (ex: Resultado Final - Flamengo, Mais de 2.5 Gols, etc)",
-  "odd": "Valor numérico da odd (ex: 1.85). Use ponto para decimal. Se não tiver, deixe vazio.",
-  "stake": "Valor numérico apostado (ex: 50.00). Use ponto para decimal. Deixe vazio se não encontrar."
+  "times_apostados": "Nome do evento ou times jogando (ex: Flamengo vs Vasco). Se for múltipla, resuma (ex: Múltipla - 5 Jogos)",
+  "detalhe_aposta": "O mercado ou palpite (ex: Resultado Final - Flamengo). Se for múltipla, escreva 'Múltipla' ou 'Criar Aposta'",
+  "odd": "Valor numérico da odd (ex: 1.85). Se for uma aposta múltipla e a odd total não estiver visível na imagem, CALCULE a odd total multiplicando todas as odds individuais visíveis no bilhete. Use ponto para decimal. Deixe vazio se não encontrar.",
+  "stake": "Valor numérico apostado. Procure na imagem por termos como 'Valor Apostado', 'Aposta', 'Total Stake' ou o valor financeiro investido (ex: R$ 50,00). Retorne APENAS O NÚMERO (ex: 50.00), usando ponto para decimal e removendo símbolos de moeda. Deixe vazio se não encontrar."
 }
 Se não tiver certeza sobre algum valor, deixe como string vazia.
 Retorne apenas o JSON. Não adicione nenhum texto antes ou depois.`;
@@ -55,10 +55,10 @@ Retorne apenas o JSON. Não adicione nenhum texto antes ou depois.`;
 
     const result = await model.generateContent([prompt, imagePart]);
     const responseText = await result.response.text();
-    
+
     // Limpar markdown de json se o Gemini retornar com formatação
     const cleanedText = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
-    
+
     let parsedData;
     try {
       parsedData = JSON.parse(cleanedText);
