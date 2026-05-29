@@ -31,8 +31,8 @@ export async function POST(req: NextRequest) {
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
-    // Use gemini-1.5-flash as it is fast and supports multimodality
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    // Use gemini-2.5-flash as it is fast and supports multimodality
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
     const prompt = `Você é um assistente especializado em extrair dados de bilhetes e prints de apostas esportivas.
 Analise a imagem enviada, que é um print de uma aposta (ex: bet365, betano, superbet, etc).
