@@ -4,62 +4,59 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 // Initialize the Google Generative AI with API Key
 const apiKey = process.env.GEMINI_API_KEY || '';
 
-// Helper function to call Gemini with retry logic and fallback models
+// Helper function to call Gemini with retry logic
 async function generateContentWithRetryAndFallback(
   genAI: GoogleGenerativeAI,
   prompt: string,
   imagePart: { inlineData: { data: string; mimeType: string } }
 ) {
-  // We try gemini-2.5-flash, gemini-2.0-flash, and gemini-1.5-flash as fallbacks
-  const modelsToTry = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+  // Vamos focar no modelo principal que sabemos que existe,
+  // apenas aumentando as tentativas, pois os outros retornaram 404 (não encontrados para essa API Key).
+  const modelName = 'gemini-2.5-flash';
   let lastError: any = null;
+  let attempts = 0;
+  const maxAttempts = 4; // Tentamos até 4 vezes com backoff
 
-  for (const modelName of modelsToTry) {
-    let attempts = 0;
-    const maxAttempts = 2; // Try each model up to 2 times
+  while (attempts < maxAttempts) {
+    try {
+      console.log(`Tentando processar com o modelo ${modelName} (tentativa ${attempts + 1}/${maxAttempts})...`);
+      const model = genAI.getGenerativeModel({ model: modelName });
+      const result = await model.generateContent([prompt, imagePart]);
+      
+      const text = await result.response.text();
+      if (text) {
+        console.log(`Sucesso com o modelo ${modelName}!`);
+        return text;
+      }
+    } catch (err: any) {
+      attempts++;
+      lastError = err;
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      console.warn(`Erro com o modelo ${modelName} na tentativa ${attempts}:`, errorMessage);
 
-    while (attempts < maxAttempts) {
-      try {
-        console.log(`Tentando processar com o modelo ${modelName} (tentativa ${attempts + 1}/${maxAttempts})...`);
-        const model = genAI.getGenerativeModel({ model: modelName });
-        const result = await model.generateContent([prompt, imagePart]);
-        
-        // Test if result works and response can be extracted
-        const text = await result.response.text();
-        if (text) {
-          console.log(`Sucesso com o modelo ${modelName}!`);
-          return text;
-        }
-      } catch (err: any) {
-        attempts++;
-        lastError = err;
-        const errorMessage = err instanceof Error ? err.message : String(err);
-        console.warn(`Erro com o modelo ${modelName} na tentativa ${attempts}:`, errorMessage);
+      // Verifica se o erro é de instabilidade/sobrecarga
+      const isTransient = 
+        err.status === 503 || 
+        err.status === 429 || 
+        errorMessage.includes('503') || 
+        errorMessage.includes('429') || 
+        errorMessage.includes('overloaded') || 
+        errorMessage.includes('demand') ||
+        errorMessage.includes('Unavailable');
 
-        // Check if the error is transient (like 503, 429, etc)
-        const isTransient = 
-          err.status === 503 || 
-          err.status === 429 || 
-          errorMessage.includes('503') || 
-          errorMessage.includes('429') || 
-          errorMessage.includes('overloaded') || 
-          errorMessage.includes('demand') ||
-          errorMessage.includes('Unavailable');
-
-        if (isTransient && attempts < maxAttempts) {
-          const delayMs = attempts * 1500; // 1.5s delay for first retry
-          console.log(`Erro temporário detectado. Aguardando ${delayMs}ms antes de tentar novamente...`);
-          await new Promise((resolve) => setTimeout(resolve, delayMs));
-        } else {
-          // If not transient, or we run out of attempts, try the next model
-          console.log(`Prosseguindo para tentar o próximo modelo após erro no ${modelName}...`);
-          break;
-        }
+      if (isTransient && attempts < maxAttempts) {
+        // Backoff: 1s, 2s, 3s...
+        const delayMs = attempts * 1000;
+        console.log(`Erro temporário detectado. Aguardando ${delayMs}ms antes de tentar novamente...`);
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+      } else {
+        // Se for 404 ou erro fatal, ou esgotarem as tentativas, paramos.
+        break;
       }
     }
   }
 
-  throw lastError || new Error('Todos os modelos de IA falharam em processar o bilhete.');
+  throw lastError || new Error('O modelo de IA falhou em processar o bilhete após várias tentativas.');
 }
 
 export async function POST(req: NextRequest) {
