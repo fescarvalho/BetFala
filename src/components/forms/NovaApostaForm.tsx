@@ -41,6 +41,7 @@ interface NovaApostaFormProps {
   bancas: Banca[];
   defaultBancaId?: string;
   initialData?: Aposta;
+  prefillData?: { jogo: string; mercado: string; odd: number };
 }
 
 const INITIAL: FormValues = {
@@ -190,6 +191,7 @@ export default function NovaApostaForm({
   bancas,
   defaultBancaId,
   initialData,
+  prefillData,
 }: NovaApostaFormProps) {
   const [values, setValues] = useState<FormValues>(
     initialData
@@ -202,10 +204,18 @@ export default function NovaApostaForm({
           is_freebet: initialData.is_freebet || false,
           bonus_percent: initialData.bonus_percent ? String(initialData.bonus_percent) : '',
         }
-      : {
-          ...INITIAL,
-          banca_id: defaultBancaId || bancas[0]?.id || '',
-        }
+      : prefillData
+        ? {
+            ...INITIAL,
+            times_apostados: prefillData.jogo,
+            detalhe_aposta: prefillData.mercado,
+            odd: String(prefillData.odd),
+            banca_id: defaultBancaId || bancas[0]?.id || '',
+          }
+        : {
+            ...INITIAL,
+            banca_id: defaultBancaId || bancas[0]?.id || '',
+          }
   );
   const [touched, setTouched] = useState<Partial<Record<keyof FormValues, boolean>>>({});
   const [saving, setSaving] = useState(false);

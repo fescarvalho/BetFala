@@ -7,15 +7,17 @@ interface Insight {
   jogo: string;
   mercado: string;
   odd: number;
+  horario?: string;
   justificativa: string;
 }
 
 interface AIInsightsProps {
   isOpen: boolean;
   onClose: () => void;
+  onOpenNovaAposta?: (prefill: { jogo: string; mercado: string; odd: number }) => void;
 }
 
-export function AIInsights({ isOpen, onClose }: AIInsightsProps) {
+export function AIInsights({ isOpen, onClose, onOpenNovaAposta }: AIInsightsProps) {
   const [insights, setInsights] = useState<Insight[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -108,7 +110,9 @@ export function AIInsights({ isOpen, onClose }: AIInsightsProps) {
                       </h3>
                       <div className="flex items-center gap-1.5 text-gray-400 text-[13px] mb-5">
                         <Calendar className="w-4 h-4 opacity-70 shrink-0" />
-                        <span className="truncate">Mercados Diários • Hoje</span>
+                        <span className="truncate">
+                          {insight.horario ? `Hoje às ${insight.horario}` : 'Mercados Diários • Hoje'}
+                        </span>
                       </div>
                     </div>
 
@@ -116,7 +120,16 @@ export function AIInsights({ isOpen, onClose }: AIInsightsProps) {
                       <div className="bg-[#00FF88] text-black font-black text-xl px-4 py-2 rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(0,255,136,0.15)] min-w-[60px]">
                         {Number(insight.odd).toFixed(2)}
                       </div>
-                      <button className="bg-[#00FF88] text-black rounded-xl h-10 w-full flex items-center justify-center hover:bg-[#00CC70] transition-colors shadow-[0_0_15px_rgba(0,255,136,0.15)]">
+                      <button
+                        onClick={() => {
+                          if (onOpenNovaAposta) {
+                            onClose();
+                            onOpenNovaAposta({ jogo: insight.jogo, mercado: insight.mercado, odd: insight.odd });
+                          }
+                        }}
+                        className="bg-[#00FF88] text-black rounded-xl h-10 w-full flex items-center justify-center hover:bg-[#00CC70] active:scale-95 transition-all shadow-[0_0_15px_rgba(0,255,136,0.15)]"
+                        title="Abrir formulário de nova aposta"
+                      >
                         <ArrowRight className="w-5 h-5 stroke-[2.5]" />
                       </button>
                     </div>

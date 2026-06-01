@@ -90,6 +90,7 @@ function DashboardPageContent() {
   const [startVoiceImmediately, setStartVoiceImmediately] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showInsightsModal, setShowInsightsModal] = useState(false);
+  const [insightPrefill, setInsightPrefill] = useState<{ jogo: string; mercado: string; odd: number } | null>(null);
   const [filtros, setFiltros] = useState<FiltrosState>({ busca: '', periodo: 'todos' });
 
   // Fallback para build/SSR (evitar erro de useSearchParams fora de Suspense, porém Next 13+ lida ok,
@@ -186,8 +187,14 @@ function DashboardPageContent() {
   const handleStatusChange = async (id: string, status: ApostaStatus) =>
     await atualizarAposta({ id, status });
 
-  const openManualForm = () => { setStartVoiceImmediately(false); setEditingAposta(null); setShowForm(true); };
-  const openVoiceForm = () => { setStartVoiceImmediately(true); setEditingAposta(null); setShowForm(true); };
+  const openManualForm = () => { setStartVoiceImmediately(false); setEditingAposta(null); setInsightPrefill(null); setShowForm(true); };
+  const openVoiceForm = () => { setStartVoiceImmediately(true); setEditingAposta(null); setInsightPrefill(null); setShowForm(true); };
+  const openFormFromInsight = (prefill: { jogo: string; mercado: string; odd: number }) => {
+    setStartVoiceImmediately(false);
+    setEditingAposta(null);
+    setInsightPrefill(prefill);
+    setShowForm(true);
+  };
 
   return (
     <div style={{ minHeight: '100svh', width: '100%', background: '#050816', color: '#FFFFFF' }}>
@@ -705,6 +712,7 @@ function DashboardPageContent() {
       <AIInsights 
         isOpen={showInsightsModal} 
         onClose={() => setShowInsightsModal(false)} 
+        onOpenNovaAposta={openFormFromInsight}
       />
 
       {showForm && (
@@ -712,11 +720,12 @@ function DashboardPageContent() {
           initialData={editingAposta || undefined}
           onSave={inserirAposta}
           onUpdate={atualizarAposta}
-          onClose={() => { setShowForm(false); setEditingAposta(null); }}
+          onClose={() => { setShowForm(false); setEditingAposta(null); setInsightPrefill(null); }}
           autoStartVoice={startVoiceImmediately}
           error={dbError}
           bancas={bancas}
           defaultBancaId={activeBanca?.id}
+          prefillData={insightPrefill || undefined}
         />
       )}
 
