@@ -5,6 +5,7 @@ import { BarChart2, History, Home, Lightbulb } from 'lucide-react';
 
 interface BottomNavBarProps {
   onNovaAposta: () => void;
+  onOpenInsights?: () => void;
 }
 
 const NAV_ITEMS = [
@@ -14,11 +15,16 @@ const NAV_ITEMS = [
   { id: 'historico', icon: History, label: 'Histórico', section: 'apostas-section' },
 ];
 
-export default function BottomNavBar({ onNovaAposta }: BottomNavBarProps) {
+export default function BottomNavBar({ onNovaAposta, onOpenInsights }: BottomNavBarProps) {
   const [activeTab, setActiveTab] = useState('inicio');
   void onNovaAposta;
 
   const handleNav = (id: string, section: string) => {
+    if (id === 'estrategias' && onOpenInsights) {
+      onOpenInsights();
+      return;
+    }
+    
     setActiveTab(id);
     if (!section) {
       window.scrollTo({ top: 0, behavior: 'smooth' });

@@ -37,6 +37,7 @@ interface SidebarProps {
   bets: Aposta[];
   transacoes?: Transacao[];
   isDataLoaded?: boolean;
+  onOpenInsights?: () => void;
 }
 
 export default function Sidebar({
@@ -51,6 +52,7 @@ export default function Sidebar({
   bets,
   transacoes = [],
   isDataLoaded = true,
+  onOpenInsights,
 }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
@@ -204,6 +206,24 @@ export default function Sidebar({
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href || (item.href === '/' && pathname === '/');
+            
+            if (item.label === 'Estratégias') {
+              return (
+                <button
+                  key={item.label}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    onOpenInsights?.();
+                    if (mobileOpen && onClose) onClose();
+                  }}
+                  className={`flex items-center w-full gap-4 px-4 py-3.5 rounded-[18px] text-[14px] font-semibold transition-all duration-200 group cursor-pointer text-[#94A3B8] hover:text-white hover:bg-[#0F172A] border border-transparent hover:border-white/[0.02]`}
+                >
+                  <Icon size={18} strokeWidth={2} className="text-[#64748B] group-hover:text-white transition-colors" />
+                  {item.label}
+                </button>
+              );
+            }
+            
             return (
               <Link
                 key={item.href}

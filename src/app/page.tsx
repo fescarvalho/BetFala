@@ -31,6 +31,7 @@ import NovaApostaForm from '@/components/forms/NovaApostaForm';
 import BancaManagerSheet from '@/components/forms/BancaManagerSheet';
 import BottomNavBar from '@/components/layout/BottomNavBar';
 import RelatoriosTab from '@/components/dashboard/RelatoriosTab';
+import { AIInsights } from '@/components/dashboard/AIInsights';
 
 function calcularSaldoBanca(banca: Banca | null, bancas: Banca[], apostas: Aposta[], transacoes: Transacao[] = []) {
   if (!banca) return 0;
@@ -88,6 +89,7 @@ function DashboardPageContent() {
   const [quickTransactionType, setQuickTransactionType] = useState<TipoTransacao | null>(null);
   const [startVoiceImmediately, setStartVoiceImmediately] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showInsightsModal, setShowInsightsModal] = useState(false);
   const [filtros, setFiltros] = useState<FiltrosState>({ busca: '', periodo: 'todos' });
 
   // Fallback para build/SSR (evitar erro de useSearchParams fora de Suspense, porém Next 13+ lida ok,
@@ -201,6 +203,7 @@ function DashboardPageContent() {
         bets={apostas}
         transacoes={transacoes}
         isDataLoaded={isDataLoaded}
+        onOpenInsights={() => setShowInsightsModal(true)}
       />
 
       <div style={{ minHeight: '100svh' }} className="w-full">
@@ -694,7 +697,15 @@ function DashboardPageContent() {
         </main>
       </div>
 
-      <BottomNavBar onNovaAposta={openManualForm} />
+      <BottomNavBar 
+        onNovaAposta={openManualForm} 
+        onOpenInsights={() => setShowInsightsModal(true)} 
+      />
+
+      <AIInsights 
+        isOpen={showInsightsModal} 
+        onClose={() => setShowInsightsModal(false)} 
+      />
 
       {showForm && (
         <NovaApostaForm
