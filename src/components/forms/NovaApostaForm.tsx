@@ -62,7 +62,6 @@ function validate(v: FormValues): FormErrors {
   if (v.detalhe_aposta.trim().length < 2) e.detalhe_aposta = 'Informe o mercado.';
   const odd = parseFloat(v.odd);
   if (!v.odd || isNaN(odd) || odd < 1.01) e.odd = 'Mín. 1.01';
-  if (odd > 1000) e.odd = 'Máx. 1000';
   const stake = parseFloat(v.stake);
   if (!v.stake || isNaN(stake) || stake < 0) e.stake = 'Valor inválido';
   if (v.bonus_percent) {
