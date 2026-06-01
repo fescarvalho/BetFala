@@ -49,7 +49,10 @@ export default function RelatoriosTab({ activeBanca, apostas, transacoes, bancas
     // Add finalized bets
     bancaBets.forEach(a => {
       if (a.status === 'Green') {
-        const lucro = a.stake * (a.odd - 1);
+        let lucro = a.stake * (a.odd - 1);
+        if (a.bonus_percent) {
+          lucro += lucro * (a.bonus_percent / 100);
+        }
         combined.push({
           id: a.id,
           data: a.data_criacao || new Date().toISOString(),
@@ -64,7 +67,7 @@ export default function RelatoriosTab({ activeBanca, apostas, transacoes, bancas
           data: a.data_criacao || new Date().toISOString(),
           tipo: 'aposta',
           descricao: `Aposta: ${a.times_apostados}`,
-          valor: -a.stake,
+          valor: a.is_freebet ? 0 : -a.stake,
           isGreen: false,
         });
       } else if (a.status === 'Aberta') {
@@ -73,7 +76,7 @@ export default function RelatoriosTab({ activeBanca, apostas, transacoes, bancas
           data: a.data_criacao || new Date().toISOString(),
           tipo: 'aposta',
           descricao: `Aposta (Aberta): ${a.times_apostados}`,
-          valor: -a.stake,
+          valor: a.is_freebet ? 0 : -a.stake,
         });
       }
     });

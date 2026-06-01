@@ -64,7 +64,7 @@ function validate(v: FormValues): FormErrors {
   if (!v.odd || isNaN(odd) || odd < 1.01) e.odd = 'Mín. 1.01';
   if (odd > 1000) e.odd = 'Máx. 1000';
   const stake = parseFloat(v.stake);
-  if (!v.stake || isNaN(stake) || stake < 0.01) e.stake = 'Mín. R$0,01';
+  if (!v.stake || isNaN(stake) || stake < 0) e.stake = 'Valor inválido';
   if (v.bonus_percent) {
     const bonus = parseFloat(v.bonus_percent);
     if (isNaN(bonus) || bonus < 0) e.bonus_percent = 'Valor inválido';
@@ -230,18 +230,18 @@ export default function NovaApostaForm({
   const { retorno, lucroReal, valorBonus } = useMemo(() => {
     const odd = parseFloat(values.odd);
     const stake = parseFloat(values.stake);
-    if (!isNaN(odd) && !isNaN(stake) && odd >= 1.01 && stake > 0) {
-      const calcRetornoBase = stake * odd;
+    if (!isNaN(odd) && !isNaN(stake) && odd >= 1.01 && stake >= 0) {
+      const lucroBase = stake * (odd - 1);
       let calcBonus = 0;
       if (values.bonus_percent) {
         const bonus = parseFloat(values.bonus_percent);
         if (!isNaN(bonus) && bonus > 0) {
-          calcBonus = calcRetornoBase * (bonus / 100);
+          calcBonus = lucroBase * (bonus / 100);
         }
       }
       return { 
-        retorno: calcRetornoBase + calcBonus, 
-        lucroReal: calcRetornoBase - stake,
+        retorno: stake + lucroBase + calcBonus, 
+        lucroReal: lucroBase + calcBonus,
         valorBonus: calcBonus 
       };
     }

@@ -40,13 +40,19 @@ function calcularSaldoBanca(banca: Banca | null, bancas: Banca[], apostas: Apost
   );
   const lucroGreens = bancaBets
     .filter((aposta) => aposta.status === 'Green')
-    .reduce((acc, aposta) => acc + aposta.stake * (aposta.odd - 1), 0);
+    .reduce((acc, aposta) => {
+      let netProfit = aposta.stake * (aposta.odd - 1);
+      if (aposta.bonus_percent) {
+        netProfit += netProfit * (aposta.bonus_percent / 100);
+      }
+      return acc + netProfit;
+    }, 0);
   const prejuizoReds = bancaBets
     .filter((aposta) => aposta.status === 'Red')
-    .reduce((acc, aposta) => acc + aposta.stake, 0);
+    .reduce((acc, aposta) => acc + (aposta.is_freebet ? 0 : aposta.stake), 0);
   const stakeAbertas = bancaBets
     .filter((aposta) => aposta.status === 'Aberta')
-    .reduce((acc, aposta) => acc + aposta.stake, 0);
+    .reduce((acc, aposta) => acc + (aposta.is_freebet ? 0 : aposta.stake), 0);
 
   const bancaTransacoes = transacoes.filter((t) => t.banca_id === banca.id);
   const depositos = bancaTransacoes.filter(t => t.tipo === 'deposito').reduce((acc, t) => acc + t.valor, 0);

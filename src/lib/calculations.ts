@@ -15,11 +15,11 @@ export function calcularKpis(apostas: Aposta[]): KpiData {
 
   // Lucro das greens: stake * (odd - 1) por cada aposta ganha, mais bônus se houver
   const lucroGreens = greens.reduce((acc, a) => {
-    let grossReturn = a.stake * a.odd;
+    let netProfit = a.stake * (a.odd - 1);
     if (a.bonus_percent) {
-      grossReturn += grossReturn * (a.bonus_percent / 100);
+      netProfit += netProfit * (a.bonus_percent / 100);
     }
-    return acc + (grossReturn - a.stake);
+    return acc + netProfit;
   }, 0);
   
   // Prejuízo das reds: soma dos stakes perdidos (0 para freebets)
@@ -64,11 +64,11 @@ export function calcularEvolucaoBanca(
   const eventos: { tipo: 'aposta' | 'deposito' | 'saque'; valor: number; date: Date; timestamp: number }[] = ativasEResolvidas.map(a => {
     let valor = 0;
     if (a.status === 'Green') {
-      let grossReturn = a.stake * a.odd;
+      let netProfit = a.stake * (a.odd - 1);
       if (a.bonus_percent) {
-        grossReturn += grossReturn * (a.bonus_percent / 100);
+        netProfit += netProfit * (a.bonus_percent / 100);
       }
-      valor = grossReturn - a.stake;
+      valor = netProfit;
     } else {
       // Red ou Aberta
       valor = a.is_freebet ? 0 : -a.stake;
