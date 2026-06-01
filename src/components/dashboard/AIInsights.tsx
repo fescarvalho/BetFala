@@ -22,11 +22,12 @@ export function AIInsights({ isOpen, onClose, onOpenNovaAposta }: AIInsightsProp
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchInsights = async () => {
+  const fetchInsights = async (force = false) => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch('/api/insights');
+      const url = force ? '/api/insights?refresh=true' : '/api/insights';
+      const res = await fetch(url);
       const data = await res.json();
 
       if (!res.ok) {
@@ -47,7 +48,8 @@ export function AIInsights({ isOpen, onClose, onOpenNovaAposta }: AIInsightsProp
 
   useEffect(() => {
     if (isOpen && insights.length === 0 && !error) {
-      fetchInsights();
+      // Fetch insights, relying on backend cache verification (or generating fresh if stale)
+      fetchInsights(false);
     }
   }, [isOpen]);
 
@@ -85,7 +87,7 @@ export function AIInsights({ isOpen, onClose, onOpenNovaAposta }: AIInsightsProp
               {error ? 'Erro ao conectar. Tente novamente.' : 'Nenhuma aposta com valor esperado encontrada agora.'}
             </p>
             <button
-              onClick={fetchInsights}
+              onClick={() => fetchInsights(true)}
               className="px-6 py-3 bg-[#00FF88] text-[#11131A] font-bold rounded-xl flex items-center gap-2 mx-auto"
             >
               <RefreshCcw className="w-4 h-4" /> Refazer Análise
