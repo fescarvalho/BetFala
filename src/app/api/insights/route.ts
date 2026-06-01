@@ -33,9 +33,9 @@ export async function GET(req: NextRequest) {
         .single();
 
       if (existingInsight && existingInsight.insight_data) {
-        // Só usa o cache se tiver pelo menos 5 insights e o primeiro tiver o campo horario
+        // Só usa o cache se tiver pelo menos 10 insights e o primeiro tiver o campo horario
         const insights = existingInsight.insight_data?.insights;
-        const isValidCache = Array.isArray(insights) && insights.length >= 5 && insights[0].horario;
+        const isValidCache = Array.isArray(insights) && insights.length >= 10 && insights[0].horario;
         if (isValidCache) {
           return NextResponse.json(existingInsight.insight_data);
         }
@@ -65,7 +65,7 @@ export async function GET(req: NextRequest) {
     // Passo C: Construir o prompt
     const genAI = new GoogleGenerativeAI(apiKey);
     const prompt = `Você é um especialista em apostas esportivas com foco em Futebol e NBA.
-Analise os seguintes jogos de Futebol (Brasileirão, Champions League, Premier League) e NBA disponíveis, e sugira as 5 melhores apostas de valor para o usuário, levando em conta seu perfil.
+Analise os seguintes jogos de Futebol (Brasileirão, Champions League, Premier League) e NBA disponíveis, e sugira as 10 melhores apostas de valor para o usuário, levando em conta seu perfil.
 
 Perfil do usuário: ${historySummary}
 
@@ -75,7 +75,7 @@ ${JSON.stringify(oddsData, null, 2)}
 INSTRUÇÕES IMPORTANTES:
 - Analise APENAS jogos de Futebol e NBA. Ignore qualquer outro esporte.
 - Não invente dados, times, odds ou mercados que não estão listados acima.
-- Selecione 5 oportunidades que representem as melhores apostas matemáticas de acordo com as odds apresentadas.
+- Selecione 10 oportunidades que representem as melhores apostas matemáticas de acordo com as odds apresentadas.
 - Retorne EXCLUSIVAMENTE um objeto JSON válido, sem NENHUM texto adicional ou marcação markdown (não use \`\`\`json).
 - O campo "horario" deve ser extraído do campo "commence_time" do jogo (converta para o horário de Brasília, formato "HH:MM - DD/MM").
 - O formato obrigatório do JSON é:
