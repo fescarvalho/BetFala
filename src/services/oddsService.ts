@@ -59,5 +59,5 @@ export async function fetchUpcomingOdds(): Promise<OddsGame[]> {
     new Date(a.commence_time).getTime() - new Date(b.commence_time).getTime()
   );
 
-  return allGames.slice(0, 15);
+  return allGames.slice(0, 40);
 }

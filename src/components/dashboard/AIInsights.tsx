@@ -6,6 +6,7 @@ import { Bot, X, ArrowRight, Calendar, AlertCircle, RefreshCcw } from 'lucide-re
 interface Insight {
   jogo: string;
   mercado: string;
+  selecao?: string;
   odd: number;
   horario?: string;
   justificativa: string;
@@ -96,20 +97,30 @@ export function AIInsights({ isOpen, onClose, onOpenNovaAposta }: AIInsightsProp
         ) : (
           <>
             {insights.map((insight, idx) => {
-              const marketName = insight.mercado.includes('-')
-                ? insight.mercado.split('-')[0].trim()
-                : insight.mercado;
+              const marketName = insight.mercado;
 
               return (
                 <div key={idx} className="bg-[#1C1F2E] rounded-3xl p-5 border border-white/[0.04]  shadow-lg w-full min-w-0" style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: "10px", paddingBottom: "10px" }}>
                   <div className="flex justify-between items-start gap-4">
                     <div className="flex-1 min-w-0 pr-2">
-                      <div className="inline-flex max-w-full text-[#93C5FD] text-[10px] font-bold px-3 py-1.5 rounded-full mb-3.5 uppercase tracking-wide">
+                      <div className="inline-flex max-w-full text-[#93C5FD] text-[10px] font-bold px-3 py-1.5 rounded-full mb-3.5 uppercase tracking-wide bg-white/[0.03] border border-white/[0.05]">
                         <span className="truncate">{marketName}</span>
                       </div>
                       <h3 className="text-white text-[19px] font-medium leading-snug mb-2.5 break-words">
                         {insight.jogo}
                       </h3>
+                      
+                      {insight.selecao && (
+                        <div className="bg-white/[0.03] border border-white/[0.05] rounded-2xl px-3.5 py-2 mb-3 mt-1">
+                          <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">
+                            Entrada Sugerida:
+                          </div>
+                          <div className="text-[15px] text-[#00FF88] font-extrabold tracking-tight">
+                            {insight.selecao}
+                          </div>
+                        </div>
+                      )}
+
                       <div className="flex items-center gap-1.5 text-gray-400 text-[13px] mb-5">
                         <Calendar className="w-4 h-4 opacity-70 shrink-0" />
                         <span className="truncate">
@@ -126,7 +137,10 @@ export function AIInsights({ isOpen, onClose, onOpenNovaAposta }: AIInsightsProp
                         onClick={() => {
                           if (onOpenNovaAposta) {
                             onClose();
-                            onOpenNovaAposta({ jogo: insight.jogo, mercado: insight.mercado, odd: insight.odd });
+                            const fullMarket = insight.selecao 
+                              ? `${insight.mercado} - ${insight.selecao}`
+                              : insight.mercado;
+                            onOpenNovaAposta({ jogo: insight.jogo, mercado: fullMarket, odd: insight.odd });
                           }
                         }}
                         className="bg-[#00FF88] text-black rounded-xl h-10 w-full flex items-center justify-center hover:bg-[#00CC70] active:scale-95 transition-all shadow-[0_0_15px_rgba(0,255,136,0.15)]"

@@ -33,9 +33,9 @@ export async function GET(req: NextRequest) {
         .single();
 
       if (existingInsight && existingInsight.insight_data) {
-        // Só usa o cache se tiver pelo menos 10 insights e o primeiro tiver o campo horario
+        // Só usa o cache se o primeiro insight tiver os campos horario e selecao (novo formato)
         const insights = existingInsight.insight_data?.insights;
-        const isValidCache = Array.isArray(insights) && insights.length >= 10 && insights[0].horario;
+        const isValidCache = Array.isArray(insights) && (insights.length === 0 || (insights[0].horario && insights[0].selecao));
         if (isValidCache) {
           return NextResponse.json(existingInsight.insight_data);
         }
@@ -62,20 +62,41 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ insights: [] });
     }
 
+    // Filtrar apenas jogos do dia atual (no fuso horário de Brasília)
+    const getBrasiliaDate = (dateStr: string) => {
+      try {
+        return new Date(dateStr).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+      } catch (e) {
+        return '';
+      }
+    };
+    const todayBrasilia = new Date().toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+    const todayOddsData = oddsData
+      .filter((game) => getBrasiliaDate(game.commence_time) === todayBrasilia)
+      .slice(0, 25);
+
+    if (todayOddsData.length === 0) {
+      return NextResponse.json({ insights: [] });
+    }
+
+    // Limita o número de insights ao máximo de jogos disponíveis hoje, no máximo 10
+    const numInsights = Math.min(10, todayOddsData.length);
+
     // Passo C: Construir o prompt
     const genAI = new GoogleGenerativeAI(apiKey);
     const prompt = `Você é um especialista em apostas esportivas com foco em Futebol e NBA.
-Analise os seguintes jogos de Futebol (Brasileirão, Champions League, Premier League) e NBA disponíveis, e sugira as 10 melhores apostas de valor para o usuário, levando em conta seu perfil.
+Analise os seguintes jogos de Futebol (Brasileirão, Champions League, Premier League) e NBA disponíveis hoje, e sugira as ${numInsights} melhores apostas de valor para o usuário, levando em conta seu perfil.
 
 Perfil do usuário: ${historySummary}
 
 Jogos e Odds Disponíveis (formato decimal):
-${JSON.stringify(oddsData, null, 2)}
+${JSON.stringify(todayOddsData, null, 2)}
 
 INSTRUÇÕES IMPORTANTES:
 - Analise APENAS jogos de Futebol e NBA. Ignore qualquer outro esporte.
+- NÃO repita o mesmo confronto em múltiplos insights. Cada sugestão deve ser de um confronto diferente para garantir variedade (no máximo 1 insight por jogo).
 - Não invente dados, times, odds ou mercados que não estão listados acima.
-- Selecione 10 oportunidades que representem as melhores apostas matemáticas de acordo com as odds apresentadas.
+- Selecione ${numInsights} oportunidades de confrontos distintos que representem as melhores apostas matemáticas de acordo com as odds apresentadas.
 - Retorne EXCLUSIVAMENTE um objeto JSON válido, sem NENHUM texto adicional ou marcação markdown (não use \`\`\`json).
 - O campo "horario" deve ser extraído do campo "commence_time" do jogo (converta para o horário de Brasília, formato "HH:MM - DD/MM").
 - O formato obrigatório do JSON é:
@@ -83,10 +104,11 @@ INSTRUÇÕES IMPORTANTES:
   "insights": [
     {
       "jogo": "Time A vs Time B",
-      "mercado": "Vencedor da Partida - Time A",
+      "mercado": "Vencedor da Partida",
+      "selecao": "Vitória do Time A",
       "odd": 1.85,
       "horario": "21:00 - 01/06",
-      "justificativa": "Motivo curto, claro e analítico da escolha baseado nas odds apresentadas."
+      "justificativa": "Motivo curto, claro e analítico da escolha baseado nas odds apresentadas. Explique por que apostar especificamente na seleção sugerida."
     }
   ]
 }`;
