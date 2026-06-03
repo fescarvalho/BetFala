@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Bot, X, ArrowRight, Calendar, AlertCircle, RefreshCcw } from 'lucide-react';
+import { createClient } from '@/lib/supabase/client';
 
 interface Insight {
   jogo: string;
@@ -33,20 +34,24 @@ export function AIInsights({ isOpen, onClose, onOpenNovaAposta }: AIInsightsProp
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchInsights = async (force = false) => {
+  const fetchInsights = async () => {
     setLoading(true);
     setError(null);
     try {
-      const url = force ? '/api/insights?refresh=true' : '/api/insights';
-      const res = await fetch(url);
-      const data = await res.json();
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from('ai_insights')
+        .select('data')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
-      if (!res.ok) {
-        throw new Error(data.error || 'Falha ao buscar insights');
+      if (error) {
+        throw new Error('Falha ao buscar insights');
       }
 
-      if (data.insights && Array.isArray(data.insights)) {
-        setInsights(data.insights);
+      if (data?.data?.insights && Array.isArray(data.data.insights)) {
+        setInsights(data.data.insights);
       } else {
         setInsights([]);
       }
@@ -60,7 +65,7 @@ export function AIInsights({ isOpen, onClose, onOpenNovaAposta }: AIInsightsProp
   useEffect(() => {
     if (isOpen && insights.length === 0 && !error) {
       // Fetch insights, relying on backend cache verification (or generating fresh if stale)
-      fetchInsights(false);
+      fetchInsights();
     }
   }, [isOpen]);
 
@@ -98,14 +103,14 @@ export function AIInsights({ isOpen, onClose, onOpenNovaAposta }: AIInsightsProp
               {error ? 'Erro ao conectar. Tente novamente.' : 'Nenhuma aposta com valor esperado encontrada agora.'}
             </p>
             <button
-              onClick={() => fetchInsights(true)}
+              onClick={() => fetchInsights()}
               className="px-6 py-3 bg-[#00FF88] text-[#11131A] font-bold rounded-xl flex items-center gap-2 mx-auto"
             >
               <RefreshCcw className="w-4 h-4" /> Refazer Análise
             </button>
           </div>
         ) : (
-          <>
+          <div className="w-full px-4 flex flex-col gap-4">
             {insights.map((insight, idx) => {
               const badgeText = insight.selecao || insight.mercado;
 
@@ -123,7 +128,7 @@ export function AIInsights({ isOpen, onClose, onOpenNovaAposta }: AIInsightsProp
                       <div className="flex items-center gap-1.5 text-gray-400 text-[13px] mb-5">
                         <Calendar className="w-4 h-4 opacity-70 shrink-0" />
                         <span className="truncate">
-                          {insight.horario ? `Hoje às ${insight.horario}` : 'Mercados Diários • Hoje'}
+                          {insight.horario ? insight.horario : 'Mercados Diários'}
                         </span>
                       </div>
                     </div>
@@ -172,7 +177,7 @@ export function AIInsights({ isOpen, onClose, onOpenNovaAposta }: AIInsightsProp
 
             {/* Bottom Banner */}
 
-          </>
+          </div>
         )}
       </div>
     </div>

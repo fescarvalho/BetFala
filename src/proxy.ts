@@ -36,8 +36,8 @@ export async function proxy(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  // Redirecionar para login se não autenticado (exceto a própria rota de auth)
-  if (!user && pathname !== '/auth') {
+  // Redirecionar para login se não autenticado (exceto auth e cron)
+  if (!user && pathname !== '/auth' && !pathname.startsWith('/api/cron')) {
     return NextResponse.redirect(new URL('/auth', request.url));
   }
 

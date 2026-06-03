@@ -84,40 +84,37 @@ export async function GET(req: NextRequest) {
 
     // Passo C: Construir o prompt
     const genAI = new GoogleGenerativeAI(apiKey);
-    const prompt = `Você é um analista quantitativo sênior de apostas esportivas, especialista em identificar "Value Bets" (Apostas de Valor) e Expected Value Positivo (EV+).
+    const prompt = `Você é um analista de apostas esportivas focado em valor (EV+).
+Analise os dados de jogos de Futebol (Brasileirão, Champions League, Premier League, Serie A, La Liga, Ligue 1, Bundesliga, Copa do Mundo 2026, Amistosos Internacionais) e NBA disponíveis hoje.
+Cruze com o perfil do usuário para sugerir até \${numInsights} oportunidades.
 
-Analise os seguintes dados de jogos de Futebol (Brasileirão, Champions League, Premier League, Serie A, La Liga, Ligue 1, Bundesliga, Copa do Mundo 2026, Amistosos Internacionais) e NBA disponíveis hoje, cruzando com o perfil de lucratividade do usuário para sugerir as ${numInsights} melhores oportunidades.
-
-Perfil do usuário: ${historySummary}
+Perfil do usuário: \${historySummary}
 
 Jogos, Mercados e Odds Disponíveis:
-${JSON.stringify(todayOddsData, null, 2)}
+\${JSON.stringify(todayOddsData, null, 2)}
 
-Critérios OBRIGATÓRIOS de Análise:
-1. QUANTIDADE EXATA: Você DEVE gerar e retornar EXATAMENTE ${numInsights} insights. O array final deve conter ${numInsights} objetos.
-2. Escopo Amplo e Fuga de Padrão (EV+): Busque anomalias e desajustes tanto em Mercados Tradicionais (Vencedor da Partida/Moneyline, Handicaps, Totais) quanto em Mercados de Jogadores/Props (estatísticas individuais).
-3. Variedade Exigida: NÃO repita o mesmo confronto. Cada sugestão deve ser de um confronto diferente (máximo 1 insight por jogo).
-4. Indicação da Casa de Aposta: Identifique nos dados qual plataforma (bookmaker) oferece a odd sugerida (ex: Betano, Bet365, Superbet).
-5. Precisão: Não invente dados, times, odds ou mercados que não estão no JSON fornecido.
-6. Horário: Extraia do campo "commence_time" e converta para o horário de Brasília (formato "HH:MM - DD/MM").
+Sua Tarefa:
+1. Sugira até \${numInsights} apostas de valor (EV+), buscando anomalias em Mercados Tradicionais (Vencedor, Handicaps) ou Props de Jogadores.
+2. Não repita confrontos (máximo 1 insight por jogo). Se não houver \${numInsights} boas opções nos dados, retorne menos, não há problema.
+3. Indique a casa de aposta (bookmaker) correspondente.
+4. Horário: Extraia do campo "commence_time" (formato de Brasília: HH:MM - DD/MM).
+5. Use apenas os dados fornecidos.
 
-Formato de Saída (Exclusivo):
-Retorne EXCLUSIVAMENTE um objeto JSON válido, sem NENHUM texto adicional ou marcação markdown (não use \`\`\`json). O formato obrigatório é:
-
+Responda APENAS com um objeto JSON válido, sem marcações markdown ou texto extra. Formato:
 {
   "insights": [
     {
       "jogo": "Time A vs Time B",
-      "mercado": "Nome do Mercado (ex: Vencedor da Partida OU Chutes ao Gol)",
-      "selecao": "Sua escolha específica (ex: Vitória do Time A OU Arrascaeta Over 0.5)",
+      "mercado": "Nome do Mercado",
+      "selecao": "Sua escolha",
       "odd": 2.15,
-      "casa": "Nome da Casa de Aposta",
+      "casa": "Nome da Casa",
       "horario": "21:30 - 03/06",
-      "justificativa": "Análise técnica detalhada (máx 3 frases) explicando o desajuste da odd, citando o contexto e os números."
+      "justificativa": "Análise técnica (máx 3 frases)."
     }
-    // O ARRAY DEVE CONTER EXATAMENTE ${numInsights} OBJETOS COMO ESTE ACIMA
   ]
 }`;
+
     // Passo D: Chamar Gemini com fallback
     const responseText = await generateContentWithRetryAndFallback(genAI, prompt);
     const cleanedText = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
