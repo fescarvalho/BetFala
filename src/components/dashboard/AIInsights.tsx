@@ -8,6 +8,7 @@ interface Insight {
   mercado: string;
   selecao?: string;
   odd: number;
+  casa?: string;
   horario?: string;
   justificativa: string;
 }
@@ -17,6 +18,15 @@ interface AIInsightsProps {
   onClose: () => void;
   onOpenNovaAposta?: (prefill: { jogo: string; mercado: string; odd: number }) => void;
 }
+const getCasaColor = (casa?: string) => {
+  if (!casa) return 'bg-gray-500/20 text-gray-400 border-gray-500/30';
+  const lower = casa.toLowerCase();
+  if (lower.includes('betano')) return 'bg-orange-500/20 text-orange-400 border-orange-500/30';
+  if (lower.includes('superbet')) return 'bg-red-500/20 text-red-400 border-red-500/30';
+  if (lower.includes('kto')) return 'bg-green-500/20 text-green-400 border-green-500/30';
+  if (lower.includes('bet365')) return 'bg-teal-500/20 text-teal-400 border-teal-500/30';
+  return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
+};
 
 export function AIInsights({ isOpen, onClose, onOpenNovaAposta }: AIInsightsProps) {
   const [insights, setInsights] = useState<Insight[]>([]);
@@ -97,29 +107,18 @@ export function AIInsights({ isOpen, onClose, onOpenNovaAposta }: AIInsightsProp
         ) : (
           <>
             {insights.map((insight, idx) => {
-              const marketName = insight.mercado;
+              const badgeText = insight.selecao || insight.mercado;
 
               return (
                 <div key={idx} className="bg-[#1C1F2E] rounded-3xl p-5 border border-white/[0.04]  shadow-lg w-full min-w-0" style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: "10px", paddingBottom: "10px" }}>
                   <div className="flex justify-between items-start gap-4">
                     <div className="flex-1 min-w-0 pr-2">
                       <div className="inline-flex max-w-full text-[#93C5FD] text-[10px] font-bold px-3 py-1.5 rounded-full mb-3.5 uppercase tracking-wide bg-white/[0.03] border border-white/[0.05]">
-                        <span className="truncate">{marketName}</span>
+                        <span className="truncate">{badgeText}</span>
                       </div>
                       <h3 className="text-white text-[19px] font-medium leading-snug mb-2.5 break-words">
                         {insight.jogo}
                       </h3>
-                      
-                      {insight.selecao && (
-                        <div className="bg-white/[0.03] border border-white/[0.05] rounded-2xl px-3.5 py-2 mb-3 mt-1">
-                          <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">
-                            Entrada Sugerida:
-                          </div>
-                          <div className="text-[15px] text-[#00FF88] font-extrabold tracking-tight">
-                            {insight.selecao}
-                          </div>
-                        </div>
-                      )}
 
                       <div className="flex items-center gap-1.5 text-gray-400 text-[13px] mb-5">
                         <Calendar className="w-4 h-4 opacity-70 shrink-0" />
@@ -129,8 +128,13 @@ export function AIInsights({ isOpen, onClose, onOpenNovaAposta }: AIInsightsProp
                       </div>
                     </div>
 
-                    <div className="flex flex-col gap-3 shrink-0">
-                      <div className="bg-[#00FF88] text-black font-black text-xl px-4 py-2 rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(0,255,136,0.15)] min-w-[60px]">
+                    <div className="flex flex-col gap-3 shrink-0 items-end">
+                      {insight.casa && (
+                        <div className={`text-[9px] font-bold px-2 py-0.5 rounded uppercase border ${getCasaColor(insight.casa)}`}>
+                          {insight.casa}
+                        </div>
+                      )}
+                      <div className="bg-[#00FF88] text-black font-black text-xl px-4 py-2 rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(0,255,136,0.15)] min-w-[60px] w-full">
                         {Number(insight.odd).toFixed(2)}
                       </div>
                       <button
