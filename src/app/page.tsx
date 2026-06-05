@@ -48,6 +48,9 @@ function calcularSaldoBanca(banca: Banca | null, bancas: Banca[], apostas: Apost
       }
       return acc + netProfit;
     }, 0);
+  const lucroCashouts = bancaBets
+    .filter((aposta) => aposta.status === 'Cashout')
+    .reduce((acc, aposta) => acc + ((aposta.valor_cashout || 0) - aposta.stake), 0);
   const prejuizoReds = bancaBets
     .filter((aposta) => aposta.status === 'Red')
     .reduce((acc, aposta) => acc + (aposta.is_freebet ? 0 : aposta.stake), 0);
@@ -59,7 +62,7 @@ function calcularSaldoBanca(banca: Banca | null, bancas: Banca[], apostas: Apost
   const depositos = bancaTransacoes.filter(t => t.tipo === 'deposito').reduce((acc, t) => acc + t.valor, 0);
   const saques = bancaTransacoes.filter(t => t.tipo === 'saque').reduce((acc, t) => acc + t.valor, 0);
 
-  return banca.saldo_inicial + depositos - saques + lucroGreens - prejuizoReds - stakeAbertas;
+  return banca.saldo_inicial + depositos - saques + lucroGreens + lucroCashouts - prejuizoReds - stakeAbertas;
 }
 
 function DashboardPageContent() {
@@ -184,8 +187,8 @@ function DashboardPageContent() {
     return filteredPoints;
   }, [evolucaoTotal, filtros]);
 
-  const handleStatusChange = async (id: string, status: ApostaStatus) =>
-    await atualizarAposta({ id, status });
+  const handleStatusChange = async (id: string, status: ApostaStatus, valor_cashout?: number) =>
+    await atualizarAposta({ id, status, valor_cashout });
 
   const openManualForm = () => { setStartVoiceImmediately(false); setEditingAposta(null); setInsightPrefill(null); setShowForm(true); };
   const openVoiceForm = () => { setStartVoiceImmediately(true); setEditingAposta(null); setInsightPrefill(null); setShowForm(true); };

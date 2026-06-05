@@ -11,6 +11,7 @@ export function calcularKpis(apostas: Aposta[]): KpiData {
   const greens = apostas.filter((a) => a.status === 'Green');
   const reds = apostas.filter((a) => a.status === 'Red');
   const abertas = apostas.filter((a) => a.status === 'Aberta');
+  const cashouts = apostas.filter((a) => a.status === 'Cashout');
   const voids = apostas.filter((a) => a.status === 'Void');
 
   // Lucro das greens: stake * (odd - 1) por cada aposta ganha, mais bônus se houver
@@ -22,15 +23,18 @@ export function calcularKpis(apostas: Aposta[]): KpiData {
     return acc + netProfit;
   }, 0);
   
+  // Lucro/Prejuízo dos cashouts
+  const lucroCashouts = cashouts.reduce((acc, a) => acc + ((a.valor_cashout || 0) - a.stake), 0);
+
   // Prejuízo das reds: soma dos stakes perdidos (0 para freebets)
   const prejuizoReds = reds.reduce((acc, a) => acc + (a.is_freebet ? 0 : a.stake), 0);
-  const lucroTotal = lucroGreens - prejuizoReds;
+  const lucroTotal = lucroGreens + lucroCashouts - prejuizoReds;
 
-  // Total investido (apenas resolvidas: Green + Red) - exclui freebets
-  const totalInvestido = [...greens, ...reds].reduce((acc, a) => acc + (a.is_freebet ? 0 : a.stake), 0);
+  // Total investido (apenas resolvidas: Green + Red + Cashout) - exclui freebets
+  const totalInvestido = [...greens, ...reds, ...cashouts].reduce((acc, a) => acc + (a.is_freebet ? 0 : a.stake), 0);
 
   // Taxa de acerto
-  const resolvidas = greens.length + reds.length;
+  const resolvidas = greens.length + reds.length + cashouts.length;
   const taxaAcerto = resolvidas > 0 ? (greens.length / resolvidas) * 100 : 0;
 
   // ROI
@@ -58,7 +62,7 @@ export function calcularEvolucaoBanca(
   bancaInicial: number = 0
 ): { data: string; banca: number; label: string; timestamp?: number }[] {
   // Apostas ativas e resolvidas
-  const ativasEResolvidas = apostas.filter((a) => a.status === 'Green' || a.status === 'Red' || a.status === 'Aberta');
+  const ativasEResolvidas = apostas.filter((a) => a.status === 'Green' || a.status === 'Red' || a.status === 'Aberta' || a.status === 'Cashout');
 
   // Cria eventos para apostas
   const eventos: { tipo: 'aposta' | 'deposito' | 'saque'; valor: number; date: Date; timestamp: number }[] = ativasEResolvidas.map(a => {
@@ -69,6 +73,8 @@ export function calcularEvolucaoBanca(
         netProfit += netProfit * (a.bonus_percent / 100);
       }
       valor = netProfit;
+    } else if (a.status === 'Cashout') {
+      valor = (a.valor_cashout || 0) - a.stake;
     } else {
       // Red ou Aberta
       valor = a.is_freebet ? 0 : -a.stake;

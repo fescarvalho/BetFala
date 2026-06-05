@@ -61,6 +61,16 @@ export default function RelatoriosTab({ activeBanca, apostas, transacoes, bancas
           valor: lucro,
           isGreen: true,
         });
+      } else if (a.status === 'Cashout') {
+        const lucro = (a.valor_cashout || 0) - a.stake;
+        combined.push({
+          id: a.id,
+          data: a.data_criacao || new Date().toISOString(),
+          tipo: 'aposta',
+          descricao: `Cashout: ${a.times_apostados}`,
+          valor: lucro,
+          isGreen: lucro > 0,
+        });
       } else if (a.status === 'Red') {
         combined.push({
           id: a.id,

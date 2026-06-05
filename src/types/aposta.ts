@@ -2,7 +2,7 @@
 // Tipos TypeScript — BetFala
 // ============================================================
 
-export type ApostaStatus = 'Aberta' | 'Green' | 'Red' | 'Void';
+export type ApostaStatus = 'Aberta' | 'Green' | 'Red' | 'Void' | 'Cashout';
 
 export interface Banca {
   id: string;
@@ -35,6 +35,7 @@ export interface Aposta {
   banca_id?: string;
   is_freebet?: boolean;
   bonus_percent?: number;
+  valor_cashout?: number;
 }
 
 export interface ApostaInsert {
@@ -46,6 +47,7 @@ export interface ApostaInsert {
   banca_id?: string;
   is_freebet?: boolean;
   bonus_percent?: number;
+  valor_cashout?: number;
 }
 
 export interface ApostaUpdate {
@@ -58,6 +60,7 @@ export interface ApostaUpdate {
   banca_id?: string;
   is_freebet?: boolean;
   bonus_percent?: number;
+  valor_cashout?: number;
 }
 
 export interface KpiData {
