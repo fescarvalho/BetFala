@@ -68,7 +68,7 @@ export default function KpiCards({ kpis }: KpiCardsProps) {
             id={card.id}
             className="flex flex-col"
             style={{
-              background: '#0F172A',
+              background: '#171717',
               borderRadius: '24px',
               padding: '22px 20px',
               minHeight: '140px',
@@ -146,7 +146,7 @@ export default function KpiCards({ kpis }: KpiCardsProps) {
               >
                 <div
                   className="h-full rounded-full transition-all duration-700"
-                  style={{ width: `${card.progress}%`, background: '#00FF88' }}
+                  style={{ width: `${card.progress}%`, background: '#8B5CF6' }}
                 />
               </div>
             )}

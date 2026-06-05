@@ -44,7 +44,7 @@ export default function BottomNavBar({ onNovaAposta, onOpenInsights }: BottomNav
         paddingBottom: 'calc(12px + env(safe-area-inset-bottom))',
         paddingLeft: '24px',
         paddingRight: '24px',
-        background: 'rgba(5,8,22,0.82)',
+        background: 'rgba(10,10,10,0.82)',
         backdropFilter: 'blur(28px)',
         WebkitBackdropFilter: 'blur(28px)',
         borderTop: '1px solid rgba(255,255,255,0.05)',
@@ -79,14 +79,14 @@ export default function BottomNavBar({ onNovaAposta, onOpenInsights }: BottomNav
                 alignItems: 'center',
                 justifyContent: 'center',
                 borderRadius: '12px',
-                background: isActive ? 'rgba(0,255,136,0.13)' : 'transparent',
+                background: isActive ? 'rgba(139,92,246,0.13)' : 'transparent',
                 transition: 'all 0.15s',
               }}
             >
               <Icon
                 size={19}
                 strokeWidth={isActive ? 2.4 : 1.7}
-                color={isActive ? '#00FF88' : '#94A3B8'}
+                color={isActive ? '#8B5CF6' : '#94A3B8'}
               />
             </div>
             <span
@@ -94,7 +94,7 @@ export default function BottomNavBar({ onNovaAposta, onOpenInsights }: BottomNav
                 fontSize: '10px',
                 fontWeight: 600,
                 lineHeight: '1',
-                color: isActive ? '#00FF88' : '#94A3B8',
+                color: isActive ? '#8B5CF6' : '#94A3B8',
                 transition: 'color 0.15s',
               }}
             >

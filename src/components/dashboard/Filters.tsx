@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { Search, X } from 'lucide-react';
 import { FiltrosState } from '@/types/aposta';
@@ -36,7 +36,7 @@ export default function Filters({ filtros, onChange }: FiltersProps) {
   return (
     <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '14px' }}>
 
-      {/* ── Single row: search + period chips ── */}
+      {/* â”€â”€ Single row: search + period chips â”€â”€ */}
       <div
         style={{
           display: 'flex',
@@ -73,7 +73,7 @@ export default function Filters({ filtros, onChange }: FiltersProps) {
               height: '44px',
               width: filtros.busca ? '180px' : '130px',
               borderRadius: '22px',
-              background: '#0F172A',
+              background: '#171717',
               border: 'none',
               outline: 'none',
               paddingLeft: '36px',
@@ -139,7 +139,7 @@ export default function Filters({ filtros, onChange }: FiltersProps) {
                 transition: 'all 0.15s',
                 border: 'none',
                 outline: 'none',
-                background: isActive ? '#00FF88' : '#0F172A',
+                background: isActive ? '#8B5CF6' : '#171717',
                 color: isActive ? '#050816' : '#94A3B8',
                 flexShrink: 0,
                 whiteSpace: 'nowrap',
@@ -150,7 +150,7 @@ export default function Filters({ filtros, onChange }: FiltersProps) {
           );
         })}
 
-        {/* Clear — só aparece se há filtro ativo */}
+        {/* Clear â€” só aparece se há filtro ativo */}
         {hasActiveFilters && (
           <button
             onClick={clear}
@@ -178,7 +178,7 @@ export default function Filters({ filtros, onChange }: FiltersProps) {
         )}
       </div>
 
-      {/* ── Custom date range (só aparece se 'personalizado') ── */}
+      {/* â”€â”€ Custom date range (só aparece se 'personalizado') â”€â”€ */}
       {filtros.periodo === 'personalizado' && (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
           <div>
@@ -199,7 +199,7 @@ export default function Filters({ filtros, onChange }: FiltersProps) {
                 height: '46px',
                 width: '100%',
                 borderRadius: '16px',
-                background: '#0F172A',
+                background: '#171717',
                 border: 'none',
                 outline: 'none',
                 paddingLeft: '14px',
@@ -229,7 +229,7 @@ export default function Filters({ filtros, onChange }: FiltersProps) {
                 height: '46px',
                 width: '100%',
                 borderRadius: '16px',
-                background: '#0F172A',
+                background: '#171717',
                 border: 'none',
                 outline: 'none',
                 paddingLeft: '14px',
@@ -246,3 +246,4 @@ export default function Filters({ filtros, onChange }: FiltersProps) {
     </div>
   );
 }
+

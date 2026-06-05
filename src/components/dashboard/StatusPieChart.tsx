@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import {
   PieChart,
@@ -54,7 +54,7 @@ export default function StatusPieChart({ kpis }: StatusPieChartProps) {
   return (
     <div
       style={{
-        background: '#0F172A',
+        background: '#171717',
         borderRadius: '28px',
         padding: '26px 24px',
         minHeight: '260px',
@@ -142,10 +142,11 @@ export default function StatusPieChart({ kpis }: StatusPieChartProps) {
         </div>
       ) : (
         <div className="flex-1 flex flex-col items-center justify-center text-[var(--text-muted)] text-sm">
-          <span className="text-3xl mb-2 opacity-30">🎯</span>
+          <span className="text-3xl mb-2 opacity-30">ðŸŽ¯</span>
           Nenhuma aposta para mostrar distribuição.
         </div>
       )}
     </div>
   );
 }
+

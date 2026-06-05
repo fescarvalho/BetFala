@@ -28,7 +28,7 @@ export default function Header({
         justifyContent: 'space-between',
         paddingLeft: '24px',
         paddingRight: '16px',
-        background: 'rgba(5,8,22,0.88)',
+        background: 'rgba(10,10,10,0.88)',
         backdropFilter: 'blur(24px)',
         WebkitBackdropFilter: 'blur(24px)',
         borderBottom: '1px solid rgba(255,255,255,0.04)',
@@ -44,8 +44,8 @@ export default function Header({
             display: 'grid',
             placeItems: 'center',
             borderRadius: '14px',
-            background: 'rgba(0,255,136,0.1)',
-            color: '#00FF88',
+            background: 'rgba(139,92,246,0.1)',
+            color: '#8B5CF6',
           }}
         >
           <WalletCards size={17} strokeWidth={2} />

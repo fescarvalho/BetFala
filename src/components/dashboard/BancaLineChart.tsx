@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import {
   AreaChart,
@@ -38,7 +38,7 @@ function CustomTooltip({ active, payload, label }: {
         }}
       >
         <p style={{ fontSize: '10px', color: '#94A3B8', fontWeight: 500, marginBottom: '4px' }}>{label}</p>
-        <p style={{ fontSize: '14px', fontWeight: 700, fontFamily: 'monospace', color: isPositive ? '#00FF88' : '#ffb4ab' }}>
+        <p style={{ fontSize: '14px', fontWeight: 700, fontFamily: 'monospace', color: isPositive ? '#22c55e' : '#ffb4ab' }}>
           {formatarMoeda(value)}
         </p>
       </div>
@@ -57,7 +57,7 @@ export default function BancaLineChart({ dados, onAddAposta }: BancaLineChartPro
   return (
     <div
       style={{
-        background: '#0F172A',
+        background: '#171717',
         borderRadius: '28px',
         padding: '26px 24px',
         minHeight: '260px',
@@ -88,8 +88,8 @@ export default function BancaLineChart({ dados, onAddAposta }: BancaLineChartPro
             <AreaChart data={dadosComId} margin={{ top: 8, right: 4, left: -24, bottom: 0 }}>
               <defs>
                 <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%"   stopColor="rgba(0,255,136,0.3)" stopOpacity={1} />
-                  <stop offset="100%" stopColor="rgba(0,255,136,0)"   stopOpacity={1} />
+                  <stop offset="0%"   stopColor="rgba(34,197,94,0.3)" stopOpacity={1} />
+                  <stop offset="100%" stopColor="rgba(34,197,94,0)"   stopOpacity={1} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
@@ -113,13 +113,13 @@ export default function BancaLineChart({ dados, onAddAposta }: BancaLineChartPro
               <Area
                 type="monotone"
                 dataKey="banca"
-                stroke="#00FF88"
+                stroke="#22c55e"
                 strokeWidth={2.5}
                 fill="url(#chartGradient)"
-                dot={{ fill: '#00FF88', stroke: '#0F172A', strokeWidth: 2, r: 3 }}
-                activeDot={{ r: 5, fill: '#00FF88', stroke: '#0F172A', strokeWidth: 2 }}
+                dot={{ fill: '#22c55e', stroke: '#171717', strokeWidth: 2, r: 3 }}
+                activeDot={{ r: 5, fill: '#22c55e', stroke: '#171717', strokeWidth: 2 }}
                 animationDuration={600}
-                style={{ filter: 'drop-shadow(0 0 6px rgba(0,255,136,0.45))' }}
+                style={{ filter: 'drop-shadow(0 0 6px rgba(34,197,94,0.45))' }}
               />
             </AreaChart>
           </ResponsiveContainer>
@@ -153,8 +153,8 @@ export default function BancaLineChart({ dados, onAddAposta }: BancaLineChartPro
                   alignItems: 'center',
                   gap: '8px',
                   borderRadius: '20px',
-                  background: 'rgba(0,255,136,0.1)',
-                  color: '#00FF88',
+                  background: 'rgba(34,197,94,0.1)',
+                  color: '#22c55e',
                   fontSize: '13px',
                   fontWeight: 600,
                   padding: '10px 20px',
@@ -174,3 +174,4 @@ export default function BancaLineChart({ dados, onAddAposta }: BancaLineChartPro
     </div>
   );
 }
+

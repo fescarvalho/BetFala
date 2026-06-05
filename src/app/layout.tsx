@@ -10,9 +10,9 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: 'BetFala — Gestão de Banca de Apostas',
+  title: 'ProBank - Inteligência em Gestão Esportiva',
   description:
-    'Gerencie sua banca de apostas esportivas com inteligência. Dashboard completo com KPIs, gráficos e histórico de apostas.',
+    'ProBank - Inteligência em Gestão Esportiva. Dashboard completo com KPIs, gráficos e histórico.',
   keywords: 'apostas esportivas, gestão de banca, ROI, análise de apostas, futebol, NBA',
   icons: {
     icon: [
@@ -33,7 +33,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR" className={`${outfit.variable}`}>
-      <body className="font-sans antialiased bg-[#050816] text-[#FFFFFF]">
+      <body className="font-sans antialiased bg-neutral-950 text-white">
         {children}
       </body>
     </html>

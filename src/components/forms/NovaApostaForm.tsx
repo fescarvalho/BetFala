@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import {
@@ -13,7 +13,7 @@ import {
 import { ApostaInsert, Banca, Aposta, ApostaUpdate } from '@/types/aposta';
 import { useVoiceInput } from '@/hooks/useVoiceInput';
 
-/* ─── Types ──────────────────────────────────────────────── */
+/* â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 interface FormValues {
   times_apostados: string;
   detalhe_aposta: string;
@@ -76,7 +76,7 @@ function formatBRL(val: number) {
   return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
-/* ─── Floating-label input ───────────────────────────────── */
+/* â”€â”€â”€ Floating-label input â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 function FloatInput({
   id,
   label,
@@ -105,7 +105,7 @@ function FloatInput({
   const borderColor = error
     ? 'rgba(255,77,109,0.5)'
     : focused
-      ? 'rgba(0,255,136,0.4)'
+      ? 'rgba(139,92,246,0.4)'
       : 'rgba(255,255,255,0.07)';
 
   return (
@@ -130,7 +130,7 @@ function FloatInput({
             transform: raised ? 'none' : 'translateY(-50%)',
             fontSize: raised ? '10px' : '14px',
             fontWeight: raised ? 600 : 500,
-            color: focused ? '#00FF88' : '#94A3B8',
+            color: focused ? '#8B5CF6' : '#94A3B8',
             letterSpacing: raised ? '0.05em' : '0',
             textTransform: raised ? 'uppercase' : 'none',
             transition: 'all 0.18s cubic-bezier(0.4,0,0.2,1)',
@@ -181,7 +181,7 @@ function FloatInput({
   );
 }
 
-/* ─── Component ──────────────────────────────────────────── */
+/* â”€â”€â”€ Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 export default function NovaApostaForm({
   onSave,
   onUpdate,
@@ -436,7 +436,7 @@ export default function NovaApostaForm({
   };
 
   return (
-    /* ── Backdrop ── */
+    /* â”€â”€ Backdrop â”€â”€ */
     <div
       style={{
         position: 'fixed',
@@ -460,7 +460,7 @@ export default function NovaApostaForm({
         }}
       />
 
-      {/* ── Bottom sheet ── */}
+      {/* â”€â”€ Bottom sheet â”€â”€ */}
       <div
         ref={sheetRef}
         style={{
@@ -471,14 +471,14 @@ export default function NovaApostaForm({
           maxHeight: '94dvh',
           display: 'flex',
           flexDirection: 'column',
-          background: '#0F172A',
+          background: '#171717',
           borderRadius: '32px 32px 0 0',
           boxShadow: '0 -24px 80px rgba(0,0,0,0.6)',
           overflow: 'hidden',
         }}
         className="sheet-enter sm:!rounded-[32px] sm:!mb-4 sm:!max-h-[90dvh]"
       >
-        {/* ── Drag handle ── */}
+        {/* â”€â”€ Drag handle â”€â”€ */}
         <div
           style={{
             display: 'flex',
@@ -491,7 +491,7 @@ export default function NovaApostaForm({
           <div style={{ width: '40px', height: '4px', borderRadius: '2px', background: 'rgba(255,255,255,0.15)' }} />
         </div>
 
-        {/* ── Header ── */}
+        {/* â”€â”€ Header â”€â”€ */}
         <div
           style={{
             display: 'flex',
@@ -524,7 +524,7 @@ export default function NovaApostaForm({
                 placeItems: 'center',
                 borderRadius: '14px',
                 background: 'rgba(255,255,255,0.06)',
-                color: isAnalyzingImage ? '#00FF88' : '#94A3B8',
+                color: isAnalyzingImage ? '#8B5CF6' : '#94A3B8',
                 border: 'none',
                 cursor: isAnalyzingImage ? 'wait' : 'pointer',
                 transition: 'all 0.15s',
@@ -545,7 +545,7 @@ export default function NovaApostaForm({
               }}
             />
 
-            {/* Voice toggle — compact */}
+            {/* Voice toggle â€” compact */}
             {isSupported && (
               <button
                 type="button"
@@ -557,8 +557,8 @@ export default function NovaApostaForm({
                   display: 'grid',
                   placeItems: 'center',
                   borderRadius: '14px',
-                  background: isListening ? 'rgba(0,255,136,0.15)' : 'rgba(255,255,255,0.06)',
-                  color: isListening ? '#00FF88' : '#94A3B8',
+                  background: isListening ? 'rgba(139,92,246,0.15)' : 'rgba(255,255,255,0.06)',
+                  color: isListening ? '#8B5CF6' : '#94A3B8',
                   border: 'none',
                   cursor: 'pointer',
                   transition: 'all 0.15s',
@@ -601,7 +601,7 @@ export default function NovaApostaForm({
               marginBottom: '16px',
               padding: '10px 16px',
               borderRadius: '14px',
-              background: 'rgba(0,255,136,0.08)',
+              background: 'rgba(139,92,246,0.08)',
               display: 'flex',
               alignItems: 'center',
               gap: '10px',
@@ -613,18 +613,18 @@ export default function NovaApostaForm({
                 width: '8px',
                 height: '8px',
                 borderRadius: '50%',
-                background: '#00FF88',
+                background: '#8B5CF6',
                 flexShrink: 0,
                 animation: 'fab-pulse 1.2s ease-in-out infinite',
               }}
             />
-            <span style={{ fontSize: '13px', fontWeight: 500, color: '#00FF88' }}>
+            <span style={{ fontSize: '13px', fontWeight: 500, color: '#8B5CF6' }}>
               {isAnalyzingImage ? 'Lendo o bilhete com IA...' : 'Escutando... diga o evento e o mercado'}
             </span>
           </div>
         )}
 
-        {/* ── Scrollable body ── */}
+        {/* â”€â”€ Scrollable body â”€â”€ */}
         <form
           onSubmit={handleSubmit}
           noValidate
@@ -638,7 +638,7 @@ export default function NovaApostaForm({
             paddingBottom: '8px',
           }}
         >
-          {/* Banca selector — only if multiple */}
+          {/* Banca selector â€” only if multiple */}
           {bancas.length > 1 && (
             <div style={{ position: 'relative' }}>
               <div
@@ -693,7 +693,7 @@ export default function NovaApostaForm({
                   }}
                 >
                   {bancas.map((b) => (
-                    <option key={b.id} value={b.id} style={{ background: '#0F172A', color: '#FFFFFF' }}>
+                    <option key={b.id} value={b.id} style={{ background: '#171717', color: '#FFFFFF' }}>
                       {b.nome}
                     </option>
                   ))}
@@ -729,14 +729,14 @@ export default function NovaApostaForm({
           <FloatInput
             id="f-detalhe"
             label="Mercado / detalhe"
-            placeholder="Resultado final, Over 2.5…"
+            placeholder="Resultado final, Over 2.5â€¦"
             value={values.detalhe_aposta}
             onChange={setInput('detalhe_aposta')}
             onBlur={blur('detalhe_aposta')}
             error={fieldError('detalhe_aposta')}
           />
 
-          {/* Odd + Stake — grid 2 cols */}
+          {/* Odd + Stake â€” grid 2 cols */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
             <FloatInput
               id="f-odd"
@@ -786,7 +786,7 @@ export default function NovaApostaForm({
                     border: 'none',
                     cursor: 'pointer',
                     transition: 'all 0.12s',
-                    background: active ? '#00FF88' : 'rgba(255,255,255,0.06)',
+                    background: active ? '#8B5CF6' : 'rgba(255,255,255,0.06)',
                     color: active ? '#050816' : '#94A3B8',
                   }}
                 >
@@ -806,8 +806,8 @@ export default function NovaApostaForm({
                 gap: '10px',
                 padding: '16px',
                 borderRadius: '16px',
-                background: values.is_freebet ? 'rgba(0,255,136,0.1)' : 'rgba(255,255,255,0.04)',
-                border: `1.5px solid ${values.is_freebet ? 'rgba(0,255,136,0.3)' : 'transparent'}`,
+                background: values.is_freebet ? 'rgba(139,92,246,0.1)' : 'rgba(255,255,255,0.04)',
+                border: `1.5px solid ${values.is_freebet ? 'rgba(139,92,246,0.3)' : 'transparent'}`,
                 cursor: 'pointer',
                 transition: 'all 0.2s',
               }}
@@ -819,11 +819,11 @@ export default function NovaApostaForm({
                 style={{
                   width: '18px',
                   height: '18px',
-                  accentColor: '#00FF88',
+                  accentColor: '#8B5CF6',
                   cursor: 'pointer',
                 }}
               />
-              <span style={{ fontSize: '14px', fontWeight: 600, color: values.is_freebet ? '#00FF88' : '#94A3B8' }}>
+              <span style={{ fontSize: '14px', fontWeight: 600, color: values.is_freebet ? '#8B5CF6' : '#94A3B8' }}>
                 Aposta Grátis
               </span>
             </label>
@@ -831,7 +831,7 @@ export default function NovaApostaForm({
             {/* Bonus Percent */}
             <FloatInput
               id="f-bonus"
-              label="Bônus (%)"
+              label="BÃ´nus (%)"
               type="number"
               step="0.1"
               placeholder="Ex: 10"
@@ -848,7 +848,7 @@ export default function NovaApostaForm({
             <div
               style={{
                 borderRadius: '18px',
-                background: 'rgba(0,255,136,0.06)',
+                background: 'rgba(139,92,246,0.06)',
                 padding: '16px 18px',
                 display: 'flex',
                 alignItems: 'flex-start',
@@ -859,7 +859,7 @@ export default function NovaApostaForm({
                 <p style={{ fontSize: '11px', fontWeight: 600, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.07em', lineHeight: '1', marginBottom: '5px' }}>
                   Retorno potencial
                 </p>
-                <p style={{ fontSize: '22px', fontWeight: 700, color: '#00FF88', fontFamily: 'monospace', lineHeight: '1' }}>
+                <p style={{ fontSize: '22px', fontWeight: 700, color: '#8B5CF6', fontFamily: 'monospace', lineHeight: '1' }}>
                   {formatBRL(retorno)}
                 </p>
               </div>
@@ -867,7 +867,7 @@ export default function NovaApostaForm({
                 <p style={{ fontSize: '11px', fontWeight: 600, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.07em', lineHeight: '1', marginBottom: '5px' }}>
                   {valorBonus && valorBonus > 0 ? 'Lucro Total' : 'Lucro'}
                 </p>
-                <p style={{ fontSize: '17px', fontWeight: 700, color: lucro! >= 0 ? '#00FF88' : '#ff9aae', fontFamily: 'monospace', lineHeight: '1' }}>
+                <p style={{ fontSize: '17px', fontWeight: 700, color: lucro! >= 0 ? '#8B5CF6' : '#ff9aae', fontFamily: 'monospace', lineHeight: '1' }}>
                   +{formatBRL(lucro!)}
                 </p>
                 {valorBonus !== null && valorBonus > 0 && (
@@ -877,8 +877,8 @@ export default function NovaApostaForm({
                       <span style={{ color: '#FFFFFF', fontFamily: 'monospace' }}>{formatBRL(lucroReal!)}</span>
                     </p>
                     <p style={{ fontSize: '11px', fontWeight: 500, color: '#94A3B8', display: 'flex', gap: '6px' }}>
-                      <span>Bônus:</span>
-                      <span style={{ color: '#00FF88', fontFamily: 'monospace' }}>+{formatBRL(valorBonus)}</span>
+                      <span>BÃ´nus:</span>
+                      <span style={{ color: '#8B5CF6', fontFamily: 'monospace' }}>+{formatBRL(valorBonus)}</span>
                     </p>
                   </div>
                 )}
@@ -904,7 +904,7 @@ export default function NovaApostaForm({
           )}
         </form>
 
-        {/* ── Footer — sticky CTA ── */}
+        {/* â”€â”€ Footer â€” sticky CTA â”€â”€ */}
         <div
           style={{
             flexShrink: 0,
@@ -914,7 +914,7 @@ export default function NovaApostaForm({
             flexDirection: 'column',
             gap: '10px',
             borderTop: '1px solid rgba(255,255,255,0.05)',
-            background: '#0F172A',
+            background: '#171717',
           }}
         >
           <button
@@ -931,15 +931,15 @@ export default function NovaApostaForm({
               justifyContent: 'center',
               gap: '8px',
               borderRadius: '18px',
-              background: success ? 'rgba(0,255,136,0.15)' : '#00FF88',
-              color: success ? '#00FF88' : '#050816',
+              background: success ? 'rgba(139,92,246,0.15)' : '#8B5CF6',
+              color: success ? '#8B5CF6' : '#FFFFFF',
               fontSize: '16px',
               fontWeight: 700,
               border: 'none',
               cursor: saving || success ? 'default' : 'pointer',
               opacity: saving ? 0.75 : 1,
               transition: 'all 0.2s',
-              boxShadow: success ? 'none' : '0 8px 28px rgba(0,255,136,0.22)',
+              boxShadow: success ? 'none' : '0 8px 28px rgba(139,92,246,0.22)',
               letterSpacing: '-0.1px',
             }}
           >
@@ -981,3 +981,4 @@ export default function NovaApostaForm({
     </div>
   );
 }
+

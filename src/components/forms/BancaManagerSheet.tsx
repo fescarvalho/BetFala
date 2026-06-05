@@ -15,7 +15,7 @@ import {
 import { Banca, TipoTransacao } from '@/types/aposta';
 import { formatarMoeda } from '@/lib/calculations';
 
-/* ─── Types ──────────────────────────────────────────────── */
+/* â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 interface BancaManagerSheetProps {
   bancas: Banca[];
   activeBancaId: string | undefined;
@@ -33,7 +33,7 @@ interface BancaManagerSheetProps {
 
 type View = 'list' | 'add' | 'edit' | 'transaction';
 
-/* ─── Floating-label field (reusable) ───────────────────── */
+/* â”€â”€â”€ Floating-label field (reusable) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 function Field({
   id,
   label,
@@ -61,7 +61,7 @@ function Field({
           position: 'relative',
           borderRadius: '16px',
           background: 'rgba(255,255,255,0.04)',
-          border: `1.5px solid ${error ? 'rgba(255,77,109,0.5)' : focused ? 'rgba(0,255,136,0.4)' : 'rgba(255,255,255,0.07)'}`,
+          border: `1.5px solid ${error ? 'rgba(255,77,109,0.5)' : focused ? 'rgba(139,92,246,0.4)' : 'rgba(255,255,255,0.07)'}`,
           transition: 'border-color 0.2s',
         }}
       >
@@ -74,7 +74,7 @@ function Field({
             transform: raised ? 'none' : 'translateY(-50%)',
             fontSize: raised ? '10px' : '14px',
             fontWeight: raised ? 600 : 500,
-            color: focused ? '#00FF88' : '#94A3B8',
+            color: focused ? '#8B5CF6' : '#94A3B8',
             letterSpacing: raised ? '0.05em' : '0',
             textTransform: raised ? 'uppercase' : 'none',
             transition: 'all 0.18s cubic-bezier(0.4,0,0.2,1)',
@@ -124,7 +124,7 @@ function Field({
   );
 }
 
-/* ─── Main component ─────────────────────────────────────── */
+/* â”€â”€â”€ Main component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 export default function BancaManagerSheet({
   bancas,
   activeBancaId,
@@ -153,7 +153,7 @@ export default function BancaManagerSheet({
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
-  /* ── Open Add ── */
+  /* â”€â”€ Open Add â”€â”€ */
   const openAdd = () => {
     setNome('');
     setSaldo('');
@@ -163,7 +163,7 @@ export default function BancaManagerSheet({
     setView('add');
   };
 
-  /* ── Open Edit ── */
+  /* â”€â”€ Open Edit â”€â”€ */
   const openEdit = (b: Banca) => {
     setNome(b.nome);
     setSaldo(String(b.saldo_inicial));
@@ -173,7 +173,7 @@ export default function BancaManagerSheet({
     setView('edit');
   };
 
-  /* ── Open Transaction ── */
+  /* â”€â”€ Open Transaction â”€â”€ */
   const openTransaction = (b: Banca, tipo: TipoTransacao) => {
     setSaldo('');
     setFormError('');
@@ -183,7 +183,7 @@ export default function BancaManagerSheet({
     setView('transaction');
   };
 
-  /* ── Submit ── */
+  /* â”€â”€ Submit â”€â”€ */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError('');
@@ -214,7 +214,7 @@ export default function BancaManagerSheet({
     }
   };
 
-  /* ── Delete ── */
+  /* â”€â”€ Delete â”€â”€ */
   const handleDelete = async (id: string) => {
     if (confirmDeleteId !== id) {
       setConfirmDeleteId(id);
@@ -260,7 +260,7 @@ export default function BancaManagerSheet({
           maxHeight: '88dvh',
           display: 'flex',
           flexDirection: 'column',
-          background: '#0F172A',
+          background: '#171717',
           borderRadius: '32px 32px 0 0',
           boxShadow: '0 -24px 80px rgba(0,0,0,0.55)',
           overflow: 'hidden',
@@ -303,7 +303,7 @@ export default function BancaManagerSheet({
                   cursor: 'pointer',
                 }}
               >
-                ← Voltar
+                â† Voltar
               </button>
             )}
             <button
@@ -326,7 +326,7 @@ export default function BancaManagerSheet({
           </div>
         </div>
 
-        {/* ──── LIST VIEW ──── */}
+        {/* â”€â”€â”€â”€ LIST VIEW â”€â”€â”€â”€ */}
         {view === 'list' && (
           <div style={{ flex: 1, overflowY: 'auto', padding: '0 24px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {bancas.length === 0 ? (
@@ -348,8 +348,8 @@ export default function BancaManagerSheet({
                     key={b.id}
                     style={{
                       borderRadius: '20px',
-                      background: isActive ? 'rgba(0,255,136,0.06)' : 'rgba(255,255,255,0.03)',
-                      outline: isActive ? '1.5px solid rgba(0,255,136,0.25)' : '1.5px solid rgba(255,255,255,0.05)',
+                      background: isActive ? 'rgba(139,92,246,0.06)' : 'rgba(255,255,255,0.03)',
+                      outline: isActive ? '1.5px solid rgba(139,92,246,0.25)' : '1.5px solid rgba(255,255,255,0.05)',
                       padding: '18px 20px',
                       display: 'flex',
                       alignItems: 'center',
@@ -365,8 +365,8 @@ export default function BancaManagerSheet({
                         position: 'absolute',
                         top: 0,
                         right: 0,
-                        background: 'rgba(0,255,136,0.15)',
-                        color: '#00FF88',
+                        background: 'rgba(139,92,246,0.15)',
+                        color: '#8B5CF6',
                         fontSize: '9px',
                         fontWeight: 800,
                         textTransform: 'uppercase',
@@ -386,14 +386,14 @@ export default function BancaManagerSheet({
                         display: 'grid',
                         placeItems: 'center',
                         borderRadius: '14px',
-                        background: isActive ? 'rgba(0,255,136,0.12)' : 'rgba(255,255,255,0.05)',
-                        color: isActive ? '#00FF88' : '#94A3B8',
+                        background: isActive ? 'rgba(139,92,246,0.12)' : 'rgba(255,255,255,0.05)',
+                        color: isActive ? '#8B5CF6' : '#94A3B8',
                       }}
                     >
                       <WalletCards size={18} strokeWidth={1.8} />
                     </div>
 
-                    {/* Info — tap to select */}
+                    {/* Info â€” tap to select */}
                     <button
                       onClick={() => { onSelectBanca(b.id); onClose(); }}
                       style={{
@@ -417,7 +417,7 @@ export default function BancaManagerSheet({
                         <span style={{ fontFamily: 'monospace', fontSize: '16px', fontWeight: 700, color: '#FFFFFF', whiteSpace: 'nowrap' }}>
                           {formatarMoeda(balance)}
                         </span>
-                        <span style={{ fontSize: '11px', fontWeight: 500, color: profit >= 0 ? '#00FF88' : '#ff9aae', whiteSpace: 'nowrap' }}>
+                        <span style={{ fontSize: '11px', fontWeight: 500, color: profit >= 0 ? '#8B5CF6' : '#ff9aae', whiteSpace: 'nowrap' }}>
                           {profit >= 0 ? '+' : ''}{formatarMoeda(profit)}
                         </span>
                       </div>
@@ -433,7 +433,7 @@ export default function BancaManagerSheet({
                         title="Depositar"
                         style={{
                           height: '36px', width: '36px', display: 'grid', placeItems: 'center',
-                          borderRadius: '12px', background: 'rgba(0,255,136,0.1)', color: '#00FF88',
+                          borderRadius: '12px', background: 'rgba(139,92,246,0.1)', color: '#8B5CF6',
                           border: 'none', cursor: 'pointer', transition: 'all 0.12s'
                         }}
                       >
@@ -514,7 +514,7 @@ export default function BancaManagerSheet({
           </div>
         )}
 
-        {/* ──── FORM VIEW (add / edit / transaction) ──── */}
+        {/* â”€â”€â”€â”€ FORM VIEW (add / edit / transaction) â”€â”€â”€â”€ */}
         {isForm && (
           <form
             onSubmit={handleSubmit}
@@ -525,7 +525,7 @@ export default function BancaManagerSheet({
               <Field
                 id="banca-nome"
                 label="Nome da banca"
-                placeholder="Ex: Banca Principal, Betano…"
+                placeholder="Ex: Banca Principal, Betanoâ€¦"
                 value={nome}
                 onChange={setNome}
                 error={formError && !nome.trim() ? formError : undefined}
@@ -557,8 +557,8 @@ export default function BancaManagerSheet({
                     fontWeight: 600,
                     border: 'none',
                     cursor: 'pointer',
-                    background: saldo === String(v) ? '#00FF88' : 'rgba(255,255,255,0.06)',
-                    color: saldo === String(v) ? '#050816' : '#94A3B8',
+                    background: saldo === String(v) ? '#8B5CF6' : 'rgba(255,255,255,0.06)',
+                    color: saldo === String(v) ? '#FFFFFF' : '#94A3B8',
                     transition: 'all 0.12s',
                   }}
                 >
@@ -578,14 +578,14 @@ export default function BancaManagerSheet({
             padding: '16px 24px',
             paddingBottom: 'calc(16px + env(safe-area-inset-bottom))',
             borderTop: '1px solid rgba(255,255,255,0.05)',
-            background: '#0F172A',
+            background: '#171717',
             display: 'flex',
             flexDirection: 'column',
             gap: '10px',
           }}
         >
           {view === 'list' ? (
-            /* List footer — add button */
+            /* List footer â€” add button */
             <button
               type="button"
               onClick={openAdd}
@@ -597,13 +597,13 @@ export default function BancaManagerSheet({
                 justifyContent: 'center',
                 gap: '8px',
                 borderRadius: '18px',
-                background: '#00FF88',
+                background: '#8B5CF6',
                 color: '#050816',
                 fontSize: '16px',
                 fontWeight: 700,
                 border: 'none',
                 cursor: 'pointer',
-                boxShadow: '0 8px 28px rgba(0,255,136,0.2)',
+                boxShadow: '0 8px 28px rgba(139,92,246,0.2)',
                 transition: 'opacity 0.15s',
               }}
             >
@@ -611,7 +611,7 @@ export default function BancaManagerSheet({
               Nova banca
             </button>
           ) : (
-            /* Form footer — save button */
+            /* Form footer â€” save button */
             <>
               <button
                 type="submit"
@@ -626,14 +626,14 @@ export default function BancaManagerSheet({
                   justifyContent: 'center',
                   gap: '8px',
                   borderRadius: '18px',
-                  background: success ? 'rgba(0,255,136,0.15)' : '#00FF88',
-                  color: success ? '#00FF88' : '#050816',
+                  background: success ? 'rgba(139,92,246,0.15)' : '#8B5CF6',
+                  color: success ? '#8B5CF6' : '#FFFFFF',
                   fontSize: '16px',
                   fontWeight: 700,
                   border: 'none',
                   cursor: saving || success ? 'default' : 'pointer',
                   opacity: saving ? 0.75 : 1,
-                  boxShadow: success ? 'none' : '0 8px 28px rgba(0,255,136,0.2)',
+                  boxShadow: success ? 'none' : '0 8px 28px rgba(139,92,246,0.2)',
                   transition: 'all 0.2s',
                 }}
               >
@@ -676,3 +676,4 @@ export default function BancaManagerSheet({
     </div>
   );
 }
+

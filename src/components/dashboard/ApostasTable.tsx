@@ -48,8 +48,8 @@ export function formatarDataCard(dateStr: string): string {
   const now = new Date();
   const timeStr = date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
   const diffDays = Math.floor((now.getTime() - date.getTime()) / 86400000);
-  if (diffDays === 0) return `Hoje · ${timeStr}`;
-  if (diffDays === 1) return `Ontem · ${timeStr}`;
+  if (diffDays === 0) return `Hoje Â· ${timeStr}`;
+  if (diffDays === 1) return `Ontem Â· ${timeStr}`;
   return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
 }
 
@@ -63,8 +63,8 @@ function getSportLabel(times: string, detalhe: string) {
 }
 
 function getStatusChip(status: ApostaStatus) {
-  if (status === 'Green') return { label: 'Ganhou', color: '#00FF88', bg: 'rgba(0,255,136,0.1)' };
-  if (status === 'Red') return { label: 'Perdeu', color: '#ff9aae', bg: 'rgba(255,77,109,0.1)' };
+  if (status === 'Green') return { label: 'Ganhou', color: '#22c55e', bg: 'rgba(34,197,94,0.1)' };
+  if (status === 'Red') return { label: 'Perdeu', color: '#ef4444', bg: 'rgba(239,68,68,0.1)' };
   if (status === 'Cashout') return { label: 'Cashout', color: '#00d2ff', bg: 'rgba(0,210,255,0.1)' };
   if (status === 'Void') return { label: 'Anulado', color: '#ffd166', bg: 'rgba(255,209,102,0.1)' };
   return { label: 'Pendente', color: '#adc6ff', bg: 'rgba(173,198,255,0.1)' };
@@ -83,7 +83,7 @@ function getCardBackground(status: ApostaStatus) {
   if (status === 'Red') return '#2b161c';
   if (status === 'Cashout') return '#0f293b';
   if (status === 'Void') return '#1e232e';
-  return '#0F172A';
+  return '#171717';
 }
 
 export default function ApostasTable({ apostas, onStatusChange, onDelete, onEdit }: ApostasTableProps) {
@@ -140,7 +140,7 @@ export default function ApostasTable({ apostas, onStatusChange, onDelete, onEdit
         {paginated.length === 0 ? (
           <div
             className="col-span-1 lg:col-span-2 rounded-[24px] px-6 py-12 text-center"
-            style={{ background: '#0F172A' }}
+            style={{ background: '#171717' }}
           >
             <p className="text-[15px] font-semibold text-white">Nenhuma aposta encontrada</p>
             <p className="mt-2 text-[13px] text-[#94A3B8]">Toque no botão + para registrar a primeira.</p>
@@ -167,7 +167,7 @@ export default function ApostasTable({ apostas, onStatusChange, onDelete, onEdit
                   transition: 'background 0.3s ease',
                 }}
               >
-                {/* Main row — tap to expand */}
+                {/* Main row â€” tap to expand */}
                 <button
                   onClick={() => setExpandedId(isExpanded ? null : aposta.id)}
                   style={{
@@ -233,13 +233,13 @@ export default function ApostasTable({ apostas, onStatusChange, onDelete, onEdit
                     {(aposta.is_freebet || aposta.bonus_percent) && (
                       <div style={{ display: 'flex', gap: '6px', marginBottom: '4px' }}>
                         {aposta.is_freebet && (
-                          <span style={{ fontSize: '10px', fontWeight: 600, padding: '2px 6px', borderRadius: '4px', background: 'rgba(0,255,136,0.1)', color: '#00FF88' }}>
-                            GRÁTIS
+                          <span style={{ fontSize: '10px', fontWeight: 600, padding: '2px 6px', borderRadius: '4px', background: 'rgba(34,197,94,0.1)', color: '#22c55e' }}>
+                            GRÃTIS
                           </span>
                         )}
                         {!!aposta.bonus_percent && (
                           <span style={{ fontSize: '10px', fontWeight: 600, padding: '2px 6px', borderRadius: '4px', background: 'rgba(255,209,102,0.1)', color: '#ffd166' }}>
-                            +{aposta.bonus_percent}% BÔNUS
+                            +{aposta.bonus_percent}% BÃ”NUS
                           </span>
                         )}
                       </div>
@@ -296,7 +296,7 @@ export default function ApostasTable({ apostas, onStatusChange, onDelete, onEdit
                         fontFamily: 'monospace',
                         fontSize: '13px',
                         fontWeight: 600,
-                        color: '#00FF88',
+                        color: '#22c55e',
                         whiteSpace: 'nowrap',
                       }}
                     >
@@ -346,7 +346,7 @@ export default function ApostasTable({ apostas, onStatusChange, onDelete, onEdit
                       }}
                     >
                       {STATUS_OPTIONS.map((opt) => (
-                        <option key={opt.value} value={opt.value} style={{ background: '#0F172A', color: '#FFFFFF' }}>
+                        <option key={opt.value} value={opt.value} style={{ background: '#171717', color: '#FFFFFF' }}>
                           {opt.label}
                         </option>
                       ))}
@@ -385,8 +385,8 @@ export default function ApostasTable({ apostas, onStatusChange, onDelete, onEdit
                         borderRadius: '14px',
                         fontSize: '14px',
                         fontWeight: 600,
-                        color: '#ff9aae',
-                        background: 'rgba(255,77,109,0.08)',
+                        color: '#ef4444',
+                        background: 'rgba(239,68,68,0.08)',
                         border: 'none',
                         cursor: 'pointer',
                         whiteSpace: 'nowrap',
@@ -415,7 +415,7 @@ export default function ApostasTable({ apostas, onStatusChange, onDelete, onEdit
           <div className="flex items-center gap-2">
             <button
               className="grid h-9 w-9 place-items-center rounded-2xl text-[#94A3B8] disabled:opacity-30 transition active:scale-90"
-              style={{ background: '#0F172A' }}
+              style={{ background: '#171717' }}
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
             >
@@ -423,7 +423,7 @@ export default function ApostasTable({ apostas, onStatusChange, onDelete, onEdit
             </button>
             <button
               className="grid h-9 w-9 place-items-center rounded-2xl text-[#94A3B8] disabled:opacity-30 transition active:scale-90"
-              style={{ background: '#0F172A' }}
+              style={{ background: '#171717' }}
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
             >
@@ -437,7 +437,7 @@ export default function ApostasTable({ apostas, onStatusChange, onDelete, onEdit
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-200" style={{ paddingLeft: '10px', paddingRight: '10px' }}>
           <div
             className="w-full max-w-sm rounded-3xl p-6 shadow-2xl animate-in zoom-in-95 duration-200"
-            style={{ background: '#0F172A', border: '1px solid rgba(255,255,255,0.1)', padding: '10px' }}
+            style={{ background: '#171717', border: '1px solid rgba(255,255,255,0.1)', padding: '10px' }}
           >
             <h3 className="text-xl font-bold text-white mb-2">Confirmar Cashout</h3>
             <p className="text-sm text-[#94A3B8] mb-6" style={{ marginBottom: '8px', marginTop: '10px' }}>Insira o valor retornado na operação de cashout.</p>
@@ -452,7 +452,7 @@ export default function ApostasTable({ apostas, onStatusChange, onDelete, onEdit
                 value={cashoutValue}
                 onChange={(e) => setCashoutValue(e.target.value)}
                 placeholder="0.00"
-                className="w-full h-14 bg-white/5 rounded-2xl text-white font-medium outline-none focus:ring-2 focus:ring-[#00d2ff] transition-all p-5"
+                className="w-full h-14 bg-white/5 rounded-2xl text-white font-medium outline-none focus:ring-2 focus:ring-[#8B5CF6] transition-all p-5"
                 style={{ paddingLeft: '48px' }}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && cashoutValue) handleConfirmCashout();
@@ -470,8 +470,8 @@ export default function ApostasTable({ apostas, onStatusChange, onDelete, onEdit
               <button
                 onClick={handleConfirmCashout}
                 disabled={!cashoutValue}
-                className="flex-1 h-12 rounded-xl font-bold text-[#050816] transition-opacity disabled:opacity-50"
-                style={{ background: '#00d2ff' }}
+                className="flex-1 h-12 rounded-xl font-bold text-white transition-opacity disabled:opacity-50"
+                style={{ background: '#8B5CF6' }}
               >
                 Confirmar
               </button>
@@ -482,3 +482,4 @@ export default function ApostasTable({ apostas, onStatusChange, onDelete, onEdit
     </div>
   );
 }
+

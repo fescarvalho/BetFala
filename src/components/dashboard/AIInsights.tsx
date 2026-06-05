@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 import { Bot, X, ArrowRight, Calendar, AlertCircle, RefreshCcw } from 'lucide-react';
@@ -76,8 +76,8 @@ export function AIInsights({ isOpen, onClose, onOpenNovaAposta }: AIInsightsProp
       {/* Header */}
       <div className="flex items-center justify-between p-5 border-b border-white/[0.05] bg-[#11131A] shrink-0" style={{ padding: "10px" }}>
         <div className="flex items-center gap-2.5 min-w-0">
-          <Bot className="w-7 h-7 text-[#00FF88] shrink-0" />
-          <h2 className="text-2xl font-bold text-[#00FF88] tracking-tight truncate">AI Insights</h2>
+          <Bot className="w-7 h-7 text-[#8B5CF6] shrink-0" />
+          <h2 className="text-2xl font-bold text-[#8B5CF6] tracking-tight truncate">AI Insights</h2>
         </div>
         <button
           onClick={onClose}
@@ -91,7 +91,7 @@ export function AIInsights({ isOpen, onClose, onOpenNovaAposta }: AIInsightsProp
       <div className="flex-1 overflow-y-auto w-full pt-5 pb-24 flex flex-col gap-4" style={{ paddingLeft: '20px', paddingRight: '20px', marginTop: '20px' }}>
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 px-4">
-            <RefreshCcw className="w-10 h-10 text-[#00FF88] animate-spin mb-4" />
+            <RefreshCcw className="w-10 h-10 text-[#8B5CF6] animate-spin mb-4" />
             <h3 className="text-white font-bold text-xl mb-2">Analisando Mercado</h3>
             <p className="text-gray-400 text-sm text-center">Processando dados e cruzando estatísticas...</p>
           </div>
@@ -104,7 +104,7 @@ export function AIInsights({ isOpen, onClose, onOpenNovaAposta }: AIInsightsProp
             </p>
             <button
               onClick={() => fetchInsights()}
-              className="px-6 py-3 bg-[#00FF88] text-[#11131A] font-bold rounded-xl flex items-center gap-2 mx-auto"
+              className="px-6 py-3 bg-[#8B5CF6] text-[#11131A] font-bold rounded-xl flex items-center gap-2 mx-auto"
             >
               <RefreshCcw className="w-4 h-4" /> Refazer Análise
             </button>
@@ -139,7 +139,7 @@ export function AIInsights({ isOpen, onClose, onOpenNovaAposta }: AIInsightsProp
                           {insight.casa}
                         </div>
                       )}
-                      <div className="bg-[#00FF88] text-black font-black text-xl px-4 py-2 rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(0,255,136,0.15)] min-w-[60px] w-full">
+                      <div className="bg-[#8B5CF6] text-black font-black text-xl px-4 py-2 rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(139,92,246,0.15)] min-w-[60px] w-full">
                         {Number(insight.odd).toFixed(2)}
                       </div>
                       <button
@@ -152,7 +152,7 @@ export function AIInsights({ isOpen, onClose, onOpenNovaAposta }: AIInsightsProp
                             onOpenNovaAposta({ jogo: insight.jogo, mercado: fullMarket, odd: insight.odd });
                           }
                         }}
-                        className="bg-[#00FF88] text-black rounded-xl h-10 w-full flex items-center justify-center hover:bg-[#00CC70] active:scale-95 transition-all shadow-[0_0_15px_rgba(0,255,136,0.15)]"
+                        className="bg-[#8B5CF6] text-black rounded-xl h-10 w-full flex items-center justify-center hover:bg-[#00CC70] active:scale-95 transition-all shadow-[0_0_15px_rgba(139,92,246,0.15)]"
                         title="Abrir formulário de nova aposta"
                       >
                         <ArrowRight className="w-5 h-5 stroke-[2.5]" />
@@ -162,8 +162,8 @@ export function AIInsights({ isOpen, onClose, onOpenNovaAposta }: AIInsightsProp
 
                   <div className="bg-[#11131A] rounded-2xl p-5 mt-1 border border-white/[0.02] w-full min-w-0" style={{ padding: '10px', marginTop: "10px" }}>
                     <div className="flex items-center gap-2 mb-3">
-                      <Bot className="w-4 h-4 text-[#00FF88] shrink-0" />
-                      <span className="text-[#00FF88] text-[11px] font-bold uppercase tracking-widest truncate">
+                      <Bot className="w-4 h-4 text-[#8B5CF6] shrink-0" />
+                      <span className="text-[#8B5CF6] text-[11px] font-bold uppercase tracking-widest truncate">
                         Analysis
                       </span>
                     </div>
@@ -183,3 +183,4 @@ export function AIInsights({ isOpen, onClose, onOpenNovaAposta }: AIInsightsProp
     </div>
   );
 }
+

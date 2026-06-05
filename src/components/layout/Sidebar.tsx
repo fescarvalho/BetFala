@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import Link from 'next/link';
@@ -95,16 +95,16 @@ export default function Sidebar({
       )}
 
       <aside
-        className={`fixed top-0 left-0 bottom-0 z-[60] w-[260px] bg-[#050816] border-r border-white/[0.03] flex flex-col transition-transform duration-300 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'
+        className={`fixed top-0 left-0 bottom-0 z-[60] w-[260px] bg-neutral-950 border-r border-white/[0.03] flex flex-col transition-transform duration-300 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
       >
         {/* Logo "PROBANK" */}
         <div className="px-8 pt-8 pb-4 flex items-center gap-4" style={{ padding: "20px" }}>
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#00FF88] to-[#00A855] flex items-center justify-center shadow-[0_0_20px_rgba(0,255,136,0.2)] shrink-0">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-600 flex items-center justify-center shadow-[0_0_20px_rgba(124,58,237,0.2)] shrink-0">
             <TrendingUp size={18} color="#050816" strokeWidth={3} />
           </div>
           <span className="text-xl font-bold tracking-tight text-white select-none">
-            Pro<span className="text-[#00FF88]">Bank</span>
+            Pro<span className="text-violet-500">Bank</span>
           </span>
           {isMockMode && (
             <span className="ml-auto rounded-full bg-[#ffd166]/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#ffd166] shrink-0">
@@ -118,10 +118,10 @@ export default function Sidebar({
           <div className="relative z-[100] w-full">
             <button
               onClick={() => setShowDropdown(!showDropdown)}
-              className="w-full flex items-center justify-between bg-[#0F172A] border border-white/[0.05] rounded-[24px] p-5 text-left transition-all active:scale-[0.98] cursor-pointer group shadow-[0_4px_20px_rgba(0,0,0,0.18)]"
+              className="w-full flex items-center justify-between bg-neutral-900 border border-neutral-800 rounded-[24px] p-5 text-left transition-all active:scale-[0.98] cursor-pointer group shadow-[0_4px_20px_rgba(0,0,0,0.18)]"
             >
               <div className="flex items-center gap-3.5 min-w-0 w-full">
-                <div className="w-10 h-10 rounded-[14px] bg-[rgba(0,255,136,0.1)] text-[#00FF88] flex items-center justify-center shrink-0">
+                <div className="w-10 h-10 rounded-[14px] bg-violet-500/10 text-violet-500 flex items-center justify-center shrink-0">
                   <Landmark size={18} strokeWidth={2} />
                 </div>
                 <div className="min-w-0 flex-1">
@@ -152,7 +152,7 @@ export default function Sidebar({
 
             {/* Switcher Dropdown */}
             {showDropdown && (
-              <div className="absolute left-0 right-0 top-full mt-3 bg-[#0F172A] border border-white/[0.12] rounded-[24px] shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-[999] overflow-hidden animate-fade-in flex flex-col max-h-[320px]" >
+              <div className="absolute left-0 right-0 top-full mt-3 bg-neutral-900 border border-neutral-800 rounded-[24px] shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-[999] overflow-hidden animate-fade-in flex flex-col max-h-[320px]" >
                 <div className="overflow-y-auto flex-1 flex flex-col gap-2" style={{ padding: '8px' }}>
                   {bancas.length === 0 ? (
                     <div className="py-4 text-xs text-[#94A3B8] text-center" style={{ paddingLeft: '16px', paddingRight: '16px' }}>Nenhuma banca cadastrada</div>
@@ -167,15 +167,15 @@ export default function Sidebar({
                             setShowDropdown(false);
                           }}
                           className={`w-full flex flex-col text-left transition-all cursor-pointer ${isActive
-                            ? 'bg-[rgba(0,255,136,0.08)] border border-[rgba(0,255,136,0.2)]'
+                            ? 'bg-violet-500/10 border border-violet-500/20'
                             : 'hover:bg-white/[0.04] border border-transparent'
                             }`}
                           style={{ padding: '16px 20px', borderRadius: '16px' }}
                         >
-                          <div className={`font-semibold text-[16px] break-words whitespace-normal leading-tight ${isActive ? 'text-[#00FF88]' : 'text-white'}`}>
+                          <div className={`font-semibold text-[16px] break-words whitespace-normal leading-tight ${isActive ? 'text-violet-500' : 'text-white'}`}>
                             {b.nome}
                           </div>
-                          <div className={`font-mono text-[14px] font-semibold mt-1.5 ${isActive ? 'text-[#00CC70]' : 'text-[#94A3B8]'}`}>
+                          <div className={`font-mono text-[14px] font-semibold mt-1.5 ${isActive ? 'text-violet-500' : 'text-[#94A3B8]'}`}>
                             {isDataLoaded ? formatarMoeda(getBancaBalance(b)) : '...'}
                           </div>
                         </button>
@@ -216,7 +216,7 @@ export default function Sidebar({
                     onOpenInsights?.();
                     if (mobileOpen && onClose) onClose();
                   }}
-                  className={`flex items-center w-full gap-4 px-4 py-3.5 rounded-[18px] text-[14px] font-semibold transition-all duration-200 group cursor-pointer text-[#94A3B8] hover:text-white hover:bg-[#0F172A] border border-transparent hover:border-white/[0.02]`}
+                  className={`flex items-center w-full gap-4 px-4 py-3.5 rounded-[18px] text-[14px] font-semibold transition-all duration-200 group cursor-pointer text-[#94A3B8] hover:text-white hover:bg-neutral-900 border border-transparent hover:border-white/[0.02]`}
                 >
                   <Icon size={18} strokeWidth={2} className="text-[#64748B] group-hover:text-white transition-colors" />
                   {item.label}
@@ -229,12 +229,12 @@ export default function Sidebar({
                 key={item.href}
                 href={item.href}
                 className={`flex items-center gap-4 px-4 py-3.5 rounded-[18px] text-[14px] font-semibold transition-all duration-200 group cursor-pointer ${isActive
-                  ? 'bg-[#0F172A] border border-white/[0.05] text-[#00FF88] shadow-[0_4px_20px_rgba(0,0,0,0.18)]'
-                  : 'text-[#94A3B8] hover:text-white hover:bg-[#0F172A] border border-transparent hover:border-white/[0.02]'
+                  ? 'bg-neutral-900 border border-neutral-800 text-violet-500 shadow-[0_4px_20px_rgba(0,0,0,0.18)]'
+                  : 'text-[#94A3B8] hover:text-white hover:bg-neutral-900 border border-transparent hover:border-white/[0.02]'
                   }`}
                 onClick={onClose}
               >
-                <Icon size={18} strokeWidth={isActive ? 2.5 : 2} className={isActive ? 'text-[#00FF88]' : 'text-[#64748B] group-hover:text-white transition-colors'} />
+                <Icon size={18} strokeWidth={isActive ? 2.5 : 2} className={isActive ? 'text-violet-500' : 'text-[#64748B] group-hover:text-white transition-colors'} />
                 {item.label}
               </Link>
             );
@@ -247,7 +247,7 @@ export default function Sidebar({
           {onNovaAposta && (
             <button
               onClick={onNovaAposta}
-              className="w-full h-[52px] bg-[#00FF88] hover:bg-[#00E57A] text-[#050816] font-bold text-[14px] rounded-[20px] flex items-center justify-center gap-2 transition-all cursor-pointer shadow-[0_8px_24px_rgba(0,255,136,0.2)] hover:shadow-[0_8px_28px_rgba(0,255,136,0.3)] hover:scale-[1.02] active:scale-[0.98] duration-200"
+              className="w-full h-[52px] bg-violet-600 hover:bg-violet-700 text-white font-bold text-[14px] rounded-[20px] flex items-center justify-center gap-2 transition-all cursor-pointer shadow-[0_8px_24px_rgba(124,58,237,0.2)] hover:shadow-[0_8px_28px_rgba(124,58,237,0.3)] hover:scale-[1.02] active:scale-[0.98] duration-200"
             >
               <Plus size={18} strokeWidth={3} />
               Nova Aposta
@@ -258,7 +258,7 @@ export default function Sidebar({
           <div className="flex flex-col gap-1 mt-2">
             <button
               onClick={() => router.push('/ajuda')}
-              className="flex items-center gap-3 px-4 py-3.5 rounded-[16px] text-[13px] font-semibold text-[#94A3B8] hover:text-white transition-all cursor-pointer hover:bg-[#0F172A] text-left w-full border border-transparent hover:border-white/[0.02]"
+              className="flex items-center gap-3 px-4 py-3.5 rounded-[16px] text-[13px] font-semibold text-[#94A3B8] hover:text-white transition-all cursor-pointer hover:bg-neutral-900 text-left w-full border border-transparent hover:border-white/[0.02]"
             >
               <HelpCircle size={16} strokeWidth={2} />
               Ajuda
@@ -276,3 +276,4 @@ export default function Sidebar({
     </>
   );
 }
+

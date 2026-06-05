@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useMemo } from 'react';
 import { ArrowDownRight, ArrowUpRight, Activity, WalletCards } from 'lucide-react';
@@ -156,7 +156,7 @@ export default function RelatoriosTab({ activeBanca, apostas, transacoes, bancas
             <article
               key={item.id}
               style={{
-                background: '#0F172A',
+                background: '#171717',
                 borderRadius: '24px',
                 boxShadow: '0 4px 20px rgba(0,0,0,0.18)',
                 overflow: 'hidden',
@@ -167,7 +167,7 @@ export default function RelatoriosTab({ activeBanca, apostas, transacoes, bancas
                 transition: 'background 0.3s ease',
               }}
             >
-              {/* Ícone */}
+              {/* Ãcone */}
               <div
                 style={{
                   height: '40px',
@@ -176,8 +176,8 @@ export default function RelatoriosTab({ activeBanca, apostas, transacoes, bancas
                   display: 'grid',
                   placeItems: 'center',
                   borderRadius: '14px',
-                  background: item.tipo === 'deposito' || item.id === 'initial' || isPositive ? 'rgba(0,255,136,0.1)' : 'rgba(255,77,109,0.1)',
-                  color: item.tipo === 'deposito' || item.id === 'initial' || isPositive ? '#00FF88' : '#ff9aae',
+                  background: item.tipo === 'deposito' || item.id === 'initial' || isPositive ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)',
+                  color: item.tipo === 'deposito' || item.id === 'initial' || isPositive ? '#22c55e' : '#ef4444',
                 }}
               >
                 {icon}
@@ -233,7 +233,7 @@ export default function RelatoriosTab({ activeBanca, apostas, transacoes, bancas
                     fontFamily: 'monospace',
                     fontSize: '14px',
                     fontWeight: 700,
-                    color: isPositive ? '#00FF88' : '#ff9aae',
+                    color: isPositive ? '#22c55e' : '#ef4444',
                     whiteSpace: 'nowrap',
                   }}
                 >
@@ -257,7 +257,7 @@ export default function RelatoriosTab({ activeBanca, apostas, transacoes, bancas
         {extrato.length === 0 && (
           <div
             className="col-span-1 lg:col-span-2 rounded-[24px] px-6 py-12 text-center"
-            style={{ background: '#0F172A' }}
+            style={{ background: '#171717' }}
           >
             <p className="text-[15px] font-semibold text-white">Nenhuma movimentação encontrada</p>
             <p className="mt-2 text-[13px] text-[#94A3B8]">As transações desta banca aparecerão aqui.</p>
@@ -267,3 +267,4 @@ export default function RelatoriosTab({ activeBanca, apostas, transacoes, bancas
     </section>
   );
 }
+
