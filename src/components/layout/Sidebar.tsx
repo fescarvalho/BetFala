@@ -206,7 +206,7 @@ export default function Sidebar({
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href || (item.href === '/' && pathname === '/');
-            
+
             if (item.label === 'Estratégias') {
               return (
                 <button
@@ -216,6 +216,7 @@ export default function Sidebar({
                     onOpenInsights?.();
                     if (mobileOpen && onClose) onClose();
                   }}
+                  style={{ padding: '10px' }}
                   className={`flex items-center w-full gap-4 px-4 py-3.5 rounded-[18px] text-[14px] font-semibold transition-all duration-200 group cursor-pointer text-[#94A3B8] hover:text-white hover:bg-neutral-900 border border-transparent hover:border-white/[0.02]`}
                 >
                   <Icon size={18} strokeWidth={2} className="text-[#64748B] group-hover:text-white transition-colors" />
@@ -223,11 +224,12 @@ export default function Sidebar({
                 </button>
               );
             }
-            
+
             return (
               <Link
                 key={item.href}
                 href={item.href}
+                style={{ padding: '10px' }}
                 className={`flex items-center gap-4 px-4 py-3.5 rounded-[18px] text-[14px] font-semibold transition-all duration-200 group cursor-pointer ${isActive
                   ? 'bg-neutral-900 border border-neutral-800 text-violet-500 shadow-[0_4px_20px_rgba(0,0,0,0.18)]'
                   : 'text-[#94A3B8] hover:text-white hover:bg-neutral-900 border border-transparent hover:border-white/[0.02]'
