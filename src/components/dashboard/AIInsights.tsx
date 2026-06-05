@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useState } from 'react';
 import { Bot, X, ArrowRight, Calendar, AlertCircle, RefreshCcw } from 'lucide-react';
@@ -38,20 +38,14 @@ export function AIInsights({ isOpen, onClose, onOpenNovaAposta }: AIInsightsProp
     setLoading(true);
     setError(null);
     try {
-      const supabase = createClient();
-      const { data, error } = await supabase
-        .from('ai_insights')
-        .select('data')
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (error) {
+      const response = await fetch('/api/insights');
+      if (!response.ok) {
         throw new Error('Falha ao buscar insights');
       }
+      const data = await response.json();
 
-      if (data?.data?.insights && Array.isArray(data.data.insights)) {
-        setInsights(data.data.insights);
+      if (data?.insights && Array.isArray(data.insights)) {
+        setInsights(data.insights);
       } else {
         setInsights([]);
       }
