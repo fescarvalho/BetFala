@@ -15,7 +15,7 @@ import {
 import { Banca, TipoTransacao } from '@/types/aposta';
 import { formatarMoeda } from '@/lib/calculations';
 
-/* â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─── Types ──────────────────────────────────────────────── */
 interface BancaManagerSheetProps {
   bancas: Banca[];
   activeBancaId: string | undefined;
@@ -33,7 +33,7 @@ interface BancaManagerSheetProps {
 
 type View = 'list' | 'add' | 'edit' | 'transaction';
 
-/* â”€â”€â”€ Floating-label field (reusable) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─── Floating-label field (reusable) ───────────────────── */
 function Field({
   id,
   label,
@@ -124,7 +124,7 @@ function Field({
   );
 }
 
-/* â”€â”€â”€ Main component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─── Main component ─────────────────────────────────────── */
 export default function BancaManagerSheet({
   bancas,
   activeBancaId,
@@ -153,7 +153,7 @@ export default function BancaManagerSheet({
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
-  /* â”€â”€ Open Add â”€â”€ */
+  /* ── Open Add ── */
   const openAdd = () => {
     setNome('');
     setSaldo('');
@@ -163,7 +163,7 @@ export default function BancaManagerSheet({
     setView('add');
   };
 
-  /* â”€â”€ Open Edit â”€â”€ */
+  /* ── Open Edit ── */
   const openEdit = (b: Banca) => {
     setNome(b.nome);
     setSaldo(String(b.saldo_inicial));
@@ -173,7 +173,7 @@ export default function BancaManagerSheet({
     setView('edit');
   };
 
-  /* â”€â”€ Open Transaction â”€â”€ */
+  /* ── Open Transaction ── */
   const openTransaction = (b: Banca, tipo: TipoTransacao) => {
     setSaldo('');
     setFormError('');
@@ -183,7 +183,7 @@ export default function BancaManagerSheet({
     setView('transaction');
   };
 
-  /* â”€â”€ Submit â”€â”€ */
+  /* ── Submit ── */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError('');
@@ -214,7 +214,7 @@ export default function BancaManagerSheet({
     }
   };
 
-  /* â”€â”€ Delete â”€â”€ */
+  /* ── Delete ── */
   const handleDelete = async (id: string) => {
     if (confirmDeleteId !== id) {
       setConfirmDeleteId(id);
@@ -326,7 +326,7 @@ export default function BancaManagerSheet({
           </div>
         </div>
 
-        {/* â”€â”€â”€â”€ LIST VIEW â”€â”€â”€â”€ */}
+        {/* ──── LIST VIEW ──── */}
         {view === 'list' && (
           <div style={{ flex: 1, overflowY: 'auto', padding: '0 24px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {bancas.length === 0 ? (
@@ -393,7 +393,7 @@ export default function BancaManagerSheet({
                       <WalletCards size={18} strokeWidth={1.8} />
                     </div>
 
-                    {/* Info â€” tap to select */}
+                    {/* Info — tap to select */}
                     <button
                       onClick={() => { onSelectBanca(b.id); onClose(); }}
                       style={{
@@ -514,7 +514,7 @@ export default function BancaManagerSheet({
           </div>
         )}
 
-        {/* â”€â”€â”€â”€ FORM VIEW (add / edit / transaction) â”€â”€â”€â”€ */}
+        {/* ──── FORM VIEW (add / edit / transaction) ──── */}
         {isForm && (
           <form
             onSubmit={handleSubmit}
@@ -525,7 +525,7 @@ export default function BancaManagerSheet({
               <Field
                 id="banca-nome"
                 label="Nome da banca"
-                placeholder="Ex: Banca Principal, Betanoâ€¦"
+                placeholder="Ex: Banca Principal, Betano…"
                 value={nome}
                 onChange={setNome}
                 error={formError && !nome.trim() ? formError : undefined}
@@ -585,7 +585,7 @@ export default function BancaManagerSheet({
           }}
         >
           {view === 'list' ? (
-            /* List footer â€” add button */
+            /* List footer — add button */
             <button
               type="button"
               onClick={openAdd}
@@ -611,7 +611,7 @@ export default function BancaManagerSheet({
               Nova banca
             </button>
           ) : (
-            /* Form footer â€” save button */
+            /* Form footer — save button */
             <>
               <button
                 type="submit"

@@ -48,8 +48,8 @@ export function formatarDataCard(dateStr: string): string {
   const now = new Date();
   const timeStr = date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
   const diffDays = Math.floor((now.getTime() - date.getTime()) / 86400000);
-  if (diffDays === 0) return `Hoje Â· ${timeStr}`;
-  if (diffDays === 1) return `Ontem Â· ${timeStr}`;
+  if (diffDays === 0) return `Hoje · ${timeStr}`;
+  if (diffDays === 1) return `Ontem · ${timeStr}`;
   return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
 }
 
@@ -167,7 +167,7 @@ export default function ApostasTable({ apostas, onStatusChange, onDelete, onEdit
                   transition: 'background 0.3s ease',
                 }}
               >
-                {/* Main row â€” tap to expand */}
+                {/* Main row — tap to expand */}
                 <button
                   onClick={() => setExpandedId(isExpanded ? null : aposta.id)}
                   style={{
@@ -234,12 +234,12 @@ export default function ApostasTable({ apostas, onStatusChange, onDelete, onEdit
                       <div style={{ display: 'flex', gap: '6px', marginBottom: '4px' }}>
                         {aposta.is_freebet && (
                           <span style={{ fontSize: '10px', fontWeight: 600, padding: '2px 6px', borderRadius: '4px', background: 'rgba(34,197,94,0.1)', color: '#22c55e' }}>
-                            GRÃTIS
+                            GRÁTIS
                           </span>
                         )}
                         {!!aposta.bonus_percent && (
                           <span style={{ fontSize: '10px', fontWeight: 600, padding: '2px 6px', borderRadius: '4px', background: 'rgba(255,209,102,0.1)', color: '#ffd166' }}>
-                            +{aposta.bonus_percent}% BÃ”NUS
+                            +{aposta.bonus_percent}% BÔNUS
                           </span>
                         )}
                       </div>

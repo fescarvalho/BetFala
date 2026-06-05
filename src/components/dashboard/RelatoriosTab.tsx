@@ -167,7 +167,7 @@ export default function RelatoriosTab({ activeBanca, apostas, transacoes, bancas
                 transition: 'background 0.3s ease',
               }}
             >
-              {/* Ãcone */}
+              {/* Ícone */}
               <div
                 style={{
                   height: '40px',

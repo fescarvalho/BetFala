@@ -13,7 +13,7 @@ import {
 import { ApostaInsert, Banca, Aposta, ApostaUpdate } from '@/types/aposta';
 import { useVoiceInput } from '@/hooks/useVoiceInput';
 
-/* â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─── Types ──────────────────────────────────────────────── */
 interface FormValues {
   times_apostados: string;
   detalhe_aposta: string;
@@ -76,7 +76,7 @@ function formatBRL(val: number) {
   return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
-/* â”€â”€â”€ Floating-label input â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─── Floating-label input ───────────────────────────────── */
 function FloatInput({
   id,
   label,
@@ -181,7 +181,7 @@ function FloatInput({
   );
 }
 
-/* â”€â”€â”€ Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─── Component ──────────────────────────────────────────── */
 export default function NovaApostaForm({
   onSave,
   onUpdate,
@@ -436,7 +436,7 @@ export default function NovaApostaForm({
   };
 
   return (
-    /* â”€â”€ Backdrop â”€â”€ */
+    /* ── Backdrop ── */
     <div
       style={{
         position: 'fixed',
@@ -460,7 +460,7 @@ export default function NovaApostaForm({
         }}
       />
 
-      {/* â”€â”€ Bottom sheet â”€â”€ */}
+      {/* ── Bottom sheet ── */}
       <div
         ref={sheetRef}
         style={{
@@ -478,7 +478,7 @@ export default function NovaApostaForm({
         }}
         className="sheet-enter sm:!rounded-[32px] sm:!mb-4 sm:!max-h-[90dvh]"
       >
-        {/* â”€â”€ Drag handle â”€â”€ */}
+        {/* ── Drag handle ── */}
         <div
           style={{
             display: 'flex',
@@ -491,7 +491,7 @@ export default function NovaApostaForm({
           <div style={{ width: '40px', height: '4px', borderRadius: '2px', background: 'rgba(255,255,255,0.15)' }} />
         </div>
 
-        {/* â”€â”€ Header â”€â”€ */}
+        {/* ── Header ── */}
         <div
           style={{
             display: 'flex',
@@ -545,7 +545,7 @@ export default function NovaApostaForm({
               }}
             />
 
-            {/* Voice toggle â€” compact */}
+            {/* Voice toggle — compact */}
             {isSupported && (
               <button
                 type="button"
@@ -624,7 +624,7 @@ export default function NovaApostaForm({
           </div>
         )}
 
-        {/* â”€â”€ Scrollable body â”€â”€ */}
+        {/* ── Scrollable body ── */}
         <form
           onSubmit={handleSubmit}
           noValidate
@@ -638,7 +638,7 @@ export default function NovaApostaForm({
             paddingBottom: '8px',
           }}
         >
-          {/* Banca selector â€” only if multiple */}
+          {/* Banca selector — only if multiple */}
           {bancas.length > 1 && (
             <div style={{ position: 'relative' }}>
               <div
@@ -729,14 +729,14 @@ export default function NovaApostaForm({
           <FloatInput
             id="f-detalhe"
             label="Mercado / detalhe"
-            placeholder="Resultado final, Over 2.5â€¦"
+            placeholder="Resultado final, Over 2.5…"
             value={values.detalhe_aposta}
             onChange={setInput('detalhe_aposta')}
             onBlur={blur('detalhe_aposta')}
             error={fieldError('detalhe_aposta')}
           />
 
-          {/* Odd + Stake â€” grid 2 cols */}
+          {/* Odd + Stake — grid 2 cols */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
             <FloatInput
               id="f-odd"
@@ -831,7 +831,7 @@ export default function NovaApostaForm({
             {/* Bonus Percent */}
             <FloatInput
               id="f-bonus"
-              label="BÃ´nus (%)"
+              label="Bônus (%)"
               type="number"
               step="0.1"
               placeholder="Ex: 10"
@@ -877,7 +877,7 @@ export default function NovaApostaForm({
                       <span style={{ color: '#FFFFFF', fontFamily: 'monospace' }}>{formatBRL(lucroReal!)}</span>
                     </p>
                     <p style={{ fontSize: '11px', fontWeight: 500, color: '#94A3B8', display: 'flex', gap: '6px' }}>
-                      <span>BÃ´nus:</span>
+                      <span>Bônus:</span>
                       <span style={{ color: '#8B5CF6', fontFamily: 'monospace' }}>+{formatBRL(valorBonus)}</span>
                     </p>
                   </div>
@@ -904,7 +904,7 @@ export default function NovaApostaForm({
           )}
         </form>
 
-        {/* â”€â”€ Footer â€” sticky CTA â”€â”€ */}
+        {/* ── Footer — sticky CTA ── */}
         <div
           style={{
             flexShrink: 0,

@@ -36,7 +36,7 @@ export default function Filters({ filtros, onChange }: FiltersProps) {
   return (
     <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '14px' }}>
 
-      {/* â”€â”€ Single row: search + period chips â”€â”€ */}
+      {/* ── Single row: search + period chips ── */}
       <div
         style={{
           display: 'flex',
@@ -150,7 +150,7 @@ export default function Filters({ filtros, onChange }: FiltersProps) {
           );
         })}
 
-        {/* Clear â€” só aparece se há filtro ativo */}
+        {/* Clear — só aparece se há filtro ativo */}
         {hasActiveFilters && (
           <button
             onClick={clear}
@@ -178,7 +178,7 @@ export default function Filters({ filtros, onChange }: FiltersProps) {
         )}
       </div>
 
-      {/* â”€â”€ Custom date range (só aparece se 'personalizado') â”€â”€ */}
+      {/* ── Custom date range (só aparece se 'personalizado') ── */}
       {filtros.periodo === 'personalizado' && (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
           <div>
