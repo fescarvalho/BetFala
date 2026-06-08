@@ -197,6 +197,7 @@ export function useApostas() {
   }, [supabase]);
 
   const [isDataLoaded, setIsDataLoaded] = useState(USE_MOCK);
+  const [hasLocalData, setHasLocalData] = useState(false);
 
   // Carregar dados iniciais para o Supabase
   useEffect(() => {
@@ -207,6 +208,13 @@ export function useApostas() {
           setLoading(false);
           setIsDataLoaded(true);
         });
+        
+      // Verificar se há dados locais a serem migrados
+      const localBancasStr = localStorage.getItem('betfala_bancas');
+      const localApostasStr = localStorage.getItem('betfala_apostas');
+      if (localBancasStr || localApostasStr) {
+        setHasLocalData(true);
+      }
     }
   }, [fetchBancas, fetchApostas, fetchTransacoes]);
 
@@ -509,6 +517,92 @@ export function useApostas() {
     [supabase, transacoes]
   );
 
+  // --- Migrar Dados Locais (Mock -> Supabase) ---
+  const migrarDadosLocais = useCallback(async () => {
+    if (USE_MOCK) return;
+    
+    const localBancasStr = localStorage.getItem('betfala_bancas');
+    const localApostasStr = localStorage.getItem('betfala_apostas');
+    const localTransacoesStr = localStorage.getItem('betfala_transacoes');
+
+    if (!localBancasStr && !localApostasStr) {
+      alert('Nenhum dado local antigo encontrado para migração.');
+      return;
+    }
+
+    if (confirm('Você tinha dados salvos offline antes de criar a conta. Deseja importá-los agora para sua conta na nuvem?')) {
+      setLoading(true);
+      try {
+        const { data: { user } } = await supabase!.auth.getUser();
+        if (!user) throw new Error("Usuário não autenticado");
+
+        const localBancas: Banca[] = JSON.parse(localBancasStr || '[]');
+        const localApostas: Aposta[] = JSON.parse(localApostasStr || '[]');
+        const localTransacoes: Transacao[] = JSON.parse(localTransacoesStr || '[]');
+
+        const bancaMap: Record<string, string> = {};
+
+        // 1. Inserir bancas
+        for (const banca of localBancas) {
+          const { id, user_id, data_criacao, ...camposBanca } = banca;
+          const { data, error } = await supabase!
+            .from('bancas')
+            .insert({ ...camposBanca, user_id: user.id, data_criacao })
+            .select()
+            .single();
+            
+          if (error) { console.error('Erro na banca', error); continue; }
+          bancaMap[banca.id] = data.id;
+        }
+
+        // 2. Inserir apostas
+        for (const aposta of localApostas) {
+          const { id, user_id, banca_id, ...camposAposta } = aposta;
+          const newBancaId = banca_id ? bancaMap[banca_id] : Object.values(bancaMap)[0];
+          
+          await supabase!
+            .from('apostas')
+            .insert({
+              ...camposAposta,
+              user_id: user.id,
+              banca_id: newBancaId
+            });
+        }
+
+        // 3. Inserir transacoes
+        for (const transacao of localTransacoes) {
+          const { id, user_id, banca_id, ...camposTransacao } = transacao;
+          const newBancaId = banca_id ? bancaMap[banca_id] : Object.values(bancaMap)[0];
+          
+          if(newBancaId) {
+            await supabase!
+              .from('transacoes')
+              .insert({
+                ...camposTransacao,
+                user_id: user.id,
+                banca_id: newBancaId
+              });
+          }
+        }
+
+        // Limpar storage antigo para não rodar de novo
+        localStorage.removeItem('betfala_bancas');
+        localStorage.removeItem('betfala_apostas');
+        localStorage.removeItem('betfala_transacoes');
+        localStorage.removeItem('betfala_active_banca_id');
+
+        alert('Migração concluída com sucesso! Os dados agora estão salvos na sua conta.');
+        window.location.reload();
+
+      } catch(err) {
+        console.error(err);
+        alert('Ocorreu um erro durante a migração dos dados. Veja o console.');
+      } finally {
+        setLoading(false);
+      }
+    }
+  }, [supabase]);
+
   return {
     apostas,
     bancas,
@@ -525,7 +619,9 @@ export function useApostas() {
     setActiveBanca,
     transacoes,
     inserirTransacao,
+    migrarDadosLocais,
     isMockMode: USE_MOCK,
     isDataLoaded,
+    hasLocalData,
   };
 }

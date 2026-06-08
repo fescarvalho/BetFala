@@ -82,8 +82,10 @@ function DashboardPageContent() {
     setActiveBanca,
     transacoes,
     inserirTransacao,
+    migrarDadosLocais,
     isMockMode,
     isDataLoaded,
+    hasLocalData,
   } = useApostas();
 
   const [showForm, setShowForm] = useState(false);
@@ -621,10 +623,54 @@ function DashboardPageContent() {
                 fontSize: '12px',
                 lineHeight: '1.6',
                 alignItems: 'flex-start',
+                marginBottom: '20px',
               }}
             >
               <AlertCircle size={15} strokeWidth={1.8} style={{ marginTop: '2px', flexShrink: 0 }} />
               <span>{dbError}</span>
+            </div>
+          )}
+
+          {!isMockMode && hasLocalData && (
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '12px',
+                borderRadius: '18px',
+                padding: '16px 18px',
+                background: 'rgba(124,58,237,0.1)',
+                color: '#fff',
+                fontSize: '13px',
+                lineHeight: '1.5',
+                border: '1px solid rgba(124,58,237,0.3)',
+                marginBottom: '20px',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                <AlertCircle size={16} strokeWidth={2} color="#8b5cf6" style={{ marginTop: '2px', flexShrink: 0 }} />
+                <div style={{ flex: 1 }}>
+                  <strong style={{ color: '#c4b5fd', display: 'block', marginBottom: '4px' }}>Dados antigos detectados!</strong>
+                  Você possui apostas e bancas salvas no seu navegador antes de criar a conta. Como você acabou de fazer login, a nuvem está vazia.
+                </div>
+              </div>
+              <button
+                onClick={migrarDadosLocais}
+                style={{
+                  alignSelf: 'flex-start',
+                  padding: '8px 16px',
+                  background: '#8b5cf6',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontWeight: 600,
+                  fontSize: '13px',
+                  cursor: 'pointer',
+                  marginTop: '4px'
+                }}
+              >
+                Migrar meus dados para a nuvem
+              </button>
             </div>
           )}
 
