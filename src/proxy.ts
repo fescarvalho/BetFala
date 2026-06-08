@@ -36,8 +36,14 @@ export async function proxy(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  // Redirecionar para login se não autenticado (exceto auth e cron)
-  if (!user && pathname !== '/auth' && !pathname.startsWith('/api/cron')) {
+  // Redirecionar para login se não autenticado (exceto auth, cron e webhooks)
+  const isPublicRoute =
+    pathname === '/auth' ||
+    pathname.startsWith('/api/cron') ||
+    pathname.startsWith('/api/telegram') ||
+    pathname.startsWith('/api/parse-print');
+
+  if (!user && !isPublicRoute) {
     return NextResponse.redirect(new URL('/auth', request.url));
   }
 
