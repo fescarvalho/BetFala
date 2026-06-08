@@ -37,6 +37,9 @@ interface GeminiApostaResult {
   stake?: string | number;
   status?: string;
   valor_retorno?: number | null;
+  is_freebet?: boolean;
+  bonus_percent?: number | null;
+  banca_nome?: string;
 }
 
 // ============================================================
@@ -94,8 +97,12 @@ Extraia os seguintes campos e retorne APENAS um objeto JSON válido, sem markdow
   "odd": número decimal da odd (ex: 1.85). Se múltipla e total não visível, CALCULE multiplicando as odds individuais. Null se não encontrar.,
   "stake": número decimal apostado (ex: 50.00). Null se não encontrar.,
   "status": "OBRIGATORIAMENTE um destes valores: 'Aberta', 'Green', 'Red', 'Cashout' ou 'Devolvida'. Se não indicado, use 'Aberta'.",
-  "valor_retorno": número decimal se status for 'Cashout', 'Green' ou 'Devolvida'. Null caso contrário.
+  "valor_retorno": número decimal se status for 'Cashout', 'Green' ou 'Devolvida'. Null caso contrário.,
+  "is_freebet": true se a aposta for grátis (freebet), senão false.,
+  "bonus_percent": número da porcentagem do bônus (se houver), ou null.,
+  "banca_nome": "Nome da banca informada pelo usuário (ex: bet365, betano). Vazio se não achar."
 }
+Se não tiver certeza, deixe como null ou vazio (exceto status e is_freebet).
 Retorne apenas o JSON. Nenhum texto antes ou depois.`;
 
   const parts: (string | { inlineData: { data: string; mimeType: string } })[] = [prompt];
@@ -203,7 +210,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   }
 
   const userId: string = profile.user_id;
-  const bancaId: string | null = profile.banca_id_padrao ?? null;
+  let bancaId: string | null = profile.banca_id_padrao ?? null;
 
   // ============================================================
   // Processar mensagem (foto ou texto)
@@ -256,6 +263,35 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   }
 
   // ============================================================
+  // Identificar Banca pelo nome
+  // ============================================================
+  let finalBancaNome = 'Padrão';
+  if (geminiResult.banca_nome) {
+    const { data: bancasEncontradas } = await supabaseAdmin
+      .from('bancas')
+      .select('id, nome')
+      .eq('user_id', userId)
+      .ilike('nome', `%${geminiResult.banca_nome.trim()}%`)
+      .limit(1);
+
+    if (bancasEncontradas && bancasEncontradas.length > 0) {
+      bancaId = bancasEncontradas[0].id;
+      finalBancaNome = bancasEncontradas[0].nome;
+    } else {
+      finalBancaNome = `${geminiResult.banca_nome} (Não encontrada - Usando Padrão)`;
+    }
+  } else if (bancaId) {
+    const { data: bancaPadrao } = await supabaseAdmin
+      .from('bancas')
+      .select('nome')
+      .eq('id', bancaId)
+      .limit(1);
+    if (bancaPadrao && bancaPadrao.length > 0) {
+      finalBancaNome = bancaPadrao[0].nome;
+    }
+  }
+
+  // ============================================================
   // INSERT no Supabase
   // ============================================================
   const insertPayload: Record<string, unknown> = {
@@ -266,6 +302,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     stake,
     status,
     data_criacao: new Date().toISOString(),
+    is_freebet: geminiResult.is_freebet ?? false,
+    ...(geminiResult.bonus_percent ? { bonus_percent: geminiResult.bonus_percent } : {}),
     ...(bancaId ? { banca_id: bancaId } : {}),
     ...(valorCashout !== null ? { valor_cashout: valorCashout } : {}),
   };
@@ -299,7 +337,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     `⚽ <b>Jogo:</b> ${timesApostados}\n` +
     `🎯 <b>Mercado:</b> ${detalheAposta}\n` +
     `📊 <b>Odd:</b> ${odd.toFixed(2)}\n` +
-    `💰 <b>Stake:</b> R$ ${stake.toFixed(2)}\n` +
+    `💰 <b>Stake:</b> R$ ${stake.toFixed(2)}${geminiResult.is_freebet ? ' <i>(Aposta Grátis)</i>' : ''}\n` +
+    (geminiResult.bonus_percent ? `🎁 <b>Bônus:</b> ${geminiResult.bonus_percent}%\n` : '') +
+    `🏦 <b>Banca:</b> ${finalBancaNome}\n` +
     `${emoji} <b>Status:</b> ${status}` +
     (valorCashout !== null ? `\n💵 <b>Retorno:</b> R$ ${Number(valorCashout).toFixed(2)}` : '');
 

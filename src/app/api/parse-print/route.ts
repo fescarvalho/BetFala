@@ -10,12 +10,10 @@ async function generateContentWithRetryAndFallback(
   prompt: string,
   mediaPart: { inlineData: { data: string; mimeType: string } }
 ) {
-  // Vamos focar no modelo principal que sabemos que existe,
-  // apenas aumentando as tentativas, pois os outros retornaram 404 (não encontrados para essa API Key).
   const modelName = 'gemini-2.5-flash';
   let lastError: any = null;
   let attempts = 0;
-  const maxAttempts = 4; // Tentamos até 4 vezes com backoff
+  const maxAttempts = 4;
 
   while (attempts < maxAttempts) {
     try {
@@ -34,7 +32,6 @@ async function generateContentWithRetryAndFallback(
       const errorMessage = err instanceof Error ? err.message : String(err);
       console.warn(`Erro com o modelo ${modelName} na tentativa ${attempts}:`, errorMessage);
 
-      // Verifica se o erro é de instabilidade/sobrecarga
       const isTransient = 
         err.status === 503 || 
         err.status === 429 || 
@@ -45,12 +42,10 @@ async function generateContentWithRetryAndFallback(
         errorMessage.includes('Unavailable');
 
       if (isTransient && attempts < maxAttempts) {
-        // Backoff: 1s, 2s, 3s...
         const delayMs = attempts * 1000;
         console.log(`Erro temporário detectado. Aguardando ${delayMs}ms antes de tentar novamente...`);
         await new Promise((resolve) => setTimeout(resolve, delayMs));
       } else {
-        // Se for 404 ou erro fatal, ou esgotarem as tentativas, paramos.
         break;
       }
     }
@@ -76,10 +71,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Nenhuma mídia fornecida (imagem ou áudio).' }, { status: 400 });
     }
 
-    // media is expected to be a base64 string starting with "data:..."
     const base64Data = media.split(',')[1] || media;
 
-    // Determine mime type if present in the data URI
     let mimeType = image ? 'image/png' : 'audio/webm';
     const matches = media.match(/^data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+).*,.*/);
     if (matches && matches.length > 1) {
@@ -97,9 +90,12 @@ Extraia os seguintes campos e retorne APENAS um objeto JSON válido, sem markdow
   "odd": "Valor numérico da odd (ex: 1.85). Se for uma aposta múltipla e a odd total não estiver visível, CALCULE a odd total multiplicando todas as odds individuais visíveis. Use ponto para decimal. Deixe vazio se não encontrar.",
   "stake": "Valor numérico apostado. Procure por termos como 'Valor Apostado', 'Aposta', ou o valor financeiro (ex: R$ 50,00). Retorne APENAS O NÚMERO (ex: 50.00), usando ponto para decimal. Deixe vazio se não encontrar.",
   "status": "Identifique se a mídia indica que a aposta já foi resolvida. OBRIGATORIAMENTE um destes valores: 'Aberta', 'Green', 'Red', 'Cashout' ou 'Devolvida'. Se não houver indicação, use 'Aberta'.",
-  "valor_retorno": 75.50 // Retorne o valor ganho em número decimal se o status for 'Cashout', 'Green' ou 'Devolvida'. Caso contrário, retorne null.
+  "valor_retorno": 75.50, // Retorne o valor ganho em número decimal se o status for 'Cashout', 'Green' ou 'Devolvida'. Caso contrário, retorne null.
+  "is_freebet": false, // Booleano. True se a aposta for descrita como "Grátis", "Aposta Grátis", "Freebet". False caso contrário.
+  "bonus_percent": 0, // Número inteiro (ex: 15, 20). Se for mencionado um bônus de múltipla ou aumento de lucro em porcentagem. Retorne apenas o número, ou null se não houver.
+  "banca_nome": "Nome da Banca" // Nome da banca se o usuário mencionar em qual banca foi feita a aposta. Deixe vazio se não encontrar.
 }
-Se não tiver certeza sobre algum valor (exceto status), deixe como string vazia.
+Se não tiver certeza sobre algum valor (exceto status e is_freebet), deixe como null ou vazio conforme o tipo.
 Retorne apenas o JSON. Não adicione nenhum texto antes ou depois.`;
 
     const mediaPart = {
@@ -111,7 +107,6 @@ Retorne apenas o JSON. Não adicione nenhum texto antes ou depois.`;
 
     const responseText = await generateContentWithRetryAndFallback(genAI, prompt, mediaPart);
 
-    // Limpar markdown de json se o Gemini retornar com formatação
     const cleanedText = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
 
     let parsedData;
