@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { loginAction, signupAction } from './actions';
 import { Zap, Mail, Lock, Loader2, Eye, EyeOff } from 'lucide-react';
 
 export default function AuthPage() {
@@ -13,8 +13,6 @@ export default function AuthPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const supabase = createClient();
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -22,20 +20,18 @@ export default function AuthPage() {
     setSuccess(null);
 
     try {
+      const formData = new FormData();
+      formData.append('email', email);
+      formData.append('password', password);
+
       if (mode === 'login') {
-        const { error: err } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-        if (err) throw err;
+        const res = await loginAction(formData);
+        if (res?.error) throw new Error(res.error);
         window.location.href = '/';
       } else {
-        const { error: err } = await supabase.auth.signUp({
-          email,
-          password,
-        });
-        if (err) throw err;
-        setSuccess('Conta criada! Verifique seu e-mail para confirmar.');
+        const res = await signupAction(formData);
+        if (res?.error) throw new Error(res.error);
+        setSuccess(res?.success || 'Conta criada! Verifique seu e-mail.');
       }
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : 'Erro de autenticação';

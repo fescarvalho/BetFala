@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState } from 'react';
 import Link from 'next/link';
@@ -266,7 +266,11 @@ export default function Sidebar({
               Ajuda
             </button>
             <button
-              onClick={() => router.push('/auth')}
+              onClick={async () => {
+                const { logoutAction } = await import('@/app/auth/actions');
+                await logoutAction();
+                router.push('/auth');
+              }}
               className="flex items-center gap-3 px-4 py-3.5 rounded-[16px] text-[13px] font-semibold text-[#94A3B8] hover:text-[#ff9aae] transition-all cursor-pointer hover:bg-[rgba(255,77,109,0.05)] text-left w-full border border-transparent hover:border-[rgba(255,77,109,0.1)]"
             >
               <LogOut size={16} strokeWidth={2} />

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import {
@@ -10,8 +10,8 @@ import {
   ImagePlus,
   X,
 } from 'lucide-react';
-import { ApostaInsert, Banca, Aposta, ApostaUpdate } from '@/types/aposta';
-import { useVoiceInput } from '@/hooks/useVoiceInput';
+import { ApostaInsert, Banca, Aposta, ApostaUpdate, ApostaStatus } from '@/types/aposta';
+import VoiceRecorderModal from './VoiceRecorderModal';
 
 /* ─── Types ──────────────────────────────────────────────── */
 interface FormValues {
@@ -22,6 +22,8 @@ interface FormValues {
   banca_id: string;
   is_freebet: boolean;
   bonus_percent: string;
+  status?: ApostaStatus;
+  valor_cashout?: string;
 }
 
 interface FormErrors {
@@ -52,6 +54,7 @@ const INITIAL: FormValues = {
   banca_id: '',
   is_freebet: false,
   bonus_percent: '',
+  status: 'Aberta',
 };
 
 /* Stake quick-pick chips */
@@ -203,6 +206,8 @@ export default function NovaApostaForm({
           banca_id: initialData.banca_id || defaultBancaId || bancas[0]?.id || '',
           is_freebet: initialData.is_freebet || false,
           bonus_percent: initialData.bonus_percent ? String(initialData.bonus_percent) : '',
+          status: initialData.status || 'Aberta',
+          valor_cashout: initialData.valor_cashout ? String(initialData.valor_cashout) : undefined,
         }
       : prefillData
         ? {
@@ -221,6 +226,7 @@ export default function NovaApostaForm({
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
+  const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
   const sheetRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -259,85 +265,30 @@ export default function NovaApostaForm({
 
   const lucro = retorno !== null ? retorno - parseFloat(values.stake) : null;
 
-  /* Voice */
-  const handleVoiceResult = useCallback((transcript: string) => {
-    // Tenta encontrar palavras-chave
-    const eventoRegex = /(?:evento|jogo|partida)[:\s]+(.*?)(?:,|$|(?=\s*(?:mercado|mercado|odd|stake)[:\s]))/i;
-    const mercadoRegex = /(?:mercado|mercado|detalhe)[:\s]+(.*?)(?:,|$|(?=\s*(?:evento|jogo|partida|odd|stake)[:\s]))/i;
-    const oddRegex = /(?:odd|cotação)[:\s]+(.*?)(?:,|$|(?=\s*(?:evento|jogo|partida|mercado|mercado|stake)[:\s]))/i;
-    const stakeRegex = /(?:stake|valor|aposta)[:\s]+(.*?)(?:,|$|(?=\s*(?:evento|jogo|partida|mercado|mercado|odd)[:\s]))/i;
-
-    const eventoMatch = transcript.match(eventoRegex);
-    const mercadoMatch = transcript.match(mercadoRegex);
-    const oddMatch = transcript.match(oddRegex);
-    const stakeMatch = transcript.match(stakeRegex);
-
-    const newValues: Partial<FormValues> = {};
-    const newTouched: Partial<Record<keyof FormValues, boolean>> = {};
-
-    let hasKeywordMatch = false;
-
-    if (eventoMatch && eventoMatch[1].trim()) {
-      newValues.times_apostados = eventoMatch[1].trim();
-      newTouched.times_apostados = true;
-      hasKeywordMatch = true;
-    }
-
-    if (mercadoMatch && mercadoMatch[1].trim()) {
-      newValues.detalhe_aposta = mercadoMatch[1].trim();
-      newTouched.detalhe_aposta = true;
-      hasKeywordMatch = true;
-    }
-
-    const extractNumber = (str: string) => {
-      const cleanStr = str.replace(/[^\d,.]/g, '').replace(',', '.');
-      return cleanStr;
-    };
-
-    if (oddMatch && oddMatch[1].trim()) {
-      const num = extractNumber(oddMatch[1]);
-      if (num && !isNaN(parseFloat(num))) {
-        newValues.odd = num;
-        newTouched.odd = true;
-        hasKeywordMatch = true;
-      }
-    }
-
-    if (stakeMatch && stakeMatch[1].trim()) {
-      const num = extractNumber(stakeMatch[1]);
-      if (num && !isNaN(parseFloat(num))) {
-        newValues.stake = num;
-        newTouched.stake = true;
-        hasKeywordMatch = true;
-      }
-    }
-
-    if (hasKeywordMatch) {
-      setValues((c) => ({ ...c, ...newValues }));
-      setTouched((c) => ({ ...c, ...newTouched }));
-    } else {
-      const parts = transcript.split(',');
-      if (parts.length >= 2) {
-        setValues((c) => ({
-          ...c,
-          times_apostados: parts[0].trim(),
-          detalhe_aposta: parts.slice(1).join(',').trim(),
-        }));
-        setTouched((c) => ({ ...c, times_apostados: true, detalhe_aposta: true }));
-      } else {
-        setValues((c) => ({ ...c, times_apostados: transcript }));
-        setTouched((c) => ({ ...c, times_apostados: true }));
-      }
-    }
+  /* Voice & IA Result Handler */
+  const handleAIGeneratedResult = useCallback((data: any) => {
+    setValues((prev) => {
+      let resolvedStatus = data.status || prev.status;
+      if (resolvedStatus === 'Devolvida') resolvedStatus = 'Void';
+      
+      return {
+        ...prev,
+        times_apostados: data.times_apostados || prev.times_apostados,
+        detalhe_aposta: data.detalhe_aposta || prev.detalhe_aposta,
+        odd: data.odd ? String(data.odd) : prev.odd,
+        stake: data.stake ? String(data.stake) : prev.stake,
+        status: resolvedStatus as ApostaStatus,
+        valor_cashout: data.valor_retorno ? String(data.valor_retorno) : prev.valor_cashout,
+      };
+    });
+    setTouched({ times_apostados: true, detalhe_aposta: true, odd: true, stake: true });
   }, []);
-
-  const { isListening, startListening, stopListening, isSupported } = useVoiceInput(handleVoiceResult);
 
   useEffect(() => {
     if (!autoStartVoice) return;
-    const t = setTimeout(() => startListening(), 300);
+    const t = setTimeout(() => setIsVoiceModalOpen(true), 300);
     return () => clearTimeout(t);
-  }, [autoStartVoice, startListening]);
+  }, [autoStartVoice]);
 
   useEffect(() => {
     const fn = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
@@ -365,13 +316,20 @@ export default function NovaApostaForm({
           return;
         }
 
-        setValues((prev) => ({
-          ...prev,
-          times_apostados: data.times_apostados || prev.times_apostados,
-          detalhe_aposta: data.detalhe_aposta || prev.detalhe_aposta,
-          odd: data.odd ? String(data.odd) : prev.odd,
-          stake: data.stake ? String(data.stake) : prev.stake,
-        }));
+        setValues((prev) => {
+          let resolvedStatus = data.status || prev.status;
+          if (resolvedStatus === 'Devolvida') resolvedStatus = 'Void';
+          
+          return {
+            ...prev,
+            times_apostados: data.times_apostados || prev.times_apostados,
+            detalhe_aposta: data.detalhe_aposta || prev.detalhe_aposta,
+            odd: data.odd ? String(data.odd) : prev.odd,
+            stake: data.stake ? String(data.stake) : prev.stake,
+            status: resolvedStatus as ApostaStatus,
+            valor_cashout: data.valor_retorno ? String(data.valor_retorno) : prev.valor_cashout,
+          };
+        });
         setTouched({ times_apostados: true, detalhe_aposta: true, odd: true, stake: true });
         setIsAnalyzingImage(false);
       };
@@ -415,6 +373,8 @@ export default function NovaApostaForm({
         banca_id: values.banca_id || undefined,
         is_freebet: values.is_freebet,
         bonus_percent: values.bonus_percent ? parseFloat(values.bonus_percent) : undefined,
+        status: values.status,
+        valor_cashout: values.valor_cashout ? parseFloat(values.valor_cashout) : undefined,
       });
     } else {
       ok = await onSave({
@@ -425,6 +385,8 @@ export default function NovaApostaForm({
         banca_id: values.banca_id || undefined,
         is_freebet: values.is_freebet,
         bonus_percent: values.bonus_percent ? parseFloat(values.bonus_percent) : undefined,
+        status: values.status,
+        valor_cashout: values.valor_cashout ? parseFloat(values.valor_cashout) : undefined,
       });
     }
     setSaving(false);
@@ -546,29 +508,26 @@ export default function NovaApostaForm({
             />
 
             {/* Voice toggle — compact */}
-            {isSupported && (
-              <button
-                type="button"
-                onClick={isListening ? stopListening : startListening}
-                title={isListening ? 'Parar voz' : 'Entrada por voz'}
-                style={{
-                  height: '40px',
-                  width: '40px',
-                  display: 'grid',
-                  placeItems: 'center',
-                  borderRadius: '14px',
-                  background: isListening ? 'rgba(139,92,246,0.15)' : 'rgba(255,255,255,0.06)',
-                  color: isListening ? '#8B5CF6' : '#94A3B8',
-                  border: 'none',
-                  cursor: 'pointer',
-                  transition: 'all 0.15s',
-                  flexShrink: 0,
-                }}
-                className={isListening ? 'listening-pulse' : ''}
-              >
-                {isListening ? <MicOff size={17} strokeWidth={2} /> : <Mic size={17} strokeWidth={1.8} />}
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={() => setIsVoiceModalOpen(true)}
+              title={'Entrada por voz'}
+              style={{
+                height: '40px',
+                width: '40px',
+                display: 'grid',
+                placeItems: 'center',
+                borderRadius: '14px',
+                background: 'rgba(255,255,255,0.06)',
+                color: '#94A3B8',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'all 0.15s',
+                flexShrink: 0,
+              }}
+            >
+              <Mic size={17} strokeWidth={1.8} />
+            </button>
 
             {/* Close */}
             <button
@@ -593,7 +552,7 @@ export default function NovaApostaForm({
         </div>
 
         {/* Listening / Analyzing indicator bar */}
-        {(isListening || isAnalyzingImage) && (
+        {isAnalyzingImage && (
           <div
             style={{
               marginLeft: '24px',
@@ -619,7 +578,7 @@ export default function NovaApostaForm({
               }}
             />
             <span style={{ fontSize: '13px', fontWeight: 500, color: '#8B5CF6' }}>
-              {isAnalyzingImage ? 'Lendo o bilhete com IA...' : 'Escutando... diga o evento e o mercado'}
+              Lendo o bilhete com IA...
             </span>
           </div>
         )}
@@ -978,6 +937,13 @@ export default function NovaApostaForm({
           </button>
         </div>
       </div>
+
+      {/* Voice Recorder Modal Overlay */}
+      <VoiceRecorderModal 
+        isOpen={isVoiceModalOpen} 
+        onClose={() => setIsVoiceModalOpen(false)} 
+        onResult={handleAIGeneratedResult} 
+      />
     </div>
   );
 }
