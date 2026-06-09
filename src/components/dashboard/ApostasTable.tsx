@@ -340,13 +340,13 @@ export default function ApostasTable({ apostas, onStatusChange, onDelete, onEdit
                         <div className="p-4 bg-neutral-900/50 border-b border-neutral-800">
                           <div className="flex flex-col gap-3">
                             {Object.entries(grouped).map(([jogo, selecoes]) => (
-                              <div key={jogo} className="flex flex-col rounded-xl overflow-hidden border border-neutral-800 bg-[#121212]">
-                                <div className="px-4 py-2.5 bg-white/5 border-b border-white/5 flex items-center justify-between">
+                              <div key={jogo} className="flex flex-col rounded-xl overflow-hidden border border-neutral-800 bg-[#121212]" >
+                                <div className="px-4 py-2.5 bg-white/5 border-b border-white/5 flex items-center justify-between" style={{ padding: '5px' }}>
                                   <span className="text-[14px] font-bold text-white" >{jogo}</span>
                                 </div>
-                                <div className="flex flex-col py-2">
+                                <div className="flex flex-col py-2" style={{ padding: '5px' }}>
                                   {selecoes.map((sel, idx) => (
-                                    <div key={idx} className="relative flex justify-between items-center py-2.5 pr-4 pl-[48px]">
+                                    <div key={idx} className="relative flex justify-between items-center py-2.5 pr-4" style={{ paddingLeft: '48px' }}>
                                       {/* Linha conectora */}
                                       {idx !== selecoes.length - 1 && (
                                         <div className="absolute left-[25px] top-1/2 h-full w-[2px] bg-white/10" />
