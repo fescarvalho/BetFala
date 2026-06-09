@@ -91,24 +91,7 @@ async function analyzeWithGemini(
   const genAI = new GoogleGenerativeAI(GEMINI_KEY);
   const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
-  const prompt = `Você analisará prints de bilhetes de apostas. Identifique primeiro se é uma aposta SIMPLES ou MÚLTIPLA. Retorne um JSON com a seguinte estrutura estrita:
-{
-  "tipo_aposta": "'Simples' ou 'Multipla'",
-  "casa": "Nome da casa de aposta",
-  "odd_total": A odd final multiplicada (número),
-  "valor_apostado": O valor financeiro investido na aposta (Stake) (número),
-  "valor_retorno": O valor financeiro retornado (se for Green ou Cashout, caso contrário null),
-  "status": "'Aberta', 'Green', 'Red', 'Cashout' ou 'Devolvida'",
-  "selecoes": [
-    {
-      "jogo": "Nome do jogo",
-      "mercado": "Mercado da aposta",
-      "selecao": "Seleção (ex: Vitória do Bahia)",
-      "odd_selecao": Odd da seleção (número)
-    }
-  ]
-}
-Retorne apenas o JSON. Nenhum texto antes ou depois. Não utilize crases de markdown.`;
+  const prompt = `Extraia os dados deste bilhete de aposta. Retorne APENAS um JSON válido. Estrutura: { "tipo_aposta": "Simples"|"Multipla", "casa": "string", "odd_total": number, "valor_apostado": number, "valor_retorno": number|null, "status": "Aberta"|"Green"|"Red"|"Cashout"|"Devolvida", "selecoes": [{ "jogo": "string", "mercado": "string", "selecao": "string", "odd_selecao": number }] }`;
 
   const parts: (string | { inlineData: { data: string; mimeType: string } })[] = [prompt];
 
@@ -226,8 +209,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   try {
     if (message.photo && message.photo.length > 0) {
-      // Pegar a foto de maior resolução (último elemento do array)
-      const bestPhoto = message.photo[message.photo.length - 1];
+      // Pegar resolução média para economizar tokens (~800-1024px) ou a penúltima
+      const bestPhoto = message.photo.find(p => p.width >= 800) || message.photo[Math.max(0, message.photo.length - 2)];
       const { data, mimeType } = await downloadPhotoAsBase64(bestPhoto.file_id);
       geminiResult = await analyzeWithGemini(data, mimeType, message.caption);
     } else if (message.text) {
