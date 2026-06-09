@@ -297,7 +297,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     tipo_aposta: tipoAposta,
     odd_total: odd,
     valor_apostado: stake,
-    selecoes: selecoes,
+    detalhes_selecoes: selecoes,
     ...(bancaId ? { banca_id: bancaId } : {}),
     ...(valorCashout !== null ? { valor_cashout: valorCashout } : {}),
   };
