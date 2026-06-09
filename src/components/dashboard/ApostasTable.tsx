@@ -94,6 +94,25 @@ function getCardBackground(status: ApostaStatus) {
   return '#171717';
 }
 
+function getRetornoDisplay(aposta: Aposta): number {
+  if (aposta.status === 'Red') return 0;
+  if (aposta.status === 'Void') return Number(aposta.stake) || 0;
+  if (aposta.status === 'Cashout' && aposta.valor_cashout !== undefined) return Number(aposta.valor_cashout) || 0;
+
+  const stake = Number(aposta.stake) || 0;
+  const odd = Number(aposta.odd) || 1;
+  const bonus = Number(aposta.bonus_percent) || 0;
+  const isFreebet = Boolean(aposta.is_freebet);
+
+  const lucroBase = (stake * odd) - stake;
+  const calcBonus = bonus ? (lucroBase * (bonus / 100)) : 0;
+
+  if (isFreebet) {
+    return lucroBase + calcBonus;
+  }
+  return stake + lucroBase + calcBonus;
+}
+
 export default function ApostasTable({ apostas, onStatusChange, onDelete, onEdit }: ApostasTableProps) {
   const [page, setPage] = useState(1);
   const [loadingId, setLoadingId] = useState<string | null>(null);
@@ -310,6 +329,17 @@ export default function ApostasTable({ apostas, onStatusChange, onDelete, onEdit
                       }}
                     >
                       @{aposta.odd.toFixed(2)}
+                    </span>
+                    <span
+                      style={{
+                        fontFamily: 'monospace',
+                        fontSize: '14px',
+                        fontWeight: 600,
+                        color: aposta.status === 'Red' ? '#ef4444' : '#8B5CF6',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {formatarMoeda(getRetornoDisplay(aposta))}
                     </span>
                   </span>
 
