@@ -329,32 +329,49 @@ export default function ApostasTable({ apostas, onStatusChange, onDelete, onEdit
                 {/* Expanded actions */}
                 {isExpanded && (
                   <div className="flex flex-col border-t border-neutral-800/50">
-                    {apostaExt.detalhes_selecoes && apostaExt.detalhes_selecoes.length > 0 && (
-                      <div className="p-4 bg-neutral-900/50 border-b border-neutral-800">
-                        <div className="flex flex-col gap-2">
-                          {apostaExt.detalhes_selecoes.map((sel, idx) => (
-                            <div key={idx} className="flex justify-between items-center p-3 rounded-xl border border-neutral-800 bg-neutral-900/50">
-                              <div className="flex flex-col">
-                                <span className="text-[14px] font-semibold text-white">{sel.jogo}</span>
-                                <span className="text-[12px] text-neutral-400 mt-1">{sel.mercado}: {sel.selecao}</span>
+                    {apostaExt.detalhes_selecoes && apostaExt.detalhes_selecoes.length > 0 && (() => {
+                      const grouped = apostaExt.detalhes_selecoes.reduce((acc, sel) => {
+                        if (!acc[sel.jogo]) acc[sel.jogo] = [];
+                        acc[sel.jogo].push(sel);
+                        return acc;
+                      }, {} as Record<string, ApostaSelecao[]>);
+
+                      return (
+                        <div className="p-4 bg-neutral-900/50 border-b border-neutral-800">
+                          <div className="flex flex-col gap-3">
+                            {Object.entries(grouped).map(([jogo, selecoes]) => (
+                              <div key={jogo} className="flex flex-col rounded-xl overflow-hidden border border-neutral-800 bg-[#121212]">
+                                <div className="px-4 py-2.5 bg-white/5 border-b border-white/5 flex items-center justify-between">
+                                  <span className="text-[14px] font-bold text-white">{jogo}</span>
+                                </div>
+                                <div className="flex flex-col divide-y divide-white/5">
+                                  {selecoes.map((sel, idx) => (
+                                    <div key={idx} className="flex justify-between items-center px-4 py-3">
+                                      <div className="flex flex-col">
+                                        <span className="text-[12px] font-medium text-neutral-400">{sel.mercado}</span>
+                                        <span className="text-[14px] font-semibold text-white mt-0.5">{sel.selecao}</span>
+                                      </div>
+                                      <div className="flex flex-col items-end gap-1">
+                                        {sel.odd_selecao ? (
+                                          <span className="text-[13px] font-bold text-[#22c55e]">
+                                            @{Number(sel.odd_selecao).toFixed(2)}
+                                          </span>
+                                        ) : null}
+                                        {sel.status && (
+                                          <span className={`text-[11px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full ${sel.status === 'Green' ? 'bg-[#22c55e]/10 text-[#22c55e]' : sel.status === 'Red' ? 'bg-red-500/10 text-red-500' : 'bg-neutral-500/10 text-neutral-400'}`}>
+                                            {sel.status}
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
                               </div>
-                              <div className="flex flex-col items-end gap-1">
-                                {sel.odd_selecao && (
-                                  <span className="text-[12px] font-bold text-green-400">
-                                    @{Number(sel.odd_selecao).toFixed(2)}
-                                  </span>
-                                )}
-                                {sel.status && (
-                                  <span className={`text-[12px] font-bold ${sel.status === 'Green' ? 'text-green-400' : sel.status === 'Red' ? 'text-red-400' : 'text-neutral-400'}`}>
-                                    {sel.status}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          ))}
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      );
+                    })()}
                     <div
                       style={{
                         display: 'flex',
