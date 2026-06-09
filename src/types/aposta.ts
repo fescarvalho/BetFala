@@ -36,6 +36,16 @@ export interface Aposta {
   is_freebet?: boolean;
   bonus_percent?: number;
   valor_cashout?: number;
+  tipo_aposta?: 'Simples' | 'Multipla';
+  selecoes_multipla?: {
+    jogo: string;
+    mercado: string;
+    selecao: string;
+    odd_selecao: number;
+    status_selecao?: string;
+  }[];
+  odd_total?: number;
+  valor_apostado?: number;
 }
 
 export interface ApostaInsert {
@@ -48,6 +58,10 @@ export interface ApostaInsert {
   is_freebet?: boolean;
   bonus_percent?: number;
   valor_cashout?: number;
+  tipo_aposta?: 'Simples' | 'Multipla';
+  detalhes_selecoes?: any;
+  odd_total?: number;
+  valor_apostado?: number;
 }
 
 export interface ApostaUpdate {
@@ -61,6 +75,10 @@ export interface ApostaUpdate {
   is_freebet?: boolean;
   bonus_percent?: number;
   valor_cashout?: number;
+  tipo_aposta?: 'Simples' | 'Multipla';
+  detalhes_selecoes?: any;
+  odd_total?: number;
+  valor_apostado?: number;
 }
 
 export interface KpiData {

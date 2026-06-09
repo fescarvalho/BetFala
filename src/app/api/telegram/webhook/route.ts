@@ -31,15 +31,18 @@ interface TelegramUpdate {
 // Tipo resultado do Gemini
 // ============================================================
 interface GeminiApostaResult {
-  times_apostados?: string;
-  detalhe_aposta?: string;
-  odd?: string | number;
-  stake?: string | number;
-  status?: string;
+  tipo_aposta?: 'Simples' | 'Multipla';
+  casa?: string;
+  odd_total?: number;
+  valor_apostado?: number;
   valor_retorno?: number | null;
-  is_freebet?: boolean;
-  bonus_percent?: number | null;
-  banca_nome?: string;
+  status?: string;
+  selecoes?: {
+    jogo: string;
+    mercado: string;
+    selecao: string;
+    odd_selecao: number;
+  }[];
 }
 
 // ============================================================
@@ -88,22 +91,24 @@ async function analyzeWithGemini(
   const genAI = new GoogleGenerativeAI(GEMINI_KEY);
   const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
-  const prompt = `Você é um assistente especializado em extrair dados de apostas esportivas a partir de imagens (prints) ou descrições em texto.
-Analise a mídia ou o texto enviado.
-Extraia os seguintes campos e retorne APENAS um objeto JSON válido, sem markdown (\`\`\`json), contendo:
+  const prompt = `Você analisará prints de bilhetes de apostas. Identifique primeiro se é uma aposta SIMPLES ou MÚLTIPLA. Retorne um JSON com a seguinte estrutura estrita:
 {
-  "times_apostados": "Nome do evento ou times jogando (ex: Flamengo vs Vasco). Se for múltipla, resuma (ex: Múltipla - 5 Jogos)",
-  "detalhe_aposta": "O mercado ou palpite (ex: Resultado Final - Flamengo). Se múltipla, escreva 'Múltipla' ou 'Criar Aposta'",
-  "odd": número decimal da odd (ex: 1.85). Se múltipla e total não visível, CALCULE multiplicando as odds individuais. Null se não encontrar.,
-  "stake": número decimal apostado (ex: 50.00). Null se não encontrar.,
-  "status": "OBRIGATORIAMENTE um destes valores: 'Aberta', 'Green', 'Red', 'Cashout' ou 'Devolvida'. Se não indicado, use 'Aberta'.",
-  "valor_retorno": número decimal se status for 'Cashout', 'Green' ou 'Devolvida'. Null caso contrário.,
-  "is_freebet": true se a aposta for grátis (freebet), senão false.,
-  "bonus_percent": número da porcentagem do bônus (se houver), ou null.,
-  "banca_nome": "Nome da banca informada pelo usuário (ex: bet365, betano). Vazio se não achar."
+  "tipo_aposta": "'Simples' ou 'Multipla'",
+  "casa": "Nome da casa de aposta",
+  "odd_total": A odd final multiplicada (número),
+  "valor_apostado": O valor financeiro investido na aposta (Stake) (número),
+  "valor_retorno": O valor financeiro retornado (se for Green ou Cashout, caso contrário null),
+  "status": "'Aberta', 'Green', 'Red', 'Cashout' ou 'Devolvida'",
+  "selecoes": [
+    {
+      "jogo": "Nome do jogo",
+      "mercado": "Mercado da aposta",
+      "selecao": "Seleção (ex: Vitória do Bahia)",
+      "odd_selecao": Odd da seleção (número)
+    }
+  ]
 }
-Se não tiver certeza, deixe como null ou vazio (exceto status e is_freebet).
-Retorne apenas o JSON. Nenhum texto antes ou depois.`;
+Retorne apenas o JSON. Nenhum texto antes ou depois. Não utilize crases de markdown.`;
 
   const parts: (string | { inlineData: { data: string; mimeType: string } })[] = [prompt];
 
@@ -244,17 +249,17 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   // ============================================================
   // Validar dados mínimos
   // ============================================================
-  const timesApostados = geminiResult.times_apostados?.trim() || '';
-  const detalheAposta = geminiResult.detalhe_aposta?.trim() || '';
-  const odd = parseFloat(String(geminiResult.odd ?? '')) || 0;
-  const stake = parseFloat(String(geminiResult.stake ?? '')) || 0;
+  const tipoAposta = geminiResult.tipo_aposta === 'Multipla' ? 'Multipla' : 'Simples';
+  const odd = parseFloat(String(geminiResult.odd_total ?? '')) || 0;
+  const stake = parseFloat(String(geminiResult.valor_apostado ?? '')) || 0;
   const status = mapStatus(geminiResult.status);
   const valorCashout =
     status === 'Cashout' || status === 'Green' || status === 'Void'
       ? (geminiResult.valor_retorno ?? null)
       : null;
+  const selecoes = geminiResult.selecoes || [];
 
-  if (!timesApostados || odd <= 0) {
+  if (selecoes.length === 0 || odd <= 0) {
     await sendTelegramMessage(
       chatId,
       `⚠️ Não consegui identificar os dados da aposta com clareza.\n\nTente enviar um print mais nítido ou descreva no formato:\n<i>"Apostei R$50 em Flamengo, odd 2.10"</i>`
@@ -262,23 +267,26 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ ok: true });
   }
 
+  const timesApostados = selecoes.map(s => s.jogo).join(' / ');
+  const detalheAposta = tipoAposta === 'Multipla' ? 'Múltipla' : (selecoes[0]?.mercado || '');
+
   // ============================================================
   // Identificar Banca pelo nome
   // ============================================================
   let finalBancaNome = 'Padrão';
-  if (geminiResult.banca_nome) {
+  if (geminiResult.casa) {
     const { data: bancasEncontradas } = await supabaseAdmin
       .from('bancas')
       .select('id, nome')
       .eq('user_id', userId)
-      .ilike('nome', `%${geminiResult.banca_nome.trim()}%`)
+      .ilike('nome', `%${geminiResult.casa.trim()}%`)
       .limit(1);
 
     if (bancasEncontradas && bancasEncontradas.length > 0) {
       bancaId = bancasEncontradas[0].id;
       finalBancaNome = bancasEncontradas[0].nome;
     } else {
-      finalBancaNome = `${geminiResult.banca_nome} (Não encontrada - Usando Padrão)`;
+      finalBancaNome = `${geminiResult.casa} (Não encontrada - Usando Padrão)`;
     }
   } else if (bancaId) {
     const { data: bancaPadrao } = await supabaseAdmin
@@ -297,13 +305,15 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   const insertPayload: Record<string, unknown> = {
     user_id: userId,
     times_apostados: timesApostados,
-    detalhe_aposta: detalheAposta || timesApostados,
+    detalhe_aposta: detalheAposta,
     odd,
     stake,
     status,
     data_criacao: new Date().toISOString(),
-    is_freebet: geminiResult.is_freebet ?? false,
-    ...(geminiResult.bonus_percent ? { bonus_percent: geminiResult.bonus_percent } : {}),
+    tipo_aposta: tipoAposta,
+    odd_total: odd,
+    valor_apostado: stake,
+    detalhes_selecoes: selecoes,
     ...(bancaId ? { banca_id: bancaId } : {}),
     ...(valorCashout !== null ? { valor_cashout: valorCashout } : {}),
   };
@@ -334,12 +344,11 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   const successMsg =
     `✅ <b>Aposta registada com sucesso!</b>\n\n` +
-    `⚽ <b>Jogo:</b> ${timesApostados}\n` +
-    `🎯 <b>Mercado:</b> ${detalheAposta}\n` +
-    `📊 <b>Odd:</b> ${odd.toFixed(2)}\n` +
-    `💰 <b>Stake:</b> R$ ${stake.toFixed(2)}${geminiResult.is_freebet ? ' <i>(Aposta Grátis)</i>' : ''}\n` +
-    (geminiResult.bonus_percent ? `🎁 <b>Bônus:</b> ${geminiResult.bonus_percent}%\n` : '') +
-    `🏦 <b>Banca:</b> ${finalBancaNome}\n` +
+    `⚽ <b>Jogos:</b> ${timesApostados}\n` +
+    `🎯 <b>Tipo:</b> ${tipoAposta}\n` +
+    `📊 <b>Odd Total:</b> ${odd.toFixed(2)}\n` +
+    `💰 <b>Stake:</b> R$ ${stake.toFixed(2)}\n` +
+    `🏦 <b>Casa:</b> ${finalBancaNome}\n` +
     `${emoji} <b>Status:</b> ${status}` +
     (valorCashout !== null ? `\n💵 <b>Retorno:</b> R$ ${Number(valorCashout).toFixed(2)}` : '');
 
@@ -347,3 +356,4 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   return NextResponse.json({ ok: true });
 }
+
