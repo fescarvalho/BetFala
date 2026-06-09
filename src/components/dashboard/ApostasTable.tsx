@@ -342,11 +342,18 @@ export default function ApostasTable({ apostas, onStatusChange, onDelete, onEdit
                             {Object.entries(grouped).map(([jogo, selecoes]) => (
                               <div key={jogo} className="flex flex-col rounded-xl overflow-hidden border border-neutral-800 bg-[#121212]">
                                 <div className="px-4 py-2.5 bg-white/5 border-b border-white/5 flex items-center justify-between">
-                                  <span className="text-[14px] font-bold text-white">{jogo}</span>
+                                  <span className="text-[14px] font-bold text-white" >{jogo}</span>
                                 </div>
-                                <div className="flex flex-col divide-y divide-white/5">
+                                <div className="flex flex-col py-2">
                                   {selecoes.map((sel, idx) => (
-                                    <div key={idx} className="flex justify-between items-center px-4 py-3">
+                                    <div key={idx} className="relative flex justify-between items-center py-2.5 pr-4 pl-[48px]">
+                                      {/* Linha conectora */}
+                                      {idx !== selecoes.length - 1 && (
+                                        <div className="absolute left-[25px] top-1/2 h-full w-[2px] bg-white/10" />
+                                      )}
+                                      {/* Ponto */}
+                                      <div className="absolute left-[22px] top-1/2 -translate-y-1/2 w-[8px] h-[8px] rounded-full bg-[#94A3B8] ring-4 ring-[#121212] z-10" />
+
                                       <div className="flex flex-col">
                                         <span className="text-[12px] font-medium text-neutral-400">{sel.mercado}</span>
                                         <span className="text-[14px] font-semibold text-white mt-0.5">{sel.selecao}</span>
@@ -380,33 +387,55 @@ export default function ApostasTable({ apostas, onStatusChange, onDelete, onEdit
                         padding: '20px',
                       }}
                     >
-                    <select
-                      value={aposta.status}
-                      onChange={(e) => handleStatus(aposta.id, e.target.value as ApostaStatus)}
-                      disabled={loadingId === aposta.id}
-                      style={{
-                        flex: 1,
-                        height: '44px',
-                        borderRadius: '14px',
-                        padding: '0 14px',
-                        fontSize: '14px',
-                        fontWeight: 600,
-                        color: '#FFFFFF',
-                        background: 'rgba(255,255,255,0.06)',
-                        border: 'none',
-                        outline: 'none',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      {STATUS_OPTIONS.map((opt) => (
-                        <option key={opt.value} value={opt.value} style={{ background: '#171717', color: '#FFFFFF' }}>
-                          {opt.label}
-                        </option>
-                      ))}
-                    </select>
-                    {onEdit && (
+                      <select
+                        value={aposta.status}
+                        onChange={(e) => handleStatus(aposta.id, e.target.value as ApostaStatus)}
+                        disabled={loadingId === aposta.id}
+                        style={{
+                          flex: 1,
+                          height: '44px',
+                          borderRadius: '14px',
+                          padding: '0 14px',
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          color: '#FFFFFF',
+                          background: 'rgba(255,255,255,0.06)',
+                          border: 'none',
+                          outline: 'none',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        {STATUS_OPTIONS.map((opt) => (
+                          <option key={opt.value} value={opt.value} style={{ background: '#171717', color: '#FFFFFF' }}>
+                            {opt.label}
+                          </option>
+                        ))}
+                      </select>
+                      {onEdit && (
+                        <button
+                          onClick={() => onEdit(aposta)}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            height: '44px',
+                            padding: '0 16px',
+                            borderRadius: '14px',
+                            fontSize: '14px',
+                            fontWeight: 600,
+                            color: '#94A3B8',
+                            background: 'rgba(255,255,255,0.06)',
+                            border: 'none',
+                            cursor: 'pointer',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          <Edit2 size={13} /> Editar
+                        </button>
+                      )}
                       <button
-                        onClick={() => onEdit(aposta)}
+                        onClick={() => handleDelete(aposta.id)}
+                        disabled={loadingId === aposta.id}
                         style={{
                           display: 'flex',
                           alignItems: 'center',
@@ -416,44 +445,22 @@ export default function ApostasTable({ apostas, onStatusChange, onDelete, onEdit
                           borderRadius: '14px',
                           fontSize: '14px',
                           fontWeight: 600,
-                          color: '#94A3B8',
-                          background: 'rgba(255,255,255,0.06)',
+                          color: '#ef4444',
+                          background: 'rgba(239,68,68,0.08)',
                           border: 'none',
                           cursor: 'pointer',
                           whiteSpace: 'nowrap',
                         }}
                       >
-                        <Edit2 size={13} /> Editar
+                        {loadingId === aposta.id ? (
+                          <Loader2 size={13} className="animate-spin" />
+                        ) : (
+                          <Trash2 size={13} />
+                        )}
+                        {confirmDelete === aposta.id ? 'Confirmar' : 'Excluir'}
                       </button>
-                    )}
-                    <button
-                      onClick={() => handleDelete(aposta.id)}
-                      disabled={loadingId === aposta.id}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        height: '44px',
-                        padding: '0 16px',
-                        borderRadius: '14px',
-                        fontSize: '14px',
-                        fontWeight: 600,
-                        color: '#ef4444',
-                        background: 'rgba(239,68,68,0.08)',
-                        border: 'none',
-                        cursor: 'pointer',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      {loadingId === aposta.id ? (
-                        <Loader2 size={13} className="animate-spin" />
-                      ) : (
-                        <Trash2 size={13} />
-                      )}
-                      {confirmDelete === aposta.id ? 'Confirmar' : 'Excluir'}
-                    </button>
+                    </div>
                   </div>
-                </div>
                 )}
               </article>
             );
