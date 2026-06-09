@@ -108,8 +108,9 @@ async function analyzeWithGemini(
     try {
       const result = await model.generateContent(parts);
       const text = await result.response.text();
-      const cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim();
-      return JSON.parse(cleaned) as GeminiApostaResult;
+      const cleanedText = text.replace(/```json/gi, '').replace(/```/g, '').trim();
+      const parsedData = JSON.parse(cleanedText);
+      return parsedData as GeminiApostaResult;
     } catch (err: unknown) {
       lastError = err;
       const msg = err instanceof Error ? err.message : String(err);
@@ -296,7 +297,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     tipo_aposta: tipoAposta,
     odd_total: odd,
     valor_apostado: stake,
-    detalhes_selecoes: selecoes,
+    selecoes: selecoes,
     ...(bancaId ? { banca_id: bancaId } : {}),
     ...(valorCashout !== null ? { valor_cashout: valorCashout } : {}),
   };

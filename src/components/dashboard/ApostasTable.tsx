@@ -32,6 +32,13 @@ const STATUS_OPTIONS: { value: ApostaStatus; label: string }[] = [
 
 const PAGE_SIZE = 10;
 
+export interface ApostaSelecao {
+  jogo: string;
+  mercado: string;
+  selecao: string;
+  status?: string;
+}
+
 export function getSportIcon(times: string, detalhe: string): string {
   const t = `${times} ${detalhe}`.toLowerCase();
   if (t.includes('basquete') || t.includes('nba') || t.includes('lakers') || t.includes('warriors')) {
@@ -147,6 +154,7 @@ export default function ApostasTable({ apostas, onStatusChange, onDelete, onEdit
           </div>
         ) : (
           paginated.map((aposta) => {
+            const apostaExt = aposta as Aposta & { tipo_aposta?: string; selecoes?: ApostaSelecao[] };
             const chip = getStatusChip(aposta.status);
             const isExpanded = expandedId === aposta.id;
             const SportIcon =
@@ -319,14 +327,34 @@ export default function ApostasTable({ apostas, onStatusChange, onDelete, onEdit
 
                 {/* Expanded actions */}
                 {isExpanded && (
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '10px',
-                      padding: '0 20px 20px 20px',
-                    }}
-                  >
+                  <div className="flex flex-col border-t border-neutral-800/50">
+                    {apostaExt.tipo_aposta === 'Multipla' && apostaExt.selecoes && apostaExt.selecoes.length > 0 && (
+                      <div className="p-4 bg-neutral-900/50 border-b border-neutral-800">
+                        <div className="flex flex-col gap-2">
+                          {apostaExt.selecoes.map((sel, idx) => (
+                            <div key={idx} className="flex justify-between items-center p-3 rounded-xl border border-neutral-800 bg-neutral-900/50">
+                              <div className="flex flex-col">
+                                <span className="text-[14px] font-semibold text-white">{sel.jogo}</span>
+                                <span className="text-[12px] text-neutral-400 mt-1">{sel.mercado}: {sel.selecao}</span>
+                              </div>
+                              {sel.status && (
+                                <span className={`text-[12px] font-bold ${sel.status === 'Green' ? 'text-green-400' : sel.status === 'Red' ? 'text-red-400' : 'text-neutral-400'}`}>
+                                  {sel.status}
+                                </span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        padding: '20px',
+                      }}
+                    >
                     <select
                       value={aposta.status}
                       onChange={(e) => handleStatus(aposta.id, e.target.value as ApostaStatus)}
@@ -400,6 +428,7 @@ export default function ApostasTable({ apostas, onStatusChange, onDelete, onEdit
                       {confirmDelete === aposta.id ? 'Confirmar' : 'Excluir'}
                     </button>
                   </div>
+                </div>
                 )}
               </article>
             );
