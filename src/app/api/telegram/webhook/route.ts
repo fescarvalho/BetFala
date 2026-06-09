@@ -326,6 +326,11 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   const emoji = statusEmoji[status] ?? '📝';
 
+  let selecoesStr = '';
+  if (selecoes.length > 0) {
+    selecoesStr = '\n\n📋 <b>Seleções:</b>\n' + selecoes.map(s => `- ${s.jogo} | ${s.mercado}: ${s.selecao} (@${s.odd_selecao})`).join('\n');
+  }
+
   const successMsg =
     `✅ <b>Aposta registada com sucesso!</b>\n\n` +
     `⚽ <b>Jogos:</b> ${timesApostados}\n` +
@@ -334,7 +339,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     `💰 <b>Stake:</b> R$ ${stake.toFixed(2)}\n` +
     `🏦 <b>Casa:</b> ${finalBancaNome}\n` +
     `${emoji} <b>Status:</b> ${status}` +
-    (valorCashout !== null ? `\n💵 <b>Retorno:</b> R$ ${Number(valorCashout).toFixed(2)}` : '');
+    (valorCashout !== null ? `\n💵 <b>Retorno:</b> R$ ${Number(valorCashout).toFixed(2)}` : '') +
+    selecoesStr;
 
   await sendTelegramMessage(chatId, successMsg);
 
