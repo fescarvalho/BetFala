@@ -259,16 +259,26 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   // ============================================================
   let finalBancaNome = 'Padrão';
   if (geminiResult.casa) {
-    const { data: bancasEncontradas } = await supabaseAdmin
+    const { data: todasAsBancas } = await supabaseAdmin
       .from('bancas')
       .select('id, nome')
-      .eq('user_id', userId)
-      .ilike('nome', `%${geminiResult.casa.trim()}%`)
-      .limit(1);
+      .eq('user_id', userId);
 
-    if (bancasEncontradas && bancasEncontradas.length > 0) {
-      bancaId = bancasEncontradas[0].id;
-      finalBancaNome = bancasEncontradas[0].nome;
+    if (todasAsBancas && todasAsBancas.length > 0) {
+      const normalizedCasa = geminiResult.casa.replace(/\s+/g, '').toLowerCase();
+      const bancaEncontrada = todasAsBancas.find(b => {
+        const normalizedNome = b.nome.replace(/\s+/g, '').toLowerCase();
+        return normalizedNome === normalizedCasa || 
+               normalizedNome.includes(normalizedCasa) || 
+               normalizedCasa.includes(normalizedNome);
+      });
+
+      if (bancaEncontrada) {
+        bancaId = bancaEncontrada.id;
+        finalBancaNome = bancaEncontrada.nome;
+      } else {
+        finalBancaNome = `${geminiResult.casa} (Não encontrada - Usando Padrão)`;
+      }
     } else {
       finalBancaNome = `${geminiResult.casa} (Não encontrada - Usando Padrão)`;
     }
