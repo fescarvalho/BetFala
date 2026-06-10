@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import {
   AreaChart,
@@ -48,11 +48,12 @@ function CustomTooltip({ active, payload, label }: {
 }
 
 export default function BancaLineChart({ dados, onAddAposta }: BancaLineChartProps) {
-  const hasData = dados.length > 1;
-  const maxBanca = hasData ? Math.max(...dados.map((d) => d.banca)) : 100;
-  const minBanca = hasData ? Math.min(...dados.map((d) => d.banca)) : -100;
+  const recentDados = dados.slice(-10);
+  const hasData = recentDados.length > 1;
+  const maxBanca = hasData ? Math.max(...recentDados.map((d) => d.banca)) : 100;
+  const minBanca = hasData ? Math.min(...recentDados.map((d) => d.banca)) : -100;
 
-  const dadosComId = dados.map((d, index) => ({ ...d, uniqueId: index }));
+  const dadosComId = recentDados.map((d, index) => ({ ...d, uniqueId: index }));
 
   return (
     <div
@@ -77,7 +78,7 @@ export default function BancaLineChart({ dados, onAddAposta }: BancaLineChartPro
         }}
       >
         <h2 style={{ fontSize: '15px', fontWeight: 600, color: '#FFFFFF', lineHeight: '1' }}>
-          Evolução da banca
+          Evolução da banca (Últimos 10 dias)
         </h2>
       </div>
 
