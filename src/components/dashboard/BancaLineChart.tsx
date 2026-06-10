@@ -48,7 +48,7 @@ function CustomTooltip({ active, payload, label }: {
 }
 
 export default function BancaLineChart({ dados, onAddAposta }: BancaLineChartProps) {
-  const recentDados = dados.slice(-10);
+  const recentDados = dados.slice(-15);
   const hasData = recentDados.length > 1;
   const maxBanca = hasData ? Math.max(...recentDados.map((d) => d.banca)) : 100;
   const minBanca = hasData ? Math.min(...recentDados.map((d) => d.banca)) : -100;
@@ -78,7 +78,7 @@ export default function BancaLineChart({ dados, onAddAposta }: BancaLineChartPro
         }}
       >
         <h2 style={{ fontSize: '15px', fontWeight: 600, color: '#FFFFFF', lineHeight: '1' }}>
-          Evolução da banca (Últimos 10 dias)
+          Evolução da banca (Últimos 15 dias)
         </h2>
       </div>
 
