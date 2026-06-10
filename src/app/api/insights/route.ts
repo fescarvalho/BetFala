@@ -84,9 +84,9 @@ export async function GET(req: NextRequest) {
 
     // Passo C: Construir o prompt
     const genAI = new GoogleGenerativeAI(apiKey);
-    const prompt = `Você é um analista de apostas esportivas focado em valor (EV+).
-Analise os dados de jogos de Futebol (Brasileirão, Champions League, Premier League, Serie A, La Liga, Ligue 1, Bundesliga, Copa do Mundo 2026, Amistosos Internacionais) e NBA disponíveis hoje.
-Cruze com o perfil do usuário para sugerir até \${numInsights} oportunidades.
+    const prompt = `Você é um analista especialista em apostas esportivas.
+Sua missão é analisar os dados de jogos disponíveis hoje e fornecer sugestões de apostas.
+É OBRIGATÓRIO retornar até \${numInsights} oportunidades, buscando as melhores opções de custo-benefício ou maior probabilidade de acerto dentre as disponíveis, mesmo que não sejam "Value Bets" perfeitas.
 
 Perfil do usuário: \${historySummary}
 
@@ -94,11 +94,11 @@ Jogos, Mercados e Odds Disponíveis:
 \${JSON.stringify(todayOddsData, null, 2)}
 
 Sua Tarefa:
-1. Sugira até \${numInsights} apostas de valor (EV+), buscando anomalias em Mercados Tradicionais (Vencedor, Handicaps) ou Props de Jogadores.
-2. Não repita confrontos (máximo 1 insight por jogo). Se não houver \${numInsights} boas opções nos dados, retorne menos, não há problema.
+1. Analise cuidadosamente os dados fornecidos e selecione as \${numInsights} melhores oportunidades de aposta. Se os dados tiverem menos jogos que o solicitado, retorne 1 insight para cada jogo disponível. OBRIGATÓRIO RETORNAR SUGESTÕES se houver dados.
+2. Não repita confrontos (máximo 1 insight por jogo).
 3. Indique a casa de aposta (bookmaker) correspondente.
 4. Horário: Extraia do campo "commence_time" (formato de Brasília: HH:MM - DD/MM).
-5. Use apenas os dados fornecidos.
+5. Use estritamente as odds e jogos listados nos dados fornecidos. Não invente jogos.
 
 Responda APENAS com um objeto JSON válido, sem marcações markdown ou texto extra. Formato:
 {
