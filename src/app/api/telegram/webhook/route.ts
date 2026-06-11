@@ -49,7 +49,6 @@ interface GeminiApostaResult {
 // Helpers
 // ============================================================
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN ?? '';
-const GEMINI_KEY = process.env.GEMINI_API_KEY ?? '';
 const WEBHOOK_SECRET = process.env.TELEGRAM_WEBHOOK_SECRET ?? '';
 
 async function sendTelegramMessage(chatId: number, text: string): Promise<void> {
@@ -88,8 +87,10 @@ async function analyzeWithGemini(
   mimeType: string,
   textInput?: string
 ): Promise<GeminiApostaResult> {
-  const genAI = new GoogleGenerativeAI(GEMINI_KEY);
-  const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+  const apiKeys = process.env.GEMINI_API_KEYS?.split(',') || [];
+  if (apiKeys.length === 0) {
+    throw new Error('Nenhuma chave de API configurada em GEMINI_API_KEYS.');
+  }
 
   const prompt = `Extraia os dados deste bilhete de aposta. Retorne APENAS um JSON válido. Estrutura: { "tipo_aposta": "Simples"|"Multipla", "casa": "string", "odd_total": number, "valor_apostado": number, "valor_retorno": number|null, "status": "Aberta"|"Green"|"Red"|"Cashout"|"Devolvida", "selecoes": [{ "jogo": "string", "mercado": "string", "selecao": "string", "odd_selecao": number }] }`;
 
@@ -101,31 +102,34 @@ async function analyzeWithGemini(
     parts.push({ inlineData: { data: base64Data, mimeType } });
   }
 
-  const maxAttempts = 4;
-  let lastError: unknown;
+  for (const apiKey of apiKeys) {
+    const key = apiKey.trim();
+    if (!key) continue;
 
-  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
+      const genAI = new GoogleGenerativeAI(key);
+      const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+
       const result = await model.generateContent(parts);
       const text = await result.response.text();
       const cleanedText = text.replace(/```json/gi, '').replace(/```/g, '').trim();
       const parsedData = JSON.parse(cleanedText);
       return parsedData as GeminiApostaResult;
     } catch (err: unknown) {
-      lastError = err;
       const msg = err instanceof Error ? err.message : String(err);
-      const isTransient =
-        msg.includes('503') || msg.includes('429') || msg.includes('overloaded') || msg.includes('Unavailable');
-
-      if (isTransient && attempt < maxAttempts) {
-        await new Promise((r) => setTimeout(r, attempt * 1200));
+      
+      const isQuotaError = msg.includes('429') || msg.toLowerCase().includes('quota');
+      
+      if (isQuotaError) {
+        console.warn(`[Gemini] Chave esgotada ou limite 429 atingido. Tentando próxima chave...`);
+        continue;
       } else {
-        break;
+        throw err;
       }
     }
   }
 
-  throw lastError ?? new Error('Gemini falhou após múltiplas tentativas.');
+  throw new Error('Sistema temporariamente sobrecarregado, tente em 1 minuto');
 }
 
 function mapStatus(raw: string | undefined): 'Aberta' | 'Green' | 'Red' | 'Void' | 'Cashout' {
