@@ -108,7 +108,7 @@ async function analyzeWithGemini(
 
     try {
       const genAI = new GoogleGenerativeAI(key);
-      const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
       const result = await model.generateContent(parts);
       const text = await result.response.text();
@@ -118,8 +118,13 @@ async function analyzeWithGemini(
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       
+      const is503Error = msg.includes('503') || msg.toLowerCase().includes('service unavailable');
+      if (is503Error) {
+        console.warn(`[Gemini] Instabilidade do Google (503). Interrompendo tentativas.`);
+        throw new Error('503_UNAVAILABLE');
+      }
+
       const isQuotaError = msg.includes('429') || msg.toLowerCase().includes('quota');
-      
       if (isQuotaError) {
         console.warn(`[Gemini] Chave esgotada ou limite 429 atingido. Tentando próxima chave...`);
         continue;
@@ -230,7 +235,16 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Erro desconhecido';
     console.error('[Telegram Webhook] Erro Gemini:', msg);
-    await sendTelegramMessage(chatId, `❌ Erro ao analisar a aposta: ${msg.substring(0, 200)}`);
+
+    if (msg === '503_UNAVAILABLE') {
+      await sendTelegramMessage(
+        chatId,
+        '⚠️ Os servidores da IA do Google estão passando por instabilidade no momento. Por favor, tente enviar o bilhete novamente em 5 minutos.'
+      );
+    } else {
+      await sendTelegramMessage(chatId, `❌ Erro ao analisar a aposta: ${msg.substring(0, 200)}`);
+    }
+    
     return NextResponse.json({ ok: true });
   }
 
