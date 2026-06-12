@@ -110,16 +110,11 @@ async function analyzeWithGemini(
       const genAI = new GoogleGenerativeAI(key);
       
       let text = '';
-      try {
+      
         const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' });
         const result = await model.generateContent(parts);
         text = await result.response.text();
-      } catch (modelErr: unknown) {
-        console.warn(`[Gemini] Falha com gemini-1.5-flash-latest, tentando gemini-1.0-pro. Erro:`, modelErr);
-        const fallbackModel = genAI.getGenerativeModel({ model: 'gemini-1.0-pro' });
-        const result = await fallbackModel.generateContent(parts);
-        text = await result.response.text();
-      }
+      
 
       const cleanedText = text.replace(/```json/gi, '').replace(/```/g, '').trim();
       const parsedData = JSON.parse(cleanedText);
