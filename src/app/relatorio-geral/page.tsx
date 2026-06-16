@@ -225,6 +225,7 @@ export default function RelatorioGeralPage() {
       <div style={{ minHeight: '100svh' }} className="w-full">
         <Header
           onMenuToggle={() => setIsMobileMenuOpen(true)}
+          onNovaAposta={() => {}}
           activeBancaNome="Relatório Geral"
           activeBancaSaldo={saldoAtualCalculado}
           isDataLoaded={isDataLoaded}
