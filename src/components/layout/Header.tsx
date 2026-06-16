@@ -4,7 +4,7 @@ import { Bell, Menu, WalletCards } from 'lucide-react';
 import { formatarMoeda } from '@/lib/calculations';
 
 interface HeaderProps {
-  onNovaAposta: () => void;
+  onNovaAposta?: () => void;
   onMenuToggle?: () => void;
   activeBancaNome?: string;
   activeBancaSaldo?: number;
