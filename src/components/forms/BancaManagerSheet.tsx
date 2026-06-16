@@ -199,6 +199,14 @@ export default function BancaManagerSheet({
     } else if (view === 'edit' && editTarget) {
       ok = await onUpdateBanca(editTarget.id, nome.trim(), s);
     } else if (view === 'transaction' && editTarget) {
+      if (transactionType === 'saque') {
+        const saldoAtual = getBancaBalance(editTarget);
+        if (s > saldoAtual) {
+          setFormError('Saldo insuficiente para realizar este saque.');
+          setSaving(false);
+          return;
+        }
+      }
       ok = await onAddTransaction(editTarget.id, transactionType, s);
     }
     setSaving(false);
