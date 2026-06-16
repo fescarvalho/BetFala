@@ -12,7 +12,8 @@ import {
   HelpCircle,
   LogOut,
   Landmark,
-  Plus
+  Plus,
+  PieChart
 } from 'lucide-react';
 import { Banca, Aposta, Transacao } from '@/types/aposta';
 import { formatarMoeda } from '@/lib/calculations';
@@ -20,6 +21,7 @@ import { formatarMoeda } from '@/lib/calculations';
 const navItems = [
   { href: '/', label: 'Visão Geral', icon: LayoutDashboard },
   { href: '/?tab=relatorios', label: 'Relatórios', icon: BarChart2 },
+  { href: '/relatorio-geral', label: 'Relatório Geral', icon: PieChart },
   { href: '/?tab=estrategias', label: 'Estratégias', icon: TrendingUp },
   { href: '/?tab=historico', label: 'Histórico', icon: History },
   { href: '/?tab=configuracoes', label: 'Configurações', icon: Settings },

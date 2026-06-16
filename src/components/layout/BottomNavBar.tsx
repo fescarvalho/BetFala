@@ -1,28 +1,32 @@
 'use client';
 
 import { useState } from 'react';
-import { BarChart2, History, Home, Lightbulb } from 'lucide-react';
+import { useRouter, usePathname } from 'next/navigation';
+import { BarChart2, History, Home, PieChart } from 'lucide-react';
 
 interface BottomNavBarProps {
-  onNovaAposta: () => void;
+  onNovaAposta?: () => void;
   onOpenInsights?: () => void;
 }
 
 const NAV_ITEMS = [
-  { id: 'inicio', icon: Home, label: 'Início', section: '' },
-  { id: 'relatorios', icon: BarChart2, label: 'Gráficos', section: 'graficos-section' },
-  { id: 'estrategias', icon: Lightbulb, label: 'Insights', section: 'graficos-section' },
-  { id: 'historico', icon: History, label: 'Histórico', section: 'apostas-section' },
+  { id: 'inicio', icon: Home, label: 'Início', section: '', href: '/' },
+  { id: 'relatorios', icon: BarChart2, label: 'Gráficos', section: 'graficos-section', href: '/' },
+  { id: 'relatorio-geral', icon: PieChart, label: 'Geral', section: '', href: '/relatorio-geral' },
+  { id: 'historico', icon: History, label: 'Histórico', section: 'apostas-section', href: '/' },
 ];
 
 export default function BottomNavBar({ onNovaAposta, onOpenInsights }: BottomNavBarProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  
   const [activeTab, setActiveTab] = useState('inicio');
   void onNovaAposta;
 
-  const handleNav = (id: string, section: string) => {
-    if (id === 'estrategias' && onOpenInsights) {
-      onOpenInsights();
-      return;
+  const handleNav = (id: string, section: string, href: string) => {
+    if (href !== pathname) {
+       router.push(href);
+       return;
     }
     
     setActiveTab(id);
@@ -57,7 +61,7 @@ export default function BottomNavBar({ onNovaAposta, onOpenInsights }: BottomNav
         return (
           <button
             key={item.id}
-            onClick={() => handleNav(item.id, item.section)}
+            onClick={() => handleNav(item.id, item.section, item.href)}
             style={{
               flex: 1,
               display: 'flex',
