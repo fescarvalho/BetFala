@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 // Initialize the Google Generative AI with API Key
-const apiKey = process.env.GEMINI_API_KEY || '';
+// Fallback to the first key in GEMINI_API_KEYS if GEMINI_API_KEY is not defined
+const apiKeysStr = process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEYS || '';
+const apiKey = apiKeysStr.split(',')[0]?.trim() || '';
 
 // Helper function to call Gemini with retry logic
 async function generateContentWithRetryAndFallback(
@@ -58,7 +60,7 @@ export async function POST(req: NextRequest) {
   try {
     if (!apiKey) {
       return NextResponse.json(
-        { error: 'A chave da API do Gemini (GEMINI_API_KEY) não está configurada no .env.local' },
+        { error: 'A chave da API do Gemini (GEMINI_API_KEY ou GEMINI_API_KEYS) não está configurada no .env.local' },
         { status: 500 }
       );
     }
