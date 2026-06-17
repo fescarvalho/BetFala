@@ -189,7 +189,8 @@ export default function BancaManagerSheet({
     setFormError('');
     const isTransaction = view === 'transaction';
     if (!isTransaction && !nome.trim()) { setFormError('Informe o nome da banca.'); return; }
-    const s = parseFloat(saldo || '0');
+    const normalizedSaldo = saldo.replace(',', '.');
+    const s = parseFloat(normalizedSaldo || '0');
     if (isNaN(s) || s <= 0) { setFormError('Valor inválido.'); return; }
 
     setSaving(true);
@@ -201,7 +202,7 @@ export default function BancaManagerSheet({
     } else if (view === 'transaction' && editTarget) {
       if (transactionType === 'saque') {
         const saldoAtual = getBancaBalance(editTarget);
-        if (s > saldoAtual) {
+        if (s > saldoAtual + 0.005) {
           setFormError('Saldo insuficiente para realizar este saque.');
           setSaving(false);
           return;
