@@ -97,7 +97,7 @@ export default function Sidebar({
       )}
 
       <aside
-        className={`fixed top-0 left-0 bottom-0 z-[60] w-[260px] bg-neutral-950 border-r border-white/[0.03] flex flex-col transition-transform duration-300 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'
+        className={`fixed top-0 left-0 bottom-0 z-[60] w-[260px] bg-neutral-950 border-r border-white/[0.03] flex flex-col transition-transform duration-300 ${mobileOpen ? '!translate-x-0' : '!-translate-x-full'
           }`}
       >
         {/* Logo "PROBANK" */}
