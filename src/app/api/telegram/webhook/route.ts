@@ -236,19 +236,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       );
       return NextResponse.json({ ok: true });
     }
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : 'Erro desconhecido';
-    console.error('[Telegram Webhook] Erro Gemini:', msg);
-
-    if (msg === '503_UNAVAILABLE') {
-      await sendTelegramMessage(
-        chatId,
-        '⚠️ Os servidores da IA do Google estão passando por instabilidade no momento. Por favor, tente enviar o bilhete novamente em 5 minutos.'
-      );
-    } else {
-      await sendTelegramMessage(chatId, `❌ Erro ao analisar a aposta: ${msg.substring(0, 200)}`);
-    }
-    
+  } catch (error: unknown) {
+    console.error('[Telegram Webhook] Erro Gemini:', error);
+    await sendTelegramMessage(chatId, `⚠️ Erro Real da IA: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
     return NextResponse.json({ ok: true });
   }
 
